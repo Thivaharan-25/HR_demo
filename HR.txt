@@ -1,0 +1,2422 @@
+================================================================================
+FILE 1: HR_final.docx
+HR PLATFORM — Business Requirements Document
+Detailed Module & Feature Specification
+Version 2.0  |  March 2026
+Confidential – Internal Use Only
+================================================================================
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+ROLE DEFINITIONS TABLE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Role               | Description                                                        | Default Access Scope
+-------------------|--------------------------------------------------------------------|--------------------------------------------------------------
+Employee           | All staff members including team leads and managers. Team leads      | Own profile, own attendance, own leave, own documents,
+                   | gain read-only team views via their reporting hierarchy flag.         | own development plan, own skills. Team leads additionally:
+                   | Managers can approve leaves and view team dashboards within          | team calendar, team attendance summary, pending leave
+                   | this same role.                                                      | approvals for direct reports.
+-------------------|--------------------------------------------------------------------|--------------------------------------------------------------
+HR Admin /         | HR professionals who manage the workforce lifecycle, compliance,     | All employee data across the organisation, all HR operational
+System Admin       | and talent operations. System Admins have additional access to       | modules, system configuration, integrations, audit logs,
+                   | integration and system configuration panels.                         | reports, payroll sync setup. Cannot modify org billing or
+                   |                                                                      | owner-level settings.
+-------------------|--------------------------------------------------------------------|--------------------------------------------------------------
+Organisation Owner | The top-level authority who created or owns the organisation         | Everything HR Admin can access, plus: billing & subscription,
+                   | account. Full platform access, including billing, branding,          | org-level branding, owner account management, final approval
+                   | owner-level system config, and the ability to create or deactivate   | authority for policy overrides.
+                   | HR Admin accounts.                                                   |
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. USER ROLES & SYSTEM ACCESS OVERVIEW
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The platform defines three primary user roles. All permissions, data visibility, and feature access are governed by these roles. A user can hold only one primary role, though employees promoted to team-lead status gain additional team-level view permissions without changing their base role.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. AUTHENTICATION & ONBOARDING MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Handles all aspects of user identity, access control, and first-time setup. This module is the entry point for all roles and governs security posture for the entire platform.
+
+──────────────────────────────────────────────────────────────────────────────
+2.1 Login Methods
+──────────────────────────────────────────────────────────────────────────────
+
+2.1.1 Email & Password
+How it functions:
+- Employee enters registered email and password on the login screen.
+- System validates against the organisation's user directory (bcrypt-hashed passwords).
+- On success: access token (JWT, 8-hour expiry) and refresh token (30-day rolling) issued; session created.
+- On first failed attempt: error shown. After 3 failed attempts: 15-minute lockout countdown displayed. After 5 failed attempts: account locked; HR Admin receives alert; employee must use 'Unlock Account' flow via email.
+- Password strength enforced: minimum 8 characters, 1 uppercase, 1 number, 1 special character. Passwords expire every 90 days (configurable per org).
+
+2.1.2 Single Sign-On (SSO)
+How it functions:
+- Supported protocols: SAML 2.0, OAuth 2.0 / OpenID Connect. Compatible providers: Google Workspace, Microsoft Azure AD, Okta, custom SAML IdPs.
+- Employee taps 'Sign in with [Provider]' → redirected to provider's authentication page → on success, SAML assertion or OAuth token returned to platform.
+- Platform validates token signature, maps provider user attributes (email, name, department) to platform user record.
+- If no matching platform account found: access denied; HR Admin notified to provision the account.
+- SSO sessions honour provider session duration; platform refresh token tracks local session independently.
+
+2.1.3 Biometric Authentication — Two Distinct Systems
+Revised v3.0 | March 2026 — Supersedes previous biometric spec.
+The platform uses two completely separate biometric systems. They serve different purposes, operate on different hardware, store data differently, and must never share templates or identity tokens.
+
+  System A — Mobile Biometric | Purpose: App login + Remote/Hybrid clock-in | Biometric lives: On device only (Secure Enclave / Keystore) | Managed by: Employee
+  System B — Hardware Device  | Purpose: Onsite clock-in / clock-out         | Biometric lives: On physical terminal only                   | Managed by: HR Admin
+
+⚠  GDPR / PDPA NOTE (Critical for Production): Biometric data is Special Category personal data under GDPR Art. 9. Before any enrolment, the platform MUST obtain explicit, separate, written consent from the employee. Consent must be: specific to purpose, freely given (non-coerced), revocable at any time, and stored immutably with timestamp and version. Withdrawal of consent must trigger immediate template deletion from all devices.
+
+──────────────────────────────────────────────────────────────────────────────
+SYSTEM A — Mobile Biometric (App Login & Remote/Hybrid Clock-In)
+──────────────────────────────────────────────────────────────────────────────
+
+A.1 Purpose & Scope
+Used exclusively for authenticating an employee into the mobile app (replaces password entry after first setup) and for verifying identity when clocking in/out under Remote or Hybrid modes. Not used for onsite clock-in/out — that is System B only.
+
+A.2 Architecture — Challenge-Response + Asymmetric Key Pair
+The biometric template never leaves the device. The server never sees, stores, or processes any biometric data.
+Core trust model: The device holds a private key locked behind the biometric sensor. The server holds the matching public key. When the employee passes the biometric check, the device uses the private key to sign a server-issued nonce. The server verifies the signature. No biometric data is transmitted at any point.
+
+First Enrolment Flow:
+1. Employee completes first login via email/password.
+2. App prompts 'Enable Biometric Login?' → employee taps Enable → OS biometric prompt shown.
+3. On biometric success, device generates asymmetric key pair (RSA-2048 or EC P-256):
+   - Private key stored in Secure Enclave (iOS) or Android Keystore — hardware-backed, non-exportable.
+   - Private key access requires biometric authentication on every use (no passthrough).
+4. Device sends ONLY the public key to the platform, along with: { device_id, device_model, os_version, app_version, enrollment_timestamp }.
+5. Server stores: { employee_id, device_id, public_key, enrolled_at, status: active } — the Device Credential Record.
+
+Login / Clock-In Flow:
+1. App requests a challenge nonce from server: GET /auth/biometric/challenge → server returns { nonce, expires_at (30 seconds) }. Nonce is single-use.
+2. App triggers OS biometric prompt.
+3. On success, device signs: signature = sign(privateKey, nonce + timestamp + device_id).
+4. App sends: { employee_id, device_id, nonce, signature, timestamp }.
+5. Server verifies: nonce not expired, not used before, signature valid against stored public key, device status active, timestamp within ±60 seconds.
+6. On success: nonce consumed → JWT issued → clock-in record created.
+
+A.3 Multi-Device & Device Replacement
+- Employee can register multiple devices; each gets its own key pair and Device Credential Record.
+- When phone is replaced: old private key is hardware-locked and cannot be transferred (by design). Employee re-enrols on new device after password login. Old device record set to status: inactive.
+- If phone is lost: HR Admin revokes old device record → all signatures from that device_id are rejected.
+
+A.4 Failure Handling
+- 1-2 consecutive failures: retry prompt.
+- 3 failures in one session: fallback to password/SSO for that session. Biometric not disabled.
+- 5 failures across sessions: biometric disabled on device. Employee re-enrols via Settings after password login.
+- Nonce expired (>30s): request new challenge. Never retry with old nonce.
+- Device clock out of sync (>60s drift): clock-in rejected with 'Device time mismatch' error.
+
+A.5 Mobile Biometric Consent
+Before enrolment prompt is shown, app displays a Biometric Consent Screen explaining: what is stored (key pair only — no biometric image), where (on device only), what it is used for, and how to revoke. Employee must tick consent checkbox and confirm. Consent stored: { employee_id, device_id, consent_type: 'mobile_biometric', consented_at, version }. Revoking consent deletes the Device Credential Record and disables private key access.
+
+──────────────────────────────────────────────────────────────────────────────
+SYSTEM B — Hardware Biometric Device (Onsite Clock-In / Clock-Out)
+──────────────────────────────────────────────────────────────────────────────
+
+B.1 Purpose & Scope
+Physical biometric terminals at office entrances, factory gates, or onsite entry/exit points. These are the sole mechanism for recording onsite attendance. Employees do not use the mobile app to clock in when physically at the office.
+
+B.2 Supported Hardware
+Device Types: Fingerprint scanner optical (ANSI/ISO 19794-2), Fingerprint scanner capacitive (ANSI/ISO 19794-2), Face recognition terminal IR-based with liveness detection (ISO/IEC 19794-5), Finger-vein / palm-vein reader (ISO/IEC 19794-6), Multi-modal fingerprint + face.
+Supported Manufacturer SDKs (out-of-box): ZKTeco (ZKLib SDK), Suprema (BioStar 2 API), HikVision (ISAPI), Anviz (CloudClocking API), Generic REST adapter for any manufacturer supporting REST push.
+
+B.3 Core Data Principle — What Is Stored Where
+Biometric template (actual fingerprint/face data): stored on device flash memory ONLY — NEVER on platform server.
+Employee token (UUID mapped to employee_id): stored on device alongside template AND on platform server (maps token → employee_id).
+Match result / match score: generated on device, received by platform via event payload.
+Clock event (in/out, timestamp, device_id): queued locally then persisted as attendance record.
+Raw biometric image / scan: NEVER retained after match — NEVER received by server.
+If the server is breached, no biometric data is exposed. The device holds templates; the server holds only tokens and events.
+
+B.4 Device Registration Flow
+1. HR Admin → System Configuration → Hardware Devices → 'Register New Device'.
+2. Form fields: Device Name, Device Type, Manufacturer & Model, Serial Number, Branch/Location (determines geo-zone), LAN IP Address (static), API Key / SDK Credentials, Communication Protocol (REST Push / MQTT / SDK).
+3. Platform generates a Device Secret (HMAC-SHA256 key) unique to this device. This secret is entered into the device configuration so it can sign outbound event payloads.
+4. Platform sends test ping to device IP. On success → device status: Online.
+⚠  All communication between device and platform must be over TLS 1.2+. Each event payload must include an HMAC-SHA256 signature computed using the Device Secret, preventing spoofed events.
+
+B.5 Employee Biometric Consent — Hardware Device
+Before any employee is enrolled on a hardware device, the platform checks for an active Hardware Biometric Consent record. If not present, platform sends a Consent Request notification (in-app + email) to the employee. Employee reviews: what biometric is captured, where it is stored (physical device only, never servers), what it is used for (onsite attendance only), right to withdraw. Employee taps 'I Consent' → consent stored immutably. If employee does not consent, HR Admin is notified and an alternative attendance method must be configured.
+
+B.6 Employee Enrolment Flow
+1. After consent is obtained, HR Admin → Employees → [Employee] → 'Enrol on Device' → select target device(s).
+2. Platform creates Enrolment Session: { employee_id, device_id, session_token, expires_at (24 hours), status: pending }.
+3. Platform pushes session to device. Device displays employee name and ID, ready to capture.
+4. HR Admin or Site Admin calls employee to terminal. Employee presents biometric (3 scans averaged for fingerprint).
+5. Device creates biometric template stored internally, linked to a Platform Token (UUID generated by platform — sent as part of enrolment session). The UUID is the only identifier on the device that links to a real employee.
+6. Device sends enrolment confirmation: { session_token, employee_token (UUID), device_id, template_quality_score, enrolled_at }.
+7. Platform stores Device Enrolment Record: { employee_id, device_id, employee_token, enrolled_at, status: active }.
+Multi-device enrolment: each device gets its own employee_token UUID — same employee has different tokens on different devices. If a device is stolen, the attacker sees UUIDs only.
+
+B.7 Onsite Clock-In / Clock-Out Flow (End to End)
+
+Clock-In on Device:
+1. Employee presents biometric at terminal.
+2. Device performs 1:N local match against all enrolled templates in internal memory. No network required for the match itself.
+3. On successful match, device retrieves employee_token linked to matched template.
+4. Device builds signed event payload:
+   { event_id (UUID), device_id, employee_token, event_type: 'clock_in', timestamp_utc, match_score, match_method, liveness_check: 'passed', hmac_signature }
+5. Device sends payload to platform via configured protocol (REST POST / MQTT).
+6. Device shows success indicator to employee (green light / beep).
+
+Platform Processing (server-side):
+1. Validate HMAC signature against Device Secret → reject if invalid.
+2. Check event_id uniqueness → reject if already processed (prevents duplicate records).
+3. Check timestamp_utc is within ±5 minutes of server time → reject if outside window (prevents replay attacks).
+4. Look up employee_token in Device Enrolment Records → resolve to employee_id.
+5. Verify employee is Active (not terminated).
+6. Check for existing open clock-in for today → if found, log Duplicate Clock-In Detected, notify HR, do not create second record.
+7. Create Attendance Record: { employee_id, date, mode: 'Onsite', source: 'hardware_biometric', device_id, device_name, location, clock_in_utc, clock_out_utc: null, match_score, match_method, liveness_check, status: 'open', flags: [] }.
+8. Apply Late Arrival check: if clock_in > shift_start + grace_period → add LATE_ARRIVAL flag.
+9. Push real-time notification to employee mobile app.
+
+Clock-Out: same flow with event_type: 'clock_out'. Platform finds open attendance record, updates clock_out_utc, calculates total_work_hours. Applies SHORT_HOURS and EARLY_DEPARTURE checks.
+
+B.8 Event Delivery & Reliability
+Device-Side Queuing: if device cannot reach platform, events written to device's internal persistent queue (flash storage, not RAM). Retry: 30s, exponential backoff to 30 min max. Queue holds up to 10,000 events.
+Platform Processing on Reconnect: events processed in chronological order. Timestamp within ±4 hours → processed normally, marked source_sync: realtime. Gap > 4 hours → flagged source_sync: late_sync → HR Admin review required. Duplicate event_id values silently deduplicated.
+Heartbeat: device sends heartbeat every 5 minutes (configurable): { device_id, timestamp, queue_depth, firmware_version, storage_free_pct }. No heartbeat for 10 min → status: Warning. No heartbeat for 30 min → status: Offline, HR Admin alert.
+
+B.9 Security Controls
+- Transport: TLS 1.2+ for all device ↔ platform communication.
+- Event authenticity: HMAC-SHA256 on every payload using per-device secret.
+- Anti-replay: event_id deduplication + timestamp window validation (±5 min).
+- Token anonymisation: employee_token is a UUID with no PII — device cannot identify employee from token alone.
+- Template isolation: biometric templates stored only on device, never transmitted.
+- Device secret rotation: HR Admin can rotate device's HMAC secret from admin panel; old secret invalidated immediately.
+
+B.10 Employee Termination & Template Deletion
+When employee is terminated or consent withdrawn:
+1. Platform immediately sets all Device Enrolment Records for employee to status: revoked.
+2. Platform sends Template Deletion Command to each enrolled device: { command: 'delete_template', employee_token, issued_at, hmac }.
+3. Device deletes template linked to employee_token from internal storage.
+4. Device sends Deletion Confirmation: { employee_token, deleted_at, device_id }.
+5. Platform records deletion confirmation — required for GDPR compliance (right to erasure).
+6. If device is offline when deletion commanded: command queued. Delivered on reconnect before any new events processed.
+⚠  Production Requirement: Template deletion confirmation must be obtained within 72 hours of termination (GDPR-aligned). If device is offline beyond this window, HR Admin receives escalating alert.
+
+B.11 Failure & Fallback Handling
+- 1-2 match failures: retry prompt.
+- 3 consecutive failures: device offers PIN Entry fallback (if HR Admin has enabled PIN fallback for this device). PIN event logged as source: pin_override_biometric_failure.
+- Liveness check fails (face terminal): match rejected. If same employee triggers 3+ liveness failures in a day → HR Admin alerted (potential spoofing attempt).
+- Device hardware failure: HR Admin receives 'Device Offline' alert. HR Admin can manually log attendance for affected period via Attendance Corrections flow.
+- Device storage full: HR Admin alerted. Oldest already-synced events purged first. Unsynced events never auto-purged.
+
+B.12 HR Admin — Device Management Panel
+Device Registry View: Device Name, Location, Type, Manufacturer, Status (Online/Warning/Offline/Error), Last Heartbeat timestamp, Today's Event Count, Enrolled Employees Count, Pending Deletion Commands.
+Per-Device Actions: Test Ping, View Event Log (filterable: date, employee, event type, match result, source), View Enrolled Employees (with enrolment date, status, template quality score), Rotate HMAC Secret, Configure (heartbeat interval, PIN fallback, liveness sensitivity, auto-clock-out window), Decommission Device (triggers bulk template deletion for all enrolled employees).
+Enrolment Management: Enrol employee on device, Re-enrol (if template quality degraded), Remove enrolment (triggers template deletion command), Transfer enrolment to replacement device.
+
+DEMO vs PRODUCTION NOTES
+Mobile biometric: Demo simulates with mock challenge-response. Production: real FIDO2/WebAuthn or platform biometric API (Face ID / Touch ID / Android Biometric).
+Hardware device events: Demo uses 'Simulate Scan' button in admin panel. Production: real device pushes events via REST/MQTT with HMAC authentication.
+HMAC validation: Skipped in demo. Required in production — every inbound event validated against per-device HMAC secret.
+Template deletion: Demo removes enrolment record. Production: real deletion command sent to device firmware; confirmation required within 72 hours.
+Heartbeat monitoring: Demo uses 30-second polling. Production: real-time WebSocket or MQTT subscription from device.
+
+2.1.4 Multi-Factor Authentication (MFA)
+How it functions:
+- MFA is optional for Employees and mandatory for HR Admin and Organisation Owner roles.
+- Supported methods: TOTP (Google Authenticator, Authy), SMS OTP (fallback only), Email OTP (fallback only).
+- TOTP setup: QR code generated at enrolment; employee scans with authenticator app; must verify with first code to confirm setup.
+- On login with MFA enabled: after password/SSO step, 6-digit TOTP or OTP prompt appears. Code valid for 30 seconds (TOTP) or 10 minutes (email/SMS).
+- Backup codes: 8 single-use codes generated at MFA setup. Employee can download/print; HR Admin can regenerate if all used.
+
+──────────────────────────────────────────────────────────────────────────────
+2.2 First-Time Onboarding Wizard
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+Triggered on first login after HR Admin creates employee account. Progress bar shows 'Step X of Y'.
+- Step 1 – Welcome & Role Confirmation: display role, department, reporting manager. Employee confirms details or flags discrepancy to HR.
+- Step 2 – Personal Information: pre-filled with HR-entered data; employee verifies/completes emergency contacts, personal address, date of birth. Mandatory fields marked with asterisk.
+- Step 3 – Document Upload: prompt to upload required docs (government ID, certifications); expiry dates entered per document; 'Skip for now' allowed for optional docs.
+- Step 4 – GDPR / PDPA Consent: plain-language data processing summary shown (not legalese); checkboxes for each consent category (communications, data retention, third-party payroll). All mandatory checkboxes must be ticked to proceed. Consent version and timestamp stored immutably.
+- Step 5 – Notification Preferences: default categories pre-selected; employee can deselect non-mandatory alerts.
+- Step 6 – Security Setup: password change prompt if using temporary password; MFA enrolment (mandatory for Admin roles, encouraged for others via progress nudge).
+- Completion: 'You're all set!' summary screen; redirected to Personal Dashboard.
+
+⚠  Employees who abandon the wizard mid-flow are reminded via push notification after 24 hours. HR Admin can see onboarding completion % per employee in the lifecycle management module.
+
+Role Access — Authentication & Onboarding:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Email / SSO Login                                  | ✓               | ✓                    | ✓
+Mobile Biometric Setup (app login & remote)        | ✓               | ✓                    | ✓
+MFA Setup (TOTP)                                   | Optional        | Mandatory            | Mandatory
+View all active sessions (org-wide)                | ✗               | ✓                    | ✓
+Force-logout a user session                        | ✗               | ✓                    | ✓
+Lock / unlock user accounts                        | ✗               | ✓                    | ✓
+Configure SSO provider settings                    | ✗               | ✓                    | ✓
+View login audit logs                              | ✗               | ✓                    | ✓
+Register & configure hardware biometric devices    | ✗               | ✓                    | ✓
+Enrol employees on hardware biometric device       | ✗               | ✓                    | ✓
+View hardware device registry & status             | ✗               | ✓                    | ✓
+View device event logs                             | ✗               | ✓                    | ✓
+Configure device fallback PIN policy               | ✗               | ✓                    | ✓
+Complete onboarding wizard                         | ✓               | ✓                    | ✓
+View employee onboarding completion status         | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. PERSONAL DASHBOARD MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The Personal Dashboard is the first screen presented after login. It provides an at-a-glance summary of the employee's current status and key actions. Content is role-sensitive and adapts based on pending items.
+
+──────────────────────────────────────────────────────────────────────────────
+3.1 Dashboard Widgets & Behaviour
+──────────────────────────────────────────────────────────────────────────────
+
+3.1.1 Today's Attendance Status
+- Shows current clock-in status: Not Clocked In / Clocked In (Onsite) / Clocked In (Remote) / On Leave / Public Holiday.
+- Displays: clock-in time (if clocked in), elapsed work hours, scheduled shift end time.
+- Quick action button: 'Clock In' or 'Clock Out' directly from dashboard without navigating to the attendance module.
+
+3.1.2 Leave Balance Summary
+- Displays remaining balance for top 3 most-used leave types (e.g., Annual Leave, Medical Leave, Emergency Leave).
+- 'View All' link opens full leave balances in Leave Management module.
+- Balance shown as: 'X days remaining of Y days entitlement'. Pro-rated balances calculated automatically based on employment start date.
+
+3.1.3 Upcoming Expiries
+- Lists documents and certifications expiring within the next 90 days, sorted by urgency.
+- Each entry shows: document name, expiry date, days remaining (colour-coded: >30 days = green, 15–30 = amber, <15 = red).
+- Tapping an entry navigates to the relevant document in the Profile & Documents module.
+
+3.1.4 Development Plan Progress
+- Shows active development plan name and overall completion percentage (progress bar).
+- Displays count of: goals completed vs total goals, overdue goals flagged in red.
+- 'Continue Plan' button navigates to Talent Development module.
+
+3.1.5 Quick Actions Bar
+- Contextual shortcuts rendered based on role and pending items.
+- Employee examples: Apply Leave, Log Skill, View Payslip, Chat with HR Bot.
+- Manager/team-lead (Employee role with team flag) additional shortcuts: Pending Approvals badge (with count), Team Attendance, Team Leave Calendar.
+
+3.1.6 Pending Notifications Badge
+- Count of unread notifications from the Notifications & Alerts module.
+- Tapping opens Notification Centre.
+
+3.1.7 HR Admin Dashboard (web)
+- HR Admin and Org Owner see an aggregated org-level dashboard instead of/in addition to personal widgets.
+- Org widgets: total headcount, active employees vs total, attendance % today, leave requests pending approval, open correction requests, skill gaps by department, upcoming certification expiries (org-wide), development plan completion rate.
+
+Role Access — Personal Dashboard:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Personal dashboard (own status widgets)            | ✓               | ✓                    | ✓
+Team pending approvals widget (team leads)         | Team Leads Only | ✓                    | ✓
+Org-wide HR analytics dashboard                    | ✗               | ✓                    | ✓
+Customise dashboard widget layout                  | ✓ (personal)    | ✓                    | ✓
+Pin/unpin quick action shortcuts                   | ✓               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. ATTENDANCE & WORK MODE MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Manages all aspects of employee attendance recording, validation, and correction. Supports three work modes — Onsite, Remote, and Hybrid — with geo-fencing and IP validation logic specific to each.
+
+──────────────────────────────────────────────────────────────────────────────
+4.1 Onsite Attendance — Hardware Biometric Device
+──────────────────────────────────────────────────────────────────────────────
+
+Overview:
+Onsite attendance is recorded exclusively through the hardware biometric terminals installed at the organisation's entry/exit points. Employees do not use the mobile app to clock in or out when they are physically at the office. The platform receives event data from the device and creates attendance records automatically. See Section 2.1.3B for full device integration architecture.
+
+Clock-In Flow:
+How it functions:
+- Employee approaches the biometric terminal at the office entrance.
+- Employee places finger on the fingerprint scanner or stands in front of the face recognition camera.
+- Device performs a local 1:N biometric match against enrolled templates stored on the device (no internet required for the scan itself).
+- On successful match: device transmits an event to the platform — { device_id, employee_token, event_type: 'clock_in', timestamp_utc, match_score, match_method }.
+- Platform processes the event:
+  - Looks up employee by device token → confirms employee is Active and enrolled on this device.
+  - Validates device's registered geo-zone (device's location is pre-configured; geo-zone attached to device registration — see Section 2.1.3B).
+  - Creates attendance record: mode = 'Onsite', source = 'hardware_biometric', device_id, timestamp, match_score.
+  - No mobile GPS or IP check needed — the physical device's location is the attendance proof.
+- Employee's mobile app updates to show 'Clocked In (Onsite – Office Terminal)' within seconds of the event being received. Employee receives in-app push notification confirming the clock-in.
+- If employee does not have the app open: attendance is still recorded. The device operates independently of the mobile app.
+
+Clock-Out Flow:
+- Employee scans at the terminal on departure. Device sends clock_out event.
+- Platform calculates: total_work_hours = clock_out_timestamp − clock_in_timestamp, minus tracked breaks if applicable.
+- Shift compliance check: if total hours < required shift hours − threshold (configurable, default 30 min), record flagged as 'Short Hours' for HR review.
+- If employee forgets to scan out: auto-clock-out applied at org-configured cutoff (default 23:59). Auto-clock-out creates a correction request flagged to HR. Employee notified via push notification.
+
+Break Tracking (Optional, configurable per org):
+- 'Start Break' button available during active clock-in. Creates a break segment with timestamp.
+- 'End Break' button resumes work timer. Total break time displayed and deducted from work hours.
+- Org can configure: required minimum break (e.g., 30 min if shift > 6 hours); system alerts if break not taken.
+- Maximum break cap configurable (e.g., 2 hours); breaks exceeding cap flagged.
+
+Late Arrival & Early Departure Logic:
+- Late Arrival: if clock-in time > shift_start_time + grace_period (default 15 min, configurable), record flagged as 'Late'. Late count tracked; HR can configure thresholds for automatic escalation or leave deduction policy.
+- Early Departure: if clock-out time < shift_end_time − threshold (default 30 min), flagged as 'Early Departure'. Employee prompted to add reason note.
+
+──────────────────────────────────────────────────────────────────────────────
+4.2 Remote Attendance
+──────────────────────────────────────────────────────────────────────────────
+
+Overview:
+Employee works from a non-office location (home, client site, co-working space). No geo-fence required, but VPN and device validation apply based on org policy.
+
+How it functions:
+- Employee taps 'Clock In' → selects 'Remote' → optionally enters work location note (e.g., 'Home – Colombo', 'Client site – London').
+- System captures: device IP, device fingerprint, timestamp.
+- Device check: if device ID not in employee's registered devices list, additional OTP verification prompted before clock-in proceeds.
+- Clock-out flow same as onsite minus geo-fence check.
+
+Remote-Specific Features:
+- Daily Remote Limit: org can set max consecutive remote days (e.g., 5 days) before manager approval required for further remote days. Threshold triggers a 'Remote Extension Request' flow.
+- Remote Work Reason: configurable as optional or mandatory per org. Dropdown options: Home Office, Client Site, Travel, Medical, Other.
+- Timezone Support: employee can set a working timezone (within allowed range set by HR). Timestamps stored in UTC; displayed in employee's set timezone. Shift compliance calculated relative to org's timezone.
+
+──────────────────────────────────────────────────────────────────────────────
+4.3 Hybrid Attendance
+──────────────────────────────────────────────────────────────────────────────
+
+Overview:
+Employee works from multiple locations in a single day — for example, morning at the office and afternoon from home. System records each segment independently and calculates a composite daily summary.
+
+How it functions:
+- Employee clocks in under any mode (Onsite or Remote) to begin the first segment.
+- During the active shift, employee taps 'Switch Mode' → selects new mode → system ends current segment (records segment end timestamp and duration) and immediately opens a new clock-in for the new mode.
+- Each segment independently validated by its respective rules:
+  - Onsite segment: recorded via hardware biometric terminal at the office. Employee scans in/out on the physical device. Platform receives device event and creates the onsite segment record.
+  - Remote segment: employee uses the mobile app to clock in/out; mobile GPS + device fingerprint captured.
+- Each mode switch creates a new segment record: { mode, start, end, duration, validation_flags }.
+- Daily attendance record aggregates all segments: total_onsite_hours + total_remote_hours = total_work_hours.
+- Daily attendance card shows hybrid breakdown: 'Onsite 4h 30m | Remote 3h 15m | Total 7h 45m'.
+
+Hybrid-Specific Rules:
+- Maximum mode switches per day: configurable (default 3). Prevents abuse. If max reached, additional Switch Mode is blocked; employee prompted to contact HR.
+- Segment gap handling: if > configurable threshold (default 30 min) elapses between clock-out of one segment and clock-in of next, gap is logged as 'Unrecorded Gap'. Employee prompted to explain gap (dropdown + note). Gap can be marked as break, travel, or personal by HR.
+- Hybrid records appear distinctly in attendance reports, with full segment-level breakdowns available for audit.
+
+──────────────────────────────────────────────────────────────────────────────
+4.4 Offline Mode & Background Sync
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- Employee taps Clock In / Clock Out with no internet connectivity. App detects offline state.
+- Action queued in on-device SQLite queue: records { action_type, mode, gps_snapshot, device_time, device_id, network_state }.
+- UI displays persistent banner: 'Attendance queued – will sync when online.' Vibration feedback confirms action captured.
+- GPS snapshot taken at moment of queue (device may cache last known location if GPS unavailable indoors; accuracy recorded).
+- On internet reconnection: background sync sends queued items in chronological order.
+
+Server validation for queued items:
+- Timestamp within acceptable sync window (default ±4 hours from device time): accepted and processed normally.
+- Timestamp outside window: flagged as 'Late Sync – Requires Review'. HR Admin notified; record created with 'Pending Verification' status.
+- Duplicate record detected (server already has entry for that employee/day/mode): conflict logged; HR must reconcile.
+- Employee receives push notification confirming sync success or sync failure with instructions.
+
+──────────────────────────────────────────────────────────────────────────────
+4.5 Attendance History & Corrections
+──────────────────────────────────────────────────────────────────────────────
+
+4.5.1 History View:
+- Calendar view (monthly): each day colour-coded — Present (green), Absent (red), On Leave (blue), Public Holiday (grey), Partial Day (amber), Flagged (orange).
+- List view toggle: rows showing date, mode, clock-in, clock-out, total hours, status, any flags.
+- Tapping a day opens a detail panel: full segment breakdown (for hybrid), validation results, device info.
+- Employee can filter by: month, status, work mode.
+
+4.5.2 Correction Requests:
+How it functions:
+- Employee selects a day in history → taps 'Request Correction'.
+- Correction form fields: Reason (dropdown: forgot to clock out, device issue, geo/IP error, system error, other), Correct clock-in time, Correct clock-out time, Supporting note, Optional attachment (screenshot, email confirmation).
+- Request submitted → routed to HR Admin inbox. Employee receives 'Request Submitted' notification.
+- HR Admin reviews: sees original record alongside proposed correction, employee note, and any attachment.
+- HR approves (attendance record updated; original preserved in audit trail with 'Corrected By HR' tag) or rejects (with mandatory reason; employee notified).
+- Corrections audit trail: every change logged with: who changed, when, from→to values, reason. Immutable.
+
+4.5.3 HR Admin Attendance Management:
+- HR Admin can directly edit any attendance record (with mandatory reason; creates audit entry).
+- Bulk correction tools: select multiple employees → apply shift pattern change, correct missing records for a date range.
+- Attendance dashboard: org-wide daily presence %, absenteeism rate, late arrivals count, correction requests queue.
+- Filter and drill-down by: department, role, work mode, date range, flag type.
+
+Role Access — Attendance & Work Mode:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Clock In / Clock Out (own)                         | ✓               | ✓                    | ✓
+View own attendance history                        | ✓               | ✓                    | ✓
+Submit correction request (own)                    | ✓               | ✓                    | ✓
+View team attendance summary (team leads)          | Team Leads Only | ✓                    | ✓
+Approve / reject correction requests               | ✗               | ✓                    | ✓
+Directly edit any attendance record                | ✗               | ✓                    | ✓
+View all employees' attendance (org-wide)          | ✗               | ✓                    | ✓
+Configure geo-fence zones                          | ✗               | ✓                    | ✓
+Configure IP ranges                                | ✗               | ✓                    | ✓
+Configure break rules & shift patterns             | ✗               | ✓                    | ✓
+Export attendance reports                          | ✗               | ✓                    | ✓
+View attendance analytics dashboard                | ✗               | ✓                    | ✓
+Configure auto-clock-out cutoff                    | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. LEAVE MANAGEMENT MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Handles the complete leave lifecycle: entitlement configuration, request submission, approval workflows, balance tracking, and calendar visibility. Supports multiple leave types with org-configurable rules.
+
+──────────────────────────────────────────────────────────────────────────────
+5.1 Leave Types & Entitlement
+──────────────────────────────────────────────────────────────────────────────
+
+Supported Leave Categories:
+- Annual Leave (AL) – Standard paid leave accrued based on employment tenure.
+- Medical / Sick Leave (ML) – Paid leave for illness; may require medical certificate above configured threshold (e.g., > 2 consecutive days).
+- Emergency / Compassionate Leave – Short-notice leave for personal emergencies; limited entitlement per year.
+- Maternity / Paternity Leave – Statutory leave; duration governed by jurisdiction (UK: statutory maternity/paternity rules; Sri Lanka: Labour Act provisions auto-applied based on org country setting).
+- Unpaid Leave (UL) – Leave without pay; requires manager + HR approval.
+- Public Holidays – Automatically populated from org country/region calendar. Employees do not submit requests for these.
+- Compensatory Off (Comp Off) – Earned for working on public holidays or weekends. Configurable per org.
+- Custom Leave Types – HR Admin can create up to 10 custom leave types per org (e.g., Study Leave, Volunteer Day).
+
+Entitlement & Accrual Logic:
+- Entitlement configured per leave type per employment band/grade (HR Admin sets in config).
+- Accrual options: upfront (full entitlement on Jan 1 or employment anniversary), monthly accrual (entitlement ÷ 12 credited monthly), or tenure-based (increases at 1, 3, 5 years — configurable thresholds).
+- Pro-rating: employees who join mid-year receive pro-rated entitlement based on remaining months. Calculation: (annual_entitlement ÷ 12) × remaining_months. Configurable to round up or down.
+- Carry-forward rules: configurable per leave type — max carry-forward days, expiry date for carried days (e.g., must use by 31 March).
+
+──────────────────────────────────────────────────────────────────────────────
+5.2 Leave Request Submission
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- Employee navigates to Leave → taps 'Apply Leave'.
+- Form fields:
+  - Leave Type (dropdown; only types applicable to employee's band shown).
+  - Start Date / End Date (date picker; past dates selectable only for retrospective leave, configurable).
+  - Duration: system auto-calculates working days between start and end, excluding weekends and public holidays. Employee can select 'Half Day' (AM/PM) if org enables half-day leave.
+  - Balance preview: 'After this leave: X days remaining' shown dynamically as dates are selected.
+  - Reason (text field; configurable as mandatory or optional per leave type).
+  - Attachment (optional for standard AL; mandatory for Medical Leave if > configured threshold days).
+
+Conflict checks run on submission:
+- Overlapping with existing approved/pending leave → error: 'Conflict with existing leave on [date].'
+- Insufficient balance → error with exact shortfall. If org allows negative balance (configurable), a warning shown but submission proceeds with HR flag.
+- Blackout periods (e.g., payroll close week, peak season — configurable by HR) → warning shown; submission blocked or flagged depending on org setting.
+- Team leave limit: if org sets 'max N employees on leave simultaneously per department', check runs → if limit reached, employee shown a warning and request queued for HR review.
+- On successful submission: request enters 'Pending' state. Notification sent to approver (team lead if employee has one, else HR Admin).
+- Auto-approval: HR Admin can configure certain leave types (e.g., single-day AL with sufficient balance) to auto-approve without human review.
+
+──────────────────────────────────────────────────────────────────────────────
+5.3 Approval Workflow
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- Pending request appears in approver's Pending Approvals inbox (notification badge on dashboard).
+- Approver (team lead / HR Admin) views request detail: leave type, dates, duration, balance impact, reason, attachment.
+- Team calendar view alongside request: shows other team members on leave for same period (helps judge coverage).
+
+Actions:
+- Approve: leave status → 'Approved'. Balance deducted. Employee notified. Attendance auto-marked as 'On Leave' for approved dates.
+- Reject: mandatory reason field (dropdown + note). Status → 'Rejected'. Employee notified with reason.
+- Request More Info: sends a query back to employee; request stays 'Pending' until employee responds or withdraws.
+- Escalation: if approver does not action within configured SLA (default 48 hours), reminder notification sent. If still unactioned after 72 hours, escalated to HR Admin automatically.
+- Multi-level approval (optional, configurable per org): e.g., team lead approves first, then HR Admin for leave > 5 days. Each level tracked with timestamp.
+
+──────────────────────────────────────────────────────────────────────────────
+5.4 Leave Calendar
+──────────────────────────────────────────────────────────────────────────────
+
+- Monthly/weekly calendar view showing employee's own leave (coloured by leave type).
+- Team calendar (team leads): overlaid view of all direct reports' approved leave. Colour-coded by employee. Toggle to show/hide individual team members.
+- 'Team Coverage' indicator per day: shows % of team present. Days below org-configured minimum coverage threshold highlighted in amber/red.
+- Public holidays marked automatically based on org's country/region setting.
+
+──────────────────────────────────────────────────────────────────────────────
+5.5 Leave Balance Dashboard
+──────────────────────────────────────────────────────────────────────────────
+
+- Tabular view of all leave types: entitlement, used, pending, remaining, carry-forward from prior year (if applicable).
+- Visual bar for each type showing utilisation %.
+- Transaction history: chronological log of all leave events (accrual credits, deductions, adjustments with reason and who made them).
+
+──────────────────────────────────────────────────────────────────────────────
+5.6 HR Admin Leave Management
+──────────────────────────────────────────────────────────────────────────────
+
+- Manual balance adjustments: HR Admin can add/deduct days from any employee's balance with mandatory reason (audit-logged).
+- Bulk entitlement update: adjust entitlements for an entire grade/band or department at once.
+- Leave policy configuration: all accrual rules, carry-forward caps, blackout periods, approval tiers, auto-approval rules managed here.
+- Leave utilisation report: org-wide, filterable by department, leave type, date range.
+
+Role Access — Leave Management:
+
+Feature / Action                                   | Employee                     | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|------------------------------|----------------------|----------
+View own leave balances                            | ✓                            | ✓                    | ✓
+Submit leave request                               | ✓                            | ✓                    | ✓
+Cancel own pending request                         | ✓                            | ✓                    | ✓
+View own leave calendar                            | ✓                            | ✓                    | ✓
+View team leave calendar (team leads)              | Team Leads Only              | ✓                    | ✓
+Approve / reject leave requests                    | Team Leads (direct reports)  | ✓                    | ✓
+View all employees' leave balances                 | ✗                            | ✓                    | ✓
+Manually adjust leave balances                     | ✗                            | ✓                    | ✓
+Configure leave types & entitlements               | ✗                            | ✓                    | ✓
+Set blackout periods                               | ✗                            | ✓                    | ✓
+Configure approval workflow tiers                  | ✗                            | ✓                    | ✓
+Export leave utilisation reports                   | ✗                            | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. PROFILE & DOCUMENTS MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Manages employee personal information, emergency contacts, and document records. All data changes are audit-logged. Sensitive field changes (e.g., bank details) trigger secondary verification or HR approval.
+
+──────────────────────────────────────────────────────────────────────────────
+6.1 Personal Information
+──────────────────────────────────────────────────────────────────────────────
+
+Editable Fields (Employee):
+- Contact information: personal email, mobile number, home address (street, city, postcode, country).
+- Emergency contacts: up to 3 contacts; fields: name, relationship, mobile, alternate phone. At least 1 emergency contact marked as primary.
+- Profile photo: upload from device camera or gallery; auto-cropped to 1:1 aspect ratio; max 5MB; formats: JPG, PNG.
+- Preferred name / display name: shown in greetings and chat interface.
+
+HR Admin / Org Owner Managed Fields (read-only for Employee):
+- Legal name, date of birth, national ID / passport number (masked display: last 4 digits visible to employee).
+- Employment details: employee ID, employment type (full-time/part-time/contract), employment start date, probation end date.
+- Role, department, grade/band, reporting manager.
+- Bank / payroll details: account number (masked), bank name, sort code — editable by HR Admin only; changes trigger payroll sync re-validation.
+
+Audit Logging:
+Every field change logged: { field_name, old_value, new_value, changed_by, timestamp, change_source (employee_self / hr_admin / bulk_import) }.
+HR Admin can view full change history per employee profile.
+
+──────────────────────────────────────────────────────────────────────────────
+6.2 Document Management
+──────────────────────────────────────────────────────────────────────────────
+
+6.2.1 Document Upload & Storage:
+How it functions:
+- Employee navigates to Documents tab → taps 'Upload Document'.
+- Fields: Document Name, Document Type (dropdown: Government ID, Passport, Certification, Contract, Other), Issue Date, Expiry Date (optional; mandatory for passports, certifications), Upload file (PDF, JPG, PNG; max 10MB per file).
+- File stored in encrypted object storage (AES-256). Employee can view, download, or delete own documents.
+- HR Admin can upload documents on employee's behalf (e.g., signed contract, HR correspondence).
+- Documents marked as 'HR Managed' are visible to employee but not deletable by them.
+
+6.2.2 Expiry Tracking & Alerts:
+- System scans all employee documents daily. Documents with expiry dates within 90 days surfaced on Personal Dashboard widget and Notifications.
+- Alert schedule: notification at 90 days, 60 days, 30 days, 14 days, 7 days, 1 day before expiry, and on expiry day.
+- HR Admin receives aggregated 'Expiring Documents Report' weekly (configurable frequency).
+- On expiry: document status changes to 'Expired' (red badge). Employee prompted to upload renewed document.
+
+Role Access — Profile & Documents:
+
+Feature / Action                                   | Employee              | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------------|----------------------|----------
+View own profile                                   | ✓                     | ✓                    | ✓
+Edit own contact info & emergency contacts         | ✓                     | ✓                    | ✓
+Edit own profile photo                             | ✓                     | ✓                    | ✓
+View own documents                                 | ✓                     | ✓                    | ✓
+Upload own documents                               | ✓                     | ✓                    | ✓
+Delete own documents                               | ✓ (non-HR-Managed)    | ✓                    | ✓
+View/edit any employee profile                     | ✗                     | ✓                    | ✓
+Edit sensitive HR fields (legal name, bank)        | ✗                     | ✓                    | ✓
+Upload HR-managed documents for employees          | ✗                     | ✓                    | ✓
+View full field change audit history               | ✗                     | ✓                    | ✓
+Export employee profile data                       | ✗                     | ✓                    | ✓
+Configure document types & mandatory fields        | ✗                     | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. SKILLS & CERTIFICATIONS MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Enables employees to maintain a personal skills profile and certification portfolio, while providing the organisation with visibility into skill distribution and gaps.
+
+──────────────────────────────────────────────────────────────────────────────
+7.1 Personal Skill Profile
+──────────────────────────────────────────────────────────────────────────────
+
+7.1.1 Viewing & Managing Skills:
+How it functions:
+- Employee navigates to Skills → sees their current skill list grouped by category (e.g., Technical, Leadership, Domain, Soft Skills).
+- Each skill entry shows: skill name, proficiency level (1–5 or Beginner / Intermediate / Advanced / Expert — configurable per org), date added, validation status (Unvalidated / Manager Validated / HR Verified).
+- Add skill: employee searches the central skill library (typeahead search); selects matching skill and sets proficiency level; submits. If skill not in library, employee can submit a custom skill with name and category — enters 'Pending Approval' state until HR Admin approves and adds to library.
+- Edit skill: employee can update proficiency level. Each update logged with date; history of proficiency changes preserved.
+- Delete skill: employee can remove own skills that are not required/core for their current role. Required skills cannot be deleted.
+
+7.1.2 Skill Validation:
+- After employee adds/updates a skill, they can send a 'Validation Request' to their line manager or a nominated validator.
+- Validator receives notification → reviews skill claim → can Approve (skill marked 'Manager Validated'), Request Evidence (sends back to employee for attachment of proof), or Decline (with reason; skill remains Unvalidated).
+- HR Admin can grant 'HR Verified' status — the highest validation tier — after reviewing uploaded certifications or evidence.
+
+──────────────────────────────────────────────────────────────────────────────
+7.2 Certifications
+──────────────────────────────────────────────────────────────────────────────
+
+7.2.1 Adding & Managing Certifications:
+How it functions:
+- Employee taps 'Add Certification' → fields: certification name, issuing body, issue date, expiry date (if applicable), certificate ID/number, upload certificate file (PDF/image).
+- Certification automatically linked to relevant skill(s) in skill library (based on predefined skill-cert mappings maintained by HR Admin). Employee can manually link additional skills.
+- On linking, linked skill's validation status upgraded to 'Certification Backed' automatically.
+- Expiry tracking: same alert schedule as documents (90, 60, 30, 14, 7, 1 days before expiry).
+- Expired certifications: status changes to 'Expired'. Linked skill validation reverts to 'Unvalidated' if cert was the only validation source. Employee prompted to renew.
+
+──────────────────────────────────────────────────────────────────────────────
+7.3 Personal Skill Gap Report
+──────────────────────────────────────────────────────────────────────────────
+
+- System compares employee's current skill profile (validated skills + proficiency levels) against the role-required skills matrix defined by HR Admin for the employee's current role.
+- Report sections: Core Skills Met, Core Skills Gap (required but missing or below required proficiency), Preferred Skills Met, Preferred Skills Gap.
+- Each gap entry shows: skill name, required proficiency, current proficiency (or 'Not Present'), gap severity (High / Medium / Low based on whether it's Core or Preferred and the proficiency delta).
+- 'Start Learning' button per gap: links to LMS course or suggested development goal (if LMS integration active).
+- Report refreshed in real-time as skills are added/validated.
+
+Role Access — Skills & Certifications:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+View own skills profile                            | ✓               | ✓                    | ✓
+Add / edit / delete own skills                     | ✓               | ✓                    | ✓
+Submit custom skill for approval                   | ✓               | ✓                    | ✓
+Request skill validation from manager              | ✓               | ✓                    | ✓
+View own certification portfolio                   | ✓               | ✓                    | ✓
+Add / manage own certifications                    | ✓               | ✓                    | ✓
+View own skill gap report                          | ✓               | ✓                    | ✓
+Validate employee skills (team leads)              | Team Leads Only | ✓                    | ✓
+View any employee's skills & certs                 | ✗               | ✓                    | ✓
+Approve custom skill submissions                   | ✗               | ✓                    | ✓
+Grant HR Verified status to skills                 | ✗               | ✓                    | ✓
+Manage role-required skills matrix                 | ✗               | ✓                    | ✓
+View org-wide skill gap dashboard                  | ✗               | ✓                    | ✓
+Manage central skill library                       | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. TALENT DEVELOPMENT MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Supports structured employee growth through development plans, OKRs, and goal tracking. Plans can be created individually or in bulk by HR Admin and linked to organisational objectives.
+
+──────────────────────────────────────────────────────────────────────────────
+8.1 Development Plans
+──────────────────────────────────────────────────────────────────────────────
+
+8.1.1 Viewing Active Plans (Employee):
+- Employee sees all active development plans assigned to them, sorted by due date.
+- Each plan shows: plan name, overall progress % (computed from goal completions), start date, target end date, assigned by (HR Admin / manager), plan status (Active / Completed / Overdue / Paused).
+
+8.1.2 Development Goals:
+Goal types supported:
+- Skill Goal: acquire or improve a specific skill to a target proficiency level. Completion auto-detected when skill validation meets target level.
+- Certification Goal: obtain a specific certification by target date. Completion auto-detected when cert added and validated.
+- Behavioural Goal: defined competency outcomes (e.g., 'Lead one cross-functional project'). Progress tracked manually with evidence uploads.
+- Project Goal: complete a defined project or deliverable. Linked to a project/task reference; completion confirmed by manager.
+- OKR-Linked Goal: goal directly tied to a Key Result in the employee's OKR set.
+
+Goal detail view (Employee) shows:
+- Goal description, type, target outcome, due date, current status (Not Started / In Progress / Complete / Overdue).
+- Progress input: for manual goals, employee can log progress notes and % completion.
+- Evidence upload: employee can attach files, URLs, or completion certificates as evidence.
+- Manager/HR feedback: comments/feedback logged against the goal (visible to employee).
+
+──────────────────────────────────────────────────────────────────────────────
+8.2 OKRs & KPIs
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- HR Admin (or Org Owner) creates Org-level Objectives. Each objective has 2–5 Key Results with quantitative targets (e.g., 'Increase NPS from 42 to 60').
+- HR Admin cascades objectives to departments and individuals. Employees see their assigned OKRs in the Talent Development module.
+- Employee updates Key Result progress regularly (numeric input or percentage). Progress updates timestamped.
+- KPIs (separate from OKRs): HR Admin can define individual KPIs per employee (e.g., 'Resolve 95% of tickets within SLA'). Employee tracks and logs KPI progress.
+- OKR/KPI dashboard: employee sees Objective → Key Results → progress bars, colour-coded by confidence level (On Track / At Risk / Off Track).
+
+──────────────────────────────────────────────────────────────────────────────
+8.3 HR Admin Plan Administration
+──────────────────────────────────────────────────────────────────────────────
+
+- Create plan templates: reusable plan structures with preset goals that can be bulk-assigned (e.g., 'New Joiner 90-Day Plan', 'Leadership Track').
+- Bulk assignment: select plan template → choose target employees (by role, department, individual, or tag) → set start/end dates → assign. System creates individual plan instances per employee.
+- Monitor progress: org-wide development completion dashboard; filter by department, plan type, goal type. Export to CSV/Excel.
+- Send nudges: HR Admin or manager can send an in-app nudge to employees with overdue goals. Nudge appears as a priority notification.
+- Pause / extend plans: HR Admin can pause a plan (freezes due dates) or extend the target date with a reason.
+
+Role Access — Talent Development:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+View own development plans & goals                 | ✓               | ✓                    | ✓
+Log progress & upload evidence (own goals)         | ✓               | ✓                    | ✓
+View own OKRs / KPIs                               | ✓               | ✓                    | ✓
+Update own OKR / KPI progress                      | ✓               | ✓                    | ✓
+View direct reports' plans (team leads)            | Team Leads Only | ✓                    | ✓
+Add feedback on employee goals (team leads)        | Team Leads Only | ✓                    | ✓
+Create / edit development plans                    | ✗               | ✓                    | ✓
+Bulk assign plans                                  | ✗               | ✓                    | ✓
+Create / manage OKR structure                      | ✗               | ✓                    | ✓
+Assign KPIs to employees                           | ✗               | ✓                    | ✓
+View org-wide development progress                 | ✗               | ✓                    | ✓
+Send nudges to employees                           | ✗               | ✓                    | ✓
+Pause / extend plans                               | ✗               | ✓                    | ✓
+Export development reports                         | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. PAYROLL & SALARY MANAGEMENT MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Manages payroll data integration, salary record management, payslip distribution, and salary reporting. The platform acts as a payroll data layer that syncs with external payroll engines (ADP, Oracle Payroll, or a custom payroll provider). No payroll processing is performed within the platform — it manages data, triggers, and reporting only.
+
+⚠  The platform does not process payments. It manages employee compensation data and integrates with the organisation's configured payroll provider via scheduled sync or API.
+
+──────────────────────────────────────────────────────────────────────────────
+9.1 Employee Salary Records
+──────────────────────────────────────────────────────────────────────────────
+
+9.1.1 Salary Profile:
+Fields stored per employee:
+- Base salary (amount + currency), effective date, salary band/grade.
+- Salary history: chronological log of all salary changes (date, old salary, new salary, reason, approved by, changed by). Immutable.
+- Pay frequency: monthly, bi-weekly, weekly (configured per org or per employee band).
+- Employment type: full-time / part-time / contract. Part-time: FTE ratio stored (e.g., 0.6 FTE) for pro-rated calculations.
+- Currency: per employee (supports multi-currency orgs — e.g., LKR for Sri Lanka staff, GBP for UK staff).
+
+9.1.2 Salary Components (Configurable per Org):
+- Basic Salary, Housing Allowance, Transport Allowance, Performance Bonus, Overtime Pay, Deductions (EPF/ETF in Sri Lanka; NI/PAYE in UK — applied based on org country setting), Other Allowances.
+- Each component configured as: fixed amount, percentage of basic, or variable (entered per pay cycle).
+- Component visibility: HR Admin configures which components are visible to employees on their payslip.
+
+──────────────────────────────────────────────────────────────────────────────
+9.2 Payslip Management
+──────────────────────────────────────────────────────────────────────────────
+
+9.2.1 Payslip Generation:
+How it functions:
+- Payslip data received from external payroll provider via API sync (scheduled or manually triggered by HR Admin) after payroll is processed.
+- Platform parses sync payload → maps fields to employee records → generates formatted payslip PDF per employee.
+- Payslips stored securely in encrypted storage. Each payslip linked to: employee_id, pay_period (month/year), generated_at timestamp.
+- HR Admin reviews payslip data before 'Publish' — payslips remain in 'Draft' state post-sync.
+- HR Admin publishes payslips for all employees at once or by department/batch → each employee receives push notification: 'Your payslip for [Month Year] is ready.'
+
+9.2.2 Employee Payslip Access:
+- Employee navigates to Payroll → Payslips tab → sees list of published payslips sorted newest-first.
+- Each entry shows: pay period, gross pay, net pay, status (Published / Draft — draft not visible to employee).
+- Tapping a payslip opens PDF viewer within the app. Employee can download payslip as PDF.
+- History: all payslips retained; employee can access up to 24 months of history by default (configurable).
+- Payslip acknowledgement (optional, configurable): employee taps 'Acknowledge' to confirm receipt. Acknowledgement timestamp logged. HR Admin can see acknowledgement status per employee.
+
+──────────────────────────────────────────────────────────────────────────────
+9.3 Payroll Sync
+──────────────────────────────────────────────────────────────────────────────
+
+9.3.1 Sync Configuration:
+- Supported providers: ADP Workforce Now (API), Oracle HCM Payroll (API), and generic CSV import for custom payroll systems.
+- Sync schedule: configurable (e.g., monthly on 25th, bi-weekly every Friday). HR Admin can trigger manual sync at any time.
+- Sync scope: employee master data pushed to payroll provider; payslip data, deductions, and tax summaries pulled back.
+
+9.3.2 Sync Status & Error Handling:
+How it functions:
+- Each sync run logged: timestamp, direction (push/pull), records processed, success count, error count, duration.
+- Sync errors presented in detail: employee name/ID, field that failed, error message from provider, suggested resolution.
+- Critical errors (e.g., employee not found in provider, salary mismatch >10%) trigger alert to HR Admin immediately.
+- Non-critical warnings (e.g., missing optional field): queued in warning log; reviewed at next HR Admin session.
+- Re-sync specific employees: HR Admin can select individual employees and trigger a targeted re-sync after resolving errors.
+
+──────────────────────────────────────────────────────────────────────────────
+9.4 Salary Reports & Export
+──────────────────────────────────────────────────────────────────────────────
+
+9.4.1 Salary Summary Report:
+How it functions:
+- HR Admin navigates to Payroll → Reports → Salary Summary.
+- Filter options: Pay Period (month/year), Department, Employment Type, Grade/Band, Currency.
+- Report displays: employee name, employee ID, department, grade, basic salary, total allowances, total deductions, net pay, currency, pay period.
+- Aggregated totals per department and org-wide.
+- 'Export' button → options: CSV, Excel (.xlsx), PDF (formatted report with org letterhead and HR Admin signature block).
+- Export audit: every export action logged — { exported_by, export_date, filters_applied, record_count, format }. Immutable. HR Admin and Org Owner can view export history.
+
+9.4.2 Payroll Cost Analysis Report:
+- Period-over-period salary cost comparison (e.g., this month vs last month, this year vs last year).
+- Breakdown by department: headcount, total payroll cost, average salary, cost as % of total org payroll.
+- New hires / leavers impact: shows salary additions and removals that affected total cost in the period.
+- Export: CSV, Excel, PDF.
+
+9.4.3 Salary Band Compliance Report:
+- Lists employees against their grade/band's configured salary range.
+- Flags employees who are below band minimum (red), at minimum (amber), or above band maximum (red).
+- Useful for annual compensation review cycles. Export as CSV/Excel.
+
+9.4.4 Individual Salary History Export:
+- HR Admin selects an employee → exports their full salary history as PDF or CSV.
+- Used for employment reference letters, legal proceedings, or internal audits.
+- PDF version includes org letterhead, employee details, and all salary records with change reasons.
+
+9.4.5 Bulk Payslip Export:
+- HR Admin can export all payslips for a given pay period as a ZIP of individual PDFs.
+- Or export as a merged multi-page PDF (all employee payslips for the month, paginated).
+- Useful for compliance archiving. Export logged in audit trail.
+
+──────────────────────────────────────────────────────────────────────────────
+9.5 Organisation Owner Salary Oversight
+──────────────────────────────────────────────────────────────────────────────
+
+- Org Owner has access to an executive salary summary: total monthly payroll spend, headcount, average salary by department, YTD payroll cost vs budget (if budget configured).
+- Org Owner can download the full org salary report at any time.
+- Salary data is masked for any HR Admin whose access is restricted to specific departments (configurable by Org Owner).
+
+Role Access — Payroll & Salary:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+View own payslips                                  | ✓               | ✓                    | ✓
+Download own payslips (PDF)                        | ✓               | ✓                    | ✓
+Acknowledge payslip receipt                        | ✓               | ✓                    | ✓
+View own salary components                         | ✓ (published)   | ✓                    | ✓
+View any employee's salary details                 | ✗               | ✓                    | ✓
+View any employee's salary history                 | ✗               | ✓                    | ✓
+Edit employee salary record                        | ✗               | ✓                    | ✓
+Publish payslips                                   | ✗               | ✓                    | ✓
+Configure payroll sync (ADP/Oracle)                | ✗               | ✓                    | ✓
+Trigger manual payroll sync                        | ✗               | ✓                    | ✓
+View sync status & error logs                      | ✗               | ✓                    | ✓
+Generate salary summary report                     | ✗               | ✓                    | ✓
+Export salary report (CSV/Excel/PDF)               | ✗               | ✓                    | ✓
+Export payroll cost analysis                       | ✗               | ✓                    | ✓
+Export salary band compliance report               | ✗               | ✓                    | ✓
+Export individual salary history (PDF)             | ✗               | ✓                    | ✓
+Bulk payslip export (ZIP/PDF)                      | ✗               | ✓                    | ✓
+View executive salary summary                      | ✗               | HR Admin (dept-scoped)| ✓
+Configure salary components & bands                | ✗               | ✓                    | ✓
+View payslip acknowledgement status                | ✗               | ✓                    | ✓
+View salary export audit log                       | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. CONVERSATIONAL CHAT INTERFACE MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+The primary interaction layer on mobile. Allows employees to perform the most common HR tasks using natural language, receiving rich contextual responses with actionable inline cards.
+
+──────────────────────────────────────────────────────────────────────────────
+10.1 Natural Language HR Assistant
+──────────────────────────────────────────────────────────────────────────────
+
+10.1.1 Intent Parsing & Execution:
+How it functions:
+- Employee types or voice-inputs a message (e.g., 'Apply annual leave for next Friday').
+- NLP intent classifier identifies: intent (apply_leave), entities (leave_type: annual_leave, date: next_friday).
+- System resolves date references relative to user's timezone and locale.
+- If all required parameters resolved: system presents a confirmation card — 'Leave Request Summary' showing resolved dates, duration, balance impact — with Confirm / Cancel buttons.
+- If parameters ambiguous or missing: follow-up prompt shown (e.g., 'What type of leave would you like to apply for?').
+- On Confirm: action executed; result confirmation shown inline (e.g., 'Leave request submitted. Pending approval from [Manager Name]').
+- All executed actions added to persistent chat history. Tapping a historical action re-opens the relevant record.
+
+Supported Intent Actions:
+- Clock In / Clock Out: 'Clock me in as remote' → clock-in flow initiated inline.
+- Leave Apply: 'I need a day off on Monday' → guided leave request with balance preview.
+- Leave Balance: 'How many annual leave days do I have left?' → balance card response.
+- Skill Gap: 'What skills am I missing for my role?' → skill gap summary card.
+- Development Plan: 'Show my development goals' → goals list card with progress.
+- Payslip: 'Show my last payslip' → payslip card with download button.
+- Notifications: 'What do I have pending?' → pending items summary.
+- Approvals (team leads): 'Show pending leave approvals' → approval inbox card.
+
+10.1.2 Rich Response Types:
+- Info Cards: structured data cards (e.g., attendance summary, leave balance).
+- Action Cards: cards with embedded Confirm / Cancel / View Detail buttons.
+- Calendar Inline: date picker rendered within chat for date selection.
+- Form Inline: short forms (leave reason, correction reason) rendered within chat flow.
+- List Cards: scrollable lists for multi-item responses (e.g., list of notifications).
+
+10.1.3 Persistent Chat History:
+- All interactions (user messages, assistant responses, action outcomes, notifications acknowledged via chat) stored per employee with timestamp.
+- History searchable by keyword. 90-day retention by default (configurable).
+- HR Admin cannot read employee chat history (employee privacy). Exception: Org Owner can access audit log of action executions (not the conversational content) for compliance.
+
+Role Access — Chat Interface:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Access conversational assistant                    | ✓               | ✓                    | ✓
+Execute HR actions via chat                        | ✓               | ✓                    | ✓
+Team lead actions via chat (approvals)             | Team Leads Only | ✓                    | ✓
+View own chat history                              | ✓               | ✓                    | ✓
+Read employees' chat conversation content          | ✗               | ✗                    | ✗
+View chat action execution audit log               | ✗               | ✓                    | ✓
+Configure intent library & responses               | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. NOTIFICATIONS & ALERTS MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Centralised notification system delivering timely, role-appropriate alerts across in-app, push, and email channels. All notifications logged for 90 days.
+
+──────────────────────────────────────────────────────────────────────────────
+11.1 Notification Categories & Triggers
+──────────────────────────────────────────────────────────────────────────────
+
+Category           | Trigger Events                                                              | Who Receives It
+-------------------|-----------------------------------------------------------------------------|----------------------------------------------
+Leave              | Request submitted, approved, rejected, pending > SLA                        | Employee (own), Team Lead (approvals), HR Admin
+Attendance         | Auto clock-out, correction request submitted/resolved, sync failed          | Employee (own), HR Admin
+Documents / Certs  | Expiring at 90/60/30/14/7/1 days, document expired                         | Employee (own), HR Admin
+Development        | Goal overdue, plan milestone reached, nudge from HR                         | Employee (own)
+Payroll            | Payslip published, sync error, salary change effective                      | Employee (own), HR Admin (errors)
+Skills             | Validation request sent, validation approved/declined                       | Employee (own), Validator
+Approvals          | New item pending approval, approval SLA approaching                         | Approver (team lead / HR Admin)
+System             | Integration error, sync failure, bulk import result                         | HR Admin, Org Owner
+Onboarding         | Step incomplete after 24h, wizard reminder                                 | Employee (own), HR Admin
+
+──────────────────────────────────────────────────────────────────────────────
+11.2 Delivery Channels & Preferences
+──────────────────────────────────────────────────────────────────────────────
+
+- In-App Notification Centre: persistent bell icon with badge count. Notifications listed newest-first with read/unread state, category icon, timestamp.
+- Push Notifications: mobile push (FCM for Android, APNs for iOS). Employee can toggle per category in preferences. Org can mark some categories as non-dismissible (e.g., payslip published, account locked).
+- Email: configurable per category. HR Admin can set org-level defaults; employees can opt out of non-mandatory categories.
+- Quiet Hours: employee can set quiet hours (e.g., 22:00–07:00). Push notifications scheduled during quiet hours are queued and delivered at quiet-hours end. Emergency / security alerts bypass quiet hours.
+
+──────────────────────────────────────────────────────────────────────────────
+11.3 Notification History & Management
+──────────────────────────────────────────────────────────────────────────────
+
+- 90-day searchable notification log per employee.
+- Bulk mark-as-read, bulk dismiss.
+- HR Admin can broadcast an org-wide announcement (e.g., office closure, policy update) — appears as a 'System' notification for all employees.
+
+Role Access — Notifications & Alerts:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Receive and view own notifications                 | ✓               | ✓                    | ✓
+Configure own notification preferences             | ✓               | ✓                    | ✓
+Set quiet hours                                    | ✓               | ✓                    | ✓
+View own notification history (90 days)            | ✓               | ✓                    | ✓
+Send broadcast notification (org-wide)             | ✗               | ✓                    | ✓
+Configure org-level notification templates         | ✗               | ✓                    | ✓
+Mark categories as non-dismissible                 | ✗               | ✓                    | ✓
+View all employees' notification logs              | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. EMPLOYEE LIFECYCLE MANAGEMENT MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+HR Admin and Org Owner-facing module for managing the complete employee journey from hire to exit. Covers account creation, status management, role changes, and separation workflows.
+
+──────────────────────────────────────────────────────────────────────────────
+12.1 Employee Onboarding (Admin Side)
+──────────────────────────────────────────────────────────────────────────────
+
+12.1.1 Single Employee Creation:
+How it functions:
+- HR Admin navigates to Employees → New Employee.
+- Form: First name, Last name, Email (becomes login), Department, Role/Job Title, Grade/Band, Employment Type, Start Date, Reporting Manager (select from org hierarchy), Work Location, Salary (basic + currency + effective date), and optionally: national ID, date of birth.
+- On save: employee account created with a temporary password (emailed securely to employee's registered email). Employee status set to 'Active – Onboarding'.
+- Onboarding wizard triggered for employee on first login (see Section 2.2).
+- HR Admin sees onboarding checklist per new employee: completed steps vs pending, % completion.
+
+12.1.2 Bulk Employee Import:
+How it functions:
+- HR Admin selects 'Bulk Import' → uploads CSV, Excel (.xlsx), or connects Google Sheets (OAuth).
+- Column mapping screen: system auto-detects column headers and maps to platform fields (e.g., 'Full Name' → first_name + last_name split; 'Dept' → department). HR Admin can override auto-mapping.
+- Preview screen: first 10 rows shown with mapped values. Validation errors highlighted in red per cell (e.g., invalid email format, unknown department name, missing mandatory field). HR Admin must resolve errors before proceeding.
+- Validation options: 'Fix in spreadsheet and re-upload' or 'Fix inline in platform' (editable grid for non-critical errors).
+- Import executed: accounts created row by row. Progress bar shown. On completion: success/fail summary (e.g., '142 imported, 3 failed — download error report').
+- Rollback option: if import partially fails, HR Admin can rollback entire batch (deletes all accounts created in that batch). Available within 24 hours of import.
+
+──────────────────────────────────────────────────────────────────────────────
+12.2 Status Transitions & Role Changes
+──────────────────────────────────────────────────────────────────────────────
+
+Employee Status States:
+- Active – Onboarding: new employee, completing onboarding wizard.
+- Active: fully onboarded and operational.
+- On Leave: on approved extended leave (auto-set when leave > 5 days approved; or manually set by HR Admin).
+- Suspended: access suspended (e.g., HR investigation). Cannot log in; data preserved.
+- Notice Period: resignation or termination notice served; access may be restricted per org policy.
+- Inactive / Offboarded: employment ended; account deactivated; data retained per GDPR/PDPA retention policy.
+
+Role & Department Changes:
+- HR Admin can update: role, department, grade, reporting manager, work location.
+- Each change: effective date set; old values archived in change history. Future-dated changes supported (e.g., 'Role change effective 1st of next month').
+- On role change: system updates leave entitlement to new grade's entitlement, required skills matrix updated, development plan targets may be flagged for review.
+- Org hierarchy automatically updated when reporting manager changes.
+
+──────────────────────────────────────────────────────────────────────────────
+12.3 Offboarding Workflow
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- HR Admin initiates offboarding: selects employee → 'Initiate Offboarding' → sets: last working day, reason (resignation / termination / redundancy / end of contract), and exit interview flag.
+- Offboarding checklist auto-generated and assigned (configurable per org): equipment return confirmation, access revocation schedule, final payroll trigger, clearance from IT/Finance/HR.
+- Each checklist item: assigned to a responsible party (IT Admin, Finance, HR); completion tracked.
+- On last working day + 1: employee account access revoked automatically. Data retained per retention policy.
+- Final payslip: HR Admin marks final payroll cycle; system triggers payroll sync with 'final pay' flag.
+- Leaving certificate / reference letter: can be generated from profile data as a formatted PDF.
+
+Role Access — Employee Lifecycle Management:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin    | Org Owner
+---------------------------------------------------|-----------------|-------------------------|----------
+View own employment details                        | ✓               | ✓                       | ✓
+Create single employee account                     | ✗               | ✓                       | ✓
+Bulk import employees                              | ✗               | ✓                       | ✓
+Edit employee profile fields                       | ✗               | ✓                       | ✓
+Change employee role / department                  | ✗               | ✓                       | ✓
+Manage employee status transitions                 | ✗               | ✓                       | ✓
+Initiate & manage offboarding                      | ✗               | ✓                       | ✓
+View org-wide employee list & search/filter        | ✗               | ✓                       | ✓
+Deactivate / reactivate accounts                   | ✗               | ✓                       | ✓
+View change history for any employee               | ✗               | ✓                       | ✓
+Generate leaving certificate PDF                   | ✗               | ✓                       | ✓
+Delete employee data (GDPR request)                | ✗               | HR Admin (request)       | ✓ (approve)
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. ORGANISATIONAL HIERARCHY MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Manages the visual and functional org structure — departments, roles, reporting relationships, and hierarchy versions. Changes to hierarchy trigger downstream updates to approval routing, leave escalation, and access scope.
+
+──────────────────────────────────────────────────────────────────────────────
+13.1 Org Chart Builder
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- Interactive drag-and-drop org chart on web (read-only view on mobile).
+- Nodes represent: departments (containers) and individuals (employee cards showing name, photo, role, department).
+- HR Admin can: drag an employee node to a new manager to update reporting line; create new department nodes; merge/rename/archive departments.
+- Structural changes take effect immediately or on a set effective date. Pending future changes shown with a 'scheduled' indicator on affected nodes.
+- Hierarchy version history: every structural change saved as a timestamped version. HR Admin can view past org structure at any historical date.
+- Change log: every node addition, move, deletion, or rename logged with: changed_by, timestamp, old_state, new_state. Viewable by HR Admin and Org Owner.
+
+──────────────────────────────────────────────────────────────────────────────
+13.2 Setup Wizards
+──────────────────────────────────────────────────────────────────────────────
+
+Hierarchy Setup Wizard (triggered on first admin login or via 'Rebuild Org' button):
+- Option 1 – Start from Scratch: blank canvas; HR Admin manually creates departments and assigns employees.
+- Option 2 – Import from CSV: upload CSV with columns: employee_name / email, manager_email, department. System builds hierarchy from parent-child relationships. Preview shown before applying.
+- Option 3 – Use Template: select from presets: 'Flat Structure (1-level)', '3-Level Corporate', 'Matrix Org', 'Startup Pod Structure'. Each pre-fills department names and suggested roles; HR Admin fills in employees.
+
+──────────────────────────────────────────────────────────────────────────────
+13.3 Department & Role Management
+──────────────────────────────────────────────────────────────────────────────
+
+- Department: name, code, parent department (for nested structures), cost centre code (for payroll sync), default work location.
+- Role: title, department, grade/band, required skills (linked to Skill Library), reporting level.
+- HR Admin can create, edit, merge (merge employees of one dept into another), or archive departments. Archived departments no longer selectable for new employees but historical data preserved.
+
+Role Access — Organisational Hierarchy:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+View org chart (own team / company)                | ✓ (own chain)   | ✓                    | ✓
+Edit org chart structure                           | ✗               | ✓                    | ✓
+Create / edit / archive departments                | ✗               | ✓                    | ✓
+Create / edit roles                                | ✗               | ✓                    | ✓
+View hierarchy change log                          | ✗               | ✓                    | ✓
+View historical org structure versions             | ✗               | ✓                    | ✓
+Import hierarchy from CSV                          | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+14. SKILL LIBRARY & INTELLIGENCE MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Centrally managed repository of all recognised skills across the organisation. Powers skill gap analysis, development planning, role requirements mapping, and talent intelligence.
+
+──────────────────────────────────────────────────────────────────────────────
+14.1 Skill Library Management
+──────────────────────────────────────────────────────────────────────────────
+
+How it functions:
+- HR Admin accesses Skill Library → sees all skills in a searchable, filterable table (filter by category, status: Active/Inactive, source: org-defined/industry-template).
+- Create skill: name, category, description, related roles (auto-suggest from role list), related certifications.
+- Edit skill: update name, category, description. If a skill name is updated, all employee skill profiles using that skill are updated via a rename (not a new skill).
+- Merge skills: if duplicates exist (e.g., 'JavaScript' and 'JS'), HR Admin can merge — one becomes canonical, the other redirects all employee references to the canonical skill.
+- Deactivate skill: skill no longer selectable by employees for new additions. Existing employee skills using it remain (shown with a 'Deprecated' badge).
+- Starter wizard: pre-populated industry templates available (e.g., 'IT Services – 80 common skills', 'HR & Finance – 50 skills', 'Manufacturing – Safety & Technical 65 skills'). HR Admin selects template → bulk preview → activate/deactivate individual skills → import to library.
+
+──────────────────────────────────────────────────────────────────────────────
+14.2 Role-Required Skills Matrix
+──────────────────────────────────────────────────────────────────────────────
+
+- HR Admin defines: for each role, a list of required skills with: skill name, proficiency level required, type (Core = mandatory / Preferred = desirable).
+- Changes to the matrix automatically update all employees in that role — their personal skill gap reports recalculate immediately.
+- Matrix visible to employees in their Skill Gap report (they see what's required for their current role) but not editable by employees.
+
+──────────────────────────────────────────────────────────────────────────────
+14.3 Organisational Skill Gap Dashboard
+──────────────────────────────────────────────────────────────────────────────
+
+- Org-wide view: heatmap / table of skill gaps by department and role.
+- Metric per cell: employees_with_skill / total_employees_in_role (e.g., 'Java: 12/20 in Engineering' = gap).
+- Filter by: department, role, skill category, gap severity (>50% missing = Critical, 25–50% = Moderate, <25% = Low).
+- Trend view: skill gap delta over time (e.g., gap reducing month-over-month as training progresses).
+- Export to CSV/Excel for inclusion in board reports or training budget requests.
+
+Role Access — Skill Library & Intelligence:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+View own skills vs role requirements               | ✓               | ✓                    | ✓
+Submit new skill for approval                      | ✓               | ✓                    | ✓
+Manage central skill library (CRUD)                | ✗               | ✓                    | ✓
+Merge / deactivate skills                          | ✗               | ✓                    | ✓
+Import from industry skill templates               | ✗               | ✓                    | ✓
+Define role-required skills matrix                 | ✗               | ✓                    | ✓
+View org-wide skill gap dashboard                  | ✗               | ✓                    | ✓
+Export skill gap reports                           | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+15. REPORTS & COMPLIANCE MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Centralised reporting hub providing role-appropriate analytics, exportable data sets, and compliance documentation. All reports are generated in real-time from live data unless stated otherwise.
+
+──────────────────────────────────────────────────────────────────────────────
+15.1 Standard Reports
+──────────────────────────────────────────────────────────────────────────────
+
+Attendance Reports:
+- Daily Attendance Summary: org/dept/team level presence %, absentees, late arrivals, early departures. Filter by date, department, work mode.
+- Monthly Attendance Detail: per-employee daily attendance grid for the month. Exportable as Excel.
+- Overtime Report: employees with total hours > shift hours threshold per period.
+- Correction Requests Log: all correction requests, status, and resolution. Audit-ready.
+
+Leave Reports:
+- Leave Utilisation Report: leave taken vs entitlement per employee, per leave type. Exportable.
+- Leave Balance Snapshot: current balances for all employees as of today or a selected date. Used for year-end or financial provisioning.
+- Pending Approvals Aging Report: leave requests pending approval > SLA threshold.
+
+Salary & Payroll Reports:
+- Salary Summary Report: all employees, current salary, components, net pay. See Section 9.4.1 for full detail.
+- Payroll Cost Analysis: period-over-period comparison. See Section 9.4.2.
+- Salary Band Compliance: employees outside grade band. See Section 9.4.3.
+- Payslip Acknowledgement Status: per pay period, shows which employees have/have not acknowledged.
+
+Talent & Skills Reports:
+- Skill Gap Summary: org/dept/role level (see Section 14.3).
+- Development Plan Completion Rate: org/dept level, trend over time.
+- Certification Expiry Report: upcoming expirations across all employees, filterable by days remaining.
+
+Workforce Reports:
+- Headcount Report: active employees by department, role, grade, employment type. Date-range filterable.
+- Employee Turnover Report: joiners and leavers per period, turnover rate %.
+- Diversity Report (if demographic fields configured): age bands, gender (employees opt-in to sharing).
+
+──────────────────────────────────────────────────────────────────────────────
+15.2 Compliance & Audit Reports
+──────────────────────────────────────────────────────────────────────────────
+
+- GDPR / PDPA Audit Trail: all consent records, data access events, exports, and data deletion requests. One-click export as PDF with digital timestamp for regulatory submissions.
+- Data Export Audit Log: every data export action (who, when, what data, format). Immutable log.
+- System Access Log: login events, failed attempts, account lockouts, admin actions.
+
+──────────────────────────────────────────────────────────────────────────────
+15.3 System KPI Dashboard
+──────────────────────────────────────────────────────────────────────────────
+
+- Platform health metrics: active users (daily/monthly), average session length, feature adoption rates per module.
+- Configurable thresholds: HR Admin sets target KPIs (e.g., 'Onboarding completion must be 100% within 7 days of hire'). Dashboard flags when threshold breached.
+- Visible to HR Admin and Org Owner only.
+
+Role Access — Reports & Compliance:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+View own personal reports (attendance, leave, payslip) | ✓          | ✓                    | ✓
+Generate all standard HR reports                   | ✗               | ✓                    | ✓
+Generate compliance/audit reports                  | ✗               | ✓                    | ✓
+Export any report (CSV/Excel/PDF)                  | ✗               | ✓                    | ✓
+View system KPI dashboard                          | ✗               | ✓                    | ✓
+View data export audit log                         | ✗               | ✓                    | ✓
+Configure report thresholds & KPI targets          | ✗               | ✓                    | ✓
+Schedule automated report delivery (email)         | ✗               | ✓                    | ✓
+View executive salary / payroll summary            | ✗               | HR (dept-scoped)      | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+16. SYSTEM CONFIGURATION & INTEGRATIONS MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Administrative control centre for org setup, integration configuration, security policies, and the guided setup wizards. Primarily web-based. Only HR Admin and Org Owner have access.
+
+──────────────────────────────────────────────────────────────────────────────
+16.1 Organisation Setup Wizard
+──────────────────────────────────────────────────────────────────────────────
+
+Triggered on first HR Admin or Org Owner login. Can be re-launched from Settings → 'Re-run Setup Wizard'. Multi-step guided flow with progress bar (6–8 steps). Contextual tooltips and embedded 30–60 second tutorial videos per step.
+
+Wizard Steps:
+1. Company Basics: org name, country/region (auto-sets: currency GBP or LKR, statutory leave rules, public holiday calendar, timezone). Logo upload for payslip branding.
+2. Departments & Roles: option to import from CSV or use wizard to manually create key departments and roles.
+3. Payroll Integration: connect ADP or Oracle (guided OAuth flow) or select 'CSV import (manual)'. 'Test Sync' button with sample data to validate connection before saving.
+4. Geo-fencing & IP Ranges: interactive map to draw office geo-fence polygon or enter centre point + radius. IP range input (CIDR notation) with validation. Presets: 'Single Office Building', 'Business Park – 500m radius', 'City-wide Remote Allowed'.
+5. Calendar & LMS Connections: one-click OAuth for Google Calendar, Microsoft 365 Calendar, and supported LMS platforms.
+6. Notification Defaults: toggle notification categories on/off for org defaults; select channels (push, email) per category.
+7. Review & Confirm: summary of all settings entered. 'Apply & Test' button runs validation checks on all integrations simultaneously and shows pass/fail per integration.
+
+Pre-built Org Templates (selectable at start of wizard):
+- 'Small UK Office (20–50 employees)': pre-fills UK leave rules, GBP, standard UK public holidays, suggested geo-radius for city office.
+- 'Hybrid Remote-First': maximised remote mode defaults, VPN policy ON, relaxed geo-fence, remote day caps configured.
+- 'Sri Lanka Manufacturing (100+ employees)': EPF/ETF deduction defaults, LKR, Sri Lanka public holidays, shift-based attendance patterns, onsite-strict geo-fencing.
+Each template auto-fills relevant config sections; HR Admin can override any setting.
+
+──────────────────────────────────────────────────────────────────────────────
+16.2 Payroll Integration Configuration
+──────────────────────────────────────────────────────────────────────────────
+
+- Provider selection: ADP Workforce Now, Oracle HCM Payroll, or Custom (CSV).
+- OAuth/API key entry with guided instructions per provider. Credentials stored encrypted (AES-256); never displayed after save.
+- Sync schedule: configurable (e.g., push employee data to payroll on 20th, pull payslips on 25th). Manual sync button always available.
+- Field mapping: map platform fields to payroll provider fields (auto-mapped with manual override option).
+- Error alerting: configure who receives payroll sync error notifications (HR Admin email, in-app, or both).
+
+──────────────────────────────────────────────────────────────────────────────
+16.3 Role & Permission Management
+──────────────────────────────────────────────────────────────────────────────
+
+- HR Admin can create custom permission profiles within the HR Admin role — e.g., restrict a junior HR user to only view attendance and leave, not salary data.
+- Org Owner can promote employees to HR Admin role, or demote HR Admins back to Employee.
+- Org Owner is the only role that can change another Org Owner (succession planning use case).
+
+──────────────────────────────────────────────────────────────────────────────
+16.5 Hardware Biometric Device Management
+──────────────────────────────────────────────────────────────────────────────
+
+Centralised management of all physical biometric terminals registered to the organisation. See Section 2.1.3B for full integration architecture and enrolment flows.
+
+Device Registry:
+- Table view: device name, location/branch, type (fingerprint/face/multi-modal), manufacturer/model, IP address, status (Online / Offline / Error / Maintenance), last heartbeat timestamp, enrolled employee count, today's event count.
+- Status indicators auto-refresh every 60 seconds (configurable). Offline alert triggered if no heartbeat received within configured timeout (default 5 minutes).
+
+Device Setup & Integration:
+- Supported manufacturers out-of-box: ZKTeco, Suprema (BioStar 2), HikVision, Anviz. Generic REST adapter available for other brands.
+- Setup wizard per device: HR Admin enters device IP, selects manufacturer, inputs API credentials. Platform tests connection and lists available device capabilities (which biometric modes it supports).
+- Multiple devices per branch/location: all terminals at a location share the same geo-zone. Clock-in on any terminal at that location creates an 'Onsite' record for that branch.
+
+Enrolment Management:
+- View enrolment matrix: employees (rows) vs devices (columns); each cell shows Enrolled / Not Enrolled / Enrolment Pending.
+- Bulk enrolment queue: select employees + target device(s) → platform queues enrolment session; site admin uses device's admin screen to step through the queue.
+- Remove enrolment: HR Admin can remove an employee's template from a device (e.g., on offboarding — this is part of the offboarding checklist).
+- Re-enrol: triggered if match quality degrades over time (device alerts platform if average match score for an employee drops below threshold).
+
+Device Event Log & Audit:
+- Per-device event log: timestamp, employee name/ID, event type (clock_in/clock_out/failed_match/PIN_override/liveness_fail), match method, match score.
+- Failed match log: repeated failures per employee surfaced as alerts to HR Admin (configurable threshold, e.g., 3 failures in a day).
+- Liveness check failure log: potential spoofing attempts flagged separately for security review.
+- All device events included in the attendance audit trail; immutable.
+
+Security Configuration:
+- Password policy: minimum length, complexity rules, expiry frequency. Configurable per org.
+- Session timeout: configurable idle timeout (default 30 minutes mobile, 60 minutes web).
+- MFA enforcement: toggle mandatory MFA for HR Admin and/or all employees.
+- IP allowlisting for admin web access: restrict HR Admin web access to specific IP ranges.
+
+Role Access — System Configuration & Integrations:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Access system configuration                        | ✗               | ✓                    | ✓
+Run organisation setup wizard                      | ✗               | ✓                    | ✓
+Configure payroll integration                      | ✗               | ✓                    | ✓
+Configure geo-fencing & IP ranges (remote/hybrid)  | ✗               | ✓                    | ✓
+Register & configure hardware biometric devices    | ✗               | ✓                    | ✓
+Enrol / remove employees on hardware devices       | ✗               | ✓                    | ✓
+View hardware device registry & event logs         | ✗               | ✓                    | ✓
+Configure SSO / calendar / LMS integrations        | ✗               | ✓                    | ✓
+Manage roles & custom permission profiles          | ✗               | ✓                    | ✓
+Promote / demote HR Admin role                     | ✗               | ✗                    | ✓
+Configure security policies                        | ✗               | ✓                    | ✓
+Manage org billing & subscription                  | ✗               | ✗                    | ✓
+Rebrand / update org logo & name                   | ✗               | HR Admin (limited)    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+17. SETTINGS & PREFERENCES MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+User-level settings available to all roles for personalisation, account security, and help access.
+
+──────────────────────────────────────────────────────────────────────────────
+17.1 Account Security
+──────────────────────────────────────────────────────────────────────────────
+
+- Change Password: current password required for verification; new password validated against org policy.
+- Manage MFA: view current MFA method, switch method (TOTP ↔ email), view backup codes, regenerate backup codes.
+- Active Sessions: list of active sessions (device name, OS, last activity, location estimate). Employee can terminate individual sessions or 'Log out all other devices'.
+- Registered Devices: list of devices used for biometric or remote attendance. Employee can deregister devices (e.g., if phone lost).
+
+──────────────────────────────────────────────────────────────────────────────
+17.2 Notification Preferences
+──────────────────────────────────────────────────────────────────────────────
+
+- Toggle each notification category on/off independently for push and email channels.
+- Set quiet hours: start time, end time, timezone. Emergency/security alerts always bypass.
+- Language preference: affects notification language (if multi-language supported by org config).
+
+──────────────────────────────────────────────────────────────────────────────
+17.3 Appearance & Accessibility
+──────────────────────────────────────────────────────────────────────────────
+
+- Theme: System Default, Light, Dark.
+- Text size: Standard, Large, Extra Large (scales all app text).
+- Reduce motion: toggle for users sensitive to animations.
+
+──────────────────────────────────────────────────────────────────────────────
+17.4 Help & Support
+──────────────────────────────────────────────────────────────────────────────
+
+- In-app help centre: searchable articles covering all modules. Articles context-sensitive (e.g., opening Help from Attendance shows attendance-related articles first).
+- 'Contact HR' shortcut: opens a pre-addressed in-app message to HR Admin team.
+- Feedback: thumbs up/down per screen; optional comment. Submitted to internal feedback queue reviewed by HR Admin / product team.
+- App version, terms of service, privacy policy, and data processing notice accessible here.
+
+Role Access — Settings & Preferences:
+
+Feature / Action                                   | Employee        | HR Admin / Sys Admin | Org Owner
+---------------------------------------------------|-----------------|----------------------|----------
+Change own password                                | ✓               | ✓                    | ✓
+Manage own MFA                                     | ✓               | ✓                    | ✓
+View & terminate own sessions                      | ✓               | ✓                    | ✓
+Configure own notification preferences             | ✓               | ✓                    | ✓
+Set appearance / accessibility preferences         | ✓               | ✓                    | ✓
+Access help centre                                 | ✓               | ✓                    | ✓
+Manage org-wide help content                       | ✗               | ✓                    | ✓
+View submitted feedback                            | ✗               | ✓                    | ✓
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+18. TALENT DNA MAPPING MODULE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+Talent DNA Mapping is the platform's unified intelligence layer that aggregates every data point known about an employee — their skills, certifications, proficiency levels, validation status, development progress, OKR performance, attendance patterns, and role fit — into a single structured talent profile. This profile is then mapped against role requirements, team composition, and organisational needs to surface actionable talent insights automatically.
+
+This module does not replace HR judgment. It eliminates the manual effort of piecing together disconnected data across modules, so HR Admin and Org Owners can make talent decisions based on a complete, live picture of every person in the organisation.
+
+⚠  Talent DNA profiles are built entirely from data that already exists within the platform across other modules. No additional data entry is required from employees or HR Admin beyond what is already collected.
+
+──────────────────────────────────────────────────────────────────────────────
+18.1 The Talent DNA Profile
+──────────────────────────────────────────────────────────────────────────────
+
+18.1.1 Profile Composition:
+Each employee has one Talent DNA Profile. It is a live, auto-updating record composed of the following data layers:
+
+Layer 1 — Skills & Competency Profile:
+- All validated skills from Section 7: skill name, category, proficiency level, validation tier (Unvalidated / Manager Validated / HR Verified / Certification Backed).
+- Proficiency trend per skill: direction of change over time (improving, static, declining based on proficiency update history).
+- Skill coverage score: percentage of Core skills met vs required for current role (0–100%).
+- Certification portfolio: active certifications, expiry status, linked skills.
+
+Layer 2 — Development & Growth Profile:
+- Active and completed development plans: plan names, completion rates, overdue goals count.
+- Goal completion rate: % of development goals completed on time vs total assigned, across all plans.
+- Learning velocity: rate of skill acquisition and certification completion over the last 6 / 12 months.
+- OKR performance: average Key Result completion % across the last 2 OKR cycles.
+- KPI adherence: % of KPI targets met in current and prior period.
+
+Layer 3 — Attendance & Reliability Profile:
+- Attendance rate: % of scheduled working days present (rolling 90-day window).
+- Punctuality rate: % of days clocked in within grace period (no late arrivals).
+- Work mode distribution: % onsite vs remote over the last 90 days.
+- Correction request frequency: number of attendance correction requests submitted (high frequency may indicate device issues or reliability concerns).
+
+Layer 4 — Role Fit Score:
+How it is calculated:
+- System retrieves the role-required skills matrix for the employee's current role (from Section 14.2).
+- Compares employee's validated skills and proficiency levels against each required skill.
+- Core skills: each met Core skill contributes a weighted score. Core skills below required proficiency contribute a partial score based on the proficiency gap.
+- Preferred skills: each met Preferred skill contributes a smaller weighted score.
+- Final Role Fit Score expressed as a percentage (0–100%) and a tier label:
+  - 90–100% → Excellent Fit
+  - 75–89% → Strong Fit
+  - 60–74% → Developing Fit
+  - 40–59% → Partial Fit
+  - Below 40% → Significant Gap
+- Score recalculates automatically whenever: a skill is added/updated/validated, a certification is added or expires, or the role-required skills matrix is updated by HR Admin.
+
+Layer 5 — Tenure & Employment Profile:
+- Employment start date, tenure in current role, tenure in organisation.
+- Grade/band, employment type (full-time / part-time / contract).
+- Role change history: number and types of role changes, promotions, lateral moves.
+- Time since last salary review (sourced from salary history in Section 9.1).
+
+──────────────────────────────────────────────────────────────────────────────
+18.2 Talent Readiness Score
+──────────────────────────────────────────────────────────────────────────────
+
+Overview:
+The Talent Readiness Score is a composite indicator of how ready an employee is to take on greater responsibility — either through promotion within their current track or through a lateral move into a different role. It is computed from the five profile layers and displayed as a score from 0–100 with a readiness tier.
+
+Score Composition:
+
+Component                        | Weight | Source
+---------------------------------|--------|---------------------------------------------
+Role Fit Score (current role)    | 30%    | Skills & Certs vs Role Matrix (Section 14.2)
+Development Goal Completion Rate | 25%    | Talent Development Module (Section 8)
+OKR / KPI Performance            | 20%    | OKRs & KPIs (Section 8.2)
+Attendance & Reliability Rate    | 15%    | Attendance Module (Section 4)
+Tenure & Growth Trajectory       | 10%    | Employment Profile + Role Change History
+
+Readiness Tiers:
+- 80–100 → High Readiness: employee is performing strongly across all dimensions. Suitable for promotion consideration or stretch assignments.
+- 65–79 → Ready with Development: employee is performing well but has identified gaps. Suitable for a planned promotion with a targeted development plan.
+- 50–64 → Developing: employee is progressing but requires more time or targeted support. Development plan review recommended.
+- Below 50 → Needs Attention: significant gaps across one or more dimensions. HR Admin and manager alerted for review and intervention.
+
+⚠  Weights are configurable by Org Owner. An organisation may choose to weight OKR performance higher (e.g., for sales teams) or attendance lower (e.g., for fully remote orgs). Configurable in System Configuration → Talent DNA Settings.
+
+──────────────────────────────────────────────────────────────────────────────
+18.3 Succession Candidate Flagging
+──────────────────────────────────────────────────────────────────────────────
+
+Overview:
+HR Admin and Org Owner can define key roles within the organisation as 'Critical Roles' — positions where vacancy would significantly impact operations. The system automatically identifies and ranks internal candidates for each critical role based on Talent DNA profile data.
+
+How it functions:
+- HR Admin navigates to Talent DNA → Succession Planning → 'Mark Role as Critical'.
+- For each critical role, HR Admin sets: minimum Readiness Score threshold for candidate consideration (default 60), and optionally: preferred skills weighting overrides for this specific role.
+- System scans all active employees org-wide and scores each against the critical role's requirements using the Role Fit calculation from Section 18.1.1 Layer 4 — but applied to the target role's matrix rather than the employee's current role.
+- Candidate ranking generated: employees sorted by their fit score for the critical role, with their Readiness Score and key gap summary shown per candidate.
+- HR Admin can: tag an employee as a 'Confirmed Succession Candidate' for a critical role, add private HR notes per candidate, or dismiss a candidate (with reason) from the succession list.
+- Confirmed candidates automatically get a 'Succession Track' development goal added to their development plan (if HR Admin enables this option) targeting the skill gaps identified for the critical role.
+- Succession lists are private — employees are never shown whether they are or are not on a succession list. Only HR Admin and Org Owner can view succession data.
+
+──────────────────────────────────────────────────────────────────────────────
+18.4 Internal Mobility Recommendations
+──────────────────────────────────────────────────────────────────────────────
+
+Overview:
+When a role becomes vacant or is newly created, the platform automatically surfaces internal candidates whose Talent DNA profile is a strong match for that role — before HR considers external recruitment.
+
+How it functions:
+- HR Admin creates or marks a role as 'Open' in the Org Hierarchy module (Section 13).
+- System automatically runs a talent match scan: scores all active employees against the open role's required skills matrix.
+- Internal Mobility Recommendations panel shows: top 5 matched employees, their Role Fit Score for the open role, their current role, their Readiness Score, and key skill gaps to close before they'd be fully ready.
+- HR Admin can act on a recommendation: flag the employee for internal interview, assign a bridging development plan targeting the identified gaps, or dismiss the recommendation with a reason.
+- Employee is not notified unless HR Admin explicitly triggers an internal opportunity notification — this is a deliberate opt-in to prevent premature or sensitive communications.
+- Dismissed recommendations are logged and excluded from future scans for the same role for a configurable period (default 90 days).
+
+──────────────────────────────────────────────────────────────────────────────
+18.5 Talent DNA Dashboard (HR Admin & Org Owner)
+──────────────────────────────────────────────────────────────────────────────
+
+Org-Level Talent Overview:
+- Organisation-wide summary cards: average Role Fit Score, average Readiness Score, % of employees in each readiness tier, employees with High Readiness not yet in a succession plan.
+- Department drill-down: click any department to see its talent distribution — individual employee Talent DNA scores, role fit %, readiness tier, and any flagged concerns.
+- Skill Coverage Heatmap: org-wide view of which skills are well-covered and which are critically under-represented, mapped across departments (powered by Section 14.3 Skill Gap Dashboard but enriched with readiness data).
+
+Individual Talent DNA Card (HR Admin view per employee):
+- All five profile layers displayed in a structured card layout with visual indicators per layer.
+- Role Fit Score with breakdown: which Core skills are met, which are below proficiency, which are missing entirely.
+- Readiness Score with per-component breakdown and trend arrow (score improving / static / declining vs last quarter).
+- Development plan progress linked directly: HR Admin can assign or edit a development plan from within the Talent DNA card.
+- Succession flags: whether this employee is a confirmed candidate for any critical role (visible to HR Admin only).
+- HR Admin private notes: free-text notes field per employee, visible only to HR Admin and Org Owner. Timestamped per note entry. Not visible to employee.
+
+Talent DNA Reports & Export:
+- Talent Readiness Report: all employees with their Readiness Score, tier, and per-component scores. Filterable by department, role, grade, readiness tier. Exportable as CSV / Excel / PDF.
+- Role Fit Report: all employees vs their current role's fit score. Surfaces employees who may be misaligned with their current role. Export as CSV / Excel.
+- Succession Coverage Report: all critical roles, number of confirmed succession candidates per role, average readiness score of candidates, roles with zero succession coverage flagged in red. Export as PDF (suitable for board-level talent review presentation).
+- Internal Mobility Report: open roles, top internal candidates per role, recommended bridging development actions. Export as CSV / Excel.
+
+──────────────────────────────────────────────────────────────────────────────
+18.6 Employee View — Career Profile
+──────────────────────────────────────────────────────────────────────────────
+
+Employees see a limited, motivating version of their Talent DNA profile under a 'Career Profile' tab. This view is deliberately framed around growth and self-awareness rather than scores and assessments.
+
+What employees CAN see:
+- Role Fit Summary: a visual showing which Core and Preferred skills for their current role they have met, and which are gaps — without showing the numerical score. Labelled as 'Your Role Readiness' with a progress-style indicator.
+- Skills Strengths: top 5 strongest validated skills highlighted (highest proficiency + highest validation tier).
+- Growth Areas: skills identified as gaps for their current role with a 'Start Working On This' action button linking to a development goal or LMS course.
+- Development Progress: same as Section 8 development plan view — recontextualised as 'Your Growth Journey'.
+- Certifications: active certs with expiry indicators, same as Section 7.2.
+
+What employees CANNOT see:
+- Their numerical Readiness Score or Talent Readiness tier.
+- Whether they are on any succession candidate list.
+- Internal mobility recommendation results.
+- HR Admin private notes.
+- Other employees' Talent DNA data.
+
+⚠  The Career Profile view is designed to be a constructive self-development tool, not a performance rating display. Score visibility is intentionally restricted to HR Admin and Org Owner to prevent score anxiety and gaming behaviour.
+
+Role Access — Talent DNA Mapping:
+
+Feature / Action                                        | Employee | HR Admin / Sys Admin | Org Owner
+-----------------------------------------------------   |----------|----------------------|----------
+View own Career Profile (role readiness, strengths)     | ✓        | ✓                    | ✓
+View own development plan & certifications via Career   | ✓        | ✓                    | ✓
+View any employee's full Talent DNA profile             | ✗        | ✓                    | ✓
+View Readiness Score & tier (per employee)              | ✗        | ✓                    | ✓
+View Role Fit Score breakdown (per employee)            | ✗        | ✓                    | ✓
+Add / edit HR private notes on employee profile         | ✗        | ✓                    | ✓
+View org-wide Talent DNA dashboard                      | ✗        | ✓                    | ✓
+Mark roles as Critical for succession planning          | ✗        | ✓                    | ✓
+View & manage succession candidate lists                | ✗        | ✓                    | ✓
+Tag / dismiss succession candidates                     | ✗        | ✓                    | ✓
+View Internal Mobility Recommendations                  | ✗        | ✓                    | ✓
+Trigger internal opportunity notification to employee   | ✗        | ✓                    | ✓
+Export Talent Readiness Report                          | ✗        | ✓                    | ✓
+Export Role Fit Report                                  | ✗        | ✓                    | ✓
+Export Succession Coverage Report                       | ✗        | ✓                    | ✓
+Export Internal Mobility Report                         | ✗        | ✓                    | ✓
+Configure Readiness Score component weights             | ✗        | ✗                    | ✓
+Configure Critical Role definitions                     | ✗        | ✓                    | ✓
+
+────────────────────────────────────────────────────────────────────────────────
+End of Document — HR Platform BRD v2.0 — Confidential
+────────────────────────────────────────────────────────────────────────────────
+
+
+
+
+================================================================================
+FILE 2: HR_BRD.docx
+HR & TALENT DEVELOPMENT PLATFORM
+Business Requirements Document
+CONFIDENTIAL — FOR STAKEHOLDER REVIEW
+================================================================================
+
+Document Version  : v1.0
+Document Type     : Business Requirements Document
+Project Name      : HR & Talent Development Platform
+Target Markets    : United Kingdom & Sri Lanka
+Last Updated      : February 2026
+Status            : Draft — For Stakeholder Review
+Total Business Requirements : 120 Business Requirements
+In-Scope Features            : 33 Confirmed Features
+Classification               : Confidential
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+TABLE OF CONTENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+1.  Executive Summary
+2.  Project Objectives
+3.  Project Scope
+4.  Stakeholder Identification
+5.  Business Requirements
+6.  Functional Requirements
+7.  Non-Functional Requirements
+8.  Regulatory and Compliance Requirements
+9.  Technical Architecture
+10. Assumptions and Constraints
+11. Risk Management
+12. Success Criteria
+13. Appendices
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+1. EXECUTIVE SUMMARY
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+1.1 Project Overview
+──────────────────────────────────────────────────────────────────────────────
+
+The HR & Talent Development Platform is a cloud-based SaaS system designed to eliminate fragmented HR operations by centralizing employee record management, attendance and leave tracking, organizational hierarchy control, and talent development into a single intelligent platform.
+
+The system is built as a Mobile-First Application with a native iOS and Android app at its core, delivering all HR functionality through a conversational Chat Interface. Full web platform support is also provided, ensuring accessibility across onsite, remote, and hybrid workforces. Initially targeted at organizations in the United Kingdom and Sri Lanka, the architecture is designed for global SaaS scalability.
+
+──────────────────────────────────────────────────────────────────────────────
+1.2 Business Value Proposition
+──────────────────────────────────────────────────────────────────────────────
+
+For Customers (Organizations):
+- Digitized and centralized HR operations accessible from any device
+- Reduced administrative workload for HR teams through automation
+- Accurate, real-time attendance and payroll data without manual entry
+- Structured employee development programs driving retention and growth
+- Unified visibility into workforce performance and organizational trends
+
+For the Platform:
+- Scalable SaaS subscription model with monthly and annual recurring revenue
+- Tiered pricing: Core, Professional, and Enterprise plans
+- Multi-market architecture enabling global expansion
+
+──────────────────────────────────────────────────────────────────────────────
+1.3 Key Features
+──────────────────────────────────────────────────────────────────────────────
+
+- Employee Record Management — centralized, auditable employee lifecycle database
+- Attendance & Leave Management — clock-in/out, geo-fencing, shift scheduling, payroll sync
+- Organizational Hierarchy — drag-and-drop structure builder with RBAC
+- Skill Intelligence Engine — skill profiling, gap analytics, development plans, OKR mapping
+- Reports & Analytics — role-sensitive dashboards and exportable workforce reports
+- API Integration — ADP, Oracle, LMS, calendar, and communication platform connectors
+- Native App & Chat Interface — all HR actions via conversational UI on iOS and Android
+
+──────────────────────────────────────────────────────────────────────────────
+1.4 Target Markets
+──────────────────────────────────────────────────────────────────────────────
+
+- Primary Markets: United Kingdom (UK) and Sri Lanka
+- Currency: GBP (UK) / LKR (Sri Lanka)
+- Language: English (primary)
+- Regulatory Compliance: UK GDPR, Sri Lanka PDPA, PCI DSS, ISO 27001/27701
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+2. PROJECT OBJECTIVES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+2.1 Primary Objectives
+──────────────────────────────────────────────────────────────────────────────
+
+1. Solve Core HR Problem — Centralize all HR functions, eliminating reliance on disconnected tools and manual cross-platform data entry.
+2. Improve HR Productivity — Automate leave approvals, attendance records, certification alerts, and payroll data sync to reduce HR administrative effort.
+3. Automation & Process Optimization — Implement intelligent workflows for attendance tracking, leave management, certification expiry, and payroll synchronization.
+4. Multi-Workforce Scalability — Support onsite, remote, and hybrid workforces via geo-fencing and IP validation with configurable per-organization settings.
+5. Regulatory Compliance — Achieve and maintain full UK GDPR, Sri Lanka PDPA, PCI DSS, and ISO 27001 compliance across all markets.
+6. Strategic Talent Development — Transform talent management into a data-driven function through the Skill Intelligence Engine, OKR mapping, and development plan tracking.
+
+──────────────────────────────────────────────────────────────────────────────
+2.2 Business Growth Objectives
+──────────────────────────────────────────────────────────────────────────────
+
+- Establish scalable Cloud SaaS subscription revenue with Core, Professional, and Enterprise tiers
+- Achieve 40+ paying client organizations in UK and Sri Lanka within 3 months of launch
+- Reach 250+ paying clients by end of Month 12
+- Sustain MRR growth of ≥15% month-over-month for the first 6 months
+- Enable enterprise adoption through full compliance and AES-256 encryption
+
+──────────────────────────────────────────────────────────────────────────────
+2.3 Success Metrics
+──────────────────────────────────────────────────────────────────────────────
+
+- HR Admin time saved: ≥5 hours/week reduction in administrative effort reported by ≥70% of HR Admin users
+- User adoption: ≥80% of invited employees complete first login within 7 days
+- Platform uptime: ≥99.5%
+- API response time: ≤500ms (p95)
+- Payroll sync: ≤60 seconds per push cycle
+- Customer satisfaction: ≥4.2/5.0 CSAT across all user segments
+- Compliance: Zero data breach incidents and zero regulatory fines in first 12 months
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+3. PROJECT SCOPE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+3.1 In Scope
+──────────────────────────────────────────────────────────────────────────────
+
+3.1.1 Employee Application (Mobile — iOS & Android):
+- User registration, login, and biometric authentication
+- Personal dashboard with attendance, leave balance, and development summary
+- Clock-in / clock-out (onsite, remote, hybrid) with offline queue support
+- Leave request submission and status tracking
+- Skill profile management and development plan viewing
+- OKR and KPI visibility
+- Chat Interface for all HR actions via natural language commands
+- Push notification receipt for all system alerts
+
+3.1.2 Employee & Manager Application (Web):
+- Full-feature web access for all roles (Employee, Manager, HR Admin, System Admin)
+- Manager team dashboard: leave calendar, attendance monitoring, skill gap visibility
+- Leave approval and rejection workflow with mandatory rejection reason
+- Development plan and OKR tracking for direct reports
+- Responsive design for desktop, tablet, and mobile browsers
+
+3.1.3 HR Admin Application (Web):
+- Workforce dashboard and organizational hierarchy builder
+- Employee lifecycle management: profile creation, status transitions, document management
+- Attendance record review, manual editing, and correction with full audit trail
+- Skill Library management: create, edit, deactivate, and merge skills
+- Skill gap dashboard filterable by department, role, skill category, and gap type
+- Development plan creation and monitoring
+- Compliance report generation (one-click PDF)
+- System KPI dashboard with configurable thresholds
+
+3.1.4 Backend API & Integrations:
+- RESTful API with OpenAPI 3.0 documentation
+- Payroll integrations: ADP and Oracle (configurable sync schedule)
+- LMS integration for skill and certification record auto-update
+- Calendar integrations: Google Calendar and Microsoft Outlook
+- SSO via OAuth 2.0 (Identity Provider integration)
+- Email and mobile push notification engine
+- Geo-fencing validation and IP address range enforcement
+
+──────────────────────────────────────────────────────────────────────────────
+3.2 Out of Scope (Future Enhancements)
+──────────────────────────────────────────────────────────────────────────────
+
+- AI Predictive Attrition modelling
+- Compensation benchmarking against external market data
+- Recruitment / Applicant Tracking System (ATS) module
+- AI HR Document Generation
+- Advanced performance review workflows beyond OKR/KPI tracking
+- SMS notifications (push and email only for MVP)
+- Multi-currency payroll processing (separate payroll providers handle currency)
+- Native admin mobile app (web-only for admin at launch)
+
+──────────────────────────────────────────────────────────────────────────────
+3.3 Deployment Scope
+──────────────────────────────────────────────────────────────────────────────
+
+Application development and API build outputs only. Cloud infrastructure provisioning, CI/CD pipeline configuration, and production environment setup are handled separately by the infrastructure and DevOps team.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+4. STAKEHOLDER IDENTIFICATION
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+4.1 Primary Stakeholders
+──────────────────────────────────────────────────────────────────────────────
+
+4.1.1 Business Owner / Sponsor:
+- Role: Visionary and financial anchor responsible for platform ROI and people strategy alignment
+- Platform Usage: Executive dashboards, ROI tracking, strategic positioning metrics
+- Key Expectations: Revenue growth via scalable SaaS; market differentiation through Skill Intelligence Engine
+
+4.1.2 System Administrator:
+- Role: Technical backbone — security, configuration, and operational integrity
+- Platform Usage: User/role management, integration settings, System KPI Dashboard
+- Key Expectations: Security and stability during payroll cycles; intuitive admin interface
+
+4.1.3 HR Admin / HR Manager:
+- Role: Primary power users managing the full employee lifecycle
+- Platform Usage: Workforce dashboard, hierarchy builder, skill gap dashboard, compliance reporting
+- Key Expectations: Data accuracy, automated leave routing, payroll push, certification alerts, and one-click compliance PDFs
+
+4.1.4 Line Managers:
+- Role: Bridge between HR strategy and daily workforce management
+- Platform Usage: Manager team dashboard, leave calendar, development plan and OKR tracking
+- Key Expectations: Real-time data accuracy; automated alerts for leave, certification expiries, and development deadlines
+
+4.1.5 Employees:
+- Role: Largest user group; primary source of attendance, skill, and development data
+- Platform Usage: Personal dashboard, mobile clock-in, skill profile, leave requests, Chat Interface
+- Key Expectations: Frictionless daily use; transparency about data collection; trust that the system supports career growth, not surveillance
+
+4.1.6 Operations & Payroll Team:
+- Role: Ensure HR data flows accurately into payroll processing cycles
+- Platform Usage: Payroll data validation, exception handling for sync anomalies
+- Key Expectations: Payroll data accuracy; reliable integration with clear error notifications and retry mechanisms
+
+──────────────────────────────────────────────────────────────────────────────
+4.2 Secondary Stakeholders
+──────────────────────────────────────────────────────────────────────────────
+
+- Payroll Platform Providers (ADP, Oracle) — API hosts requiring adherence to API specs, rate limits, and data format standards
+- LMS Providers — Training delivery and completion data source; must sync accurately and respect API policies
+- Cloud Infrastructure Provider (AWS / Azure / GCP) — Hosting, scalability, and geo-specific data residency for UK and Sri Lanka
+- Identity Provider (SSO) — Stable OAuth 2.0 endpoints for Single Sign-On authentication
+- Payment Gateway Provider (Stripe / Direct Pay Online) — PCI DSS-compliant SaaS subscription billing
+
+──────────────────────────────────────────────────────────────────────────────
+4.3 Regulatory Bodies
+──────────────────────────────────────────────────────────────────────────────
+
+- UK Information Commissioner's Office (ICO) — UK GDPR compliance, 72-hour breach notification
+- Sri Lanka Data Protection Authority — Sri Lanka PDPA compliance, audit reporting
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+5. BUSINESS REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+5.1 Employee Record Management (BR-001 to BR-010)
+──────────────────────────────────────────────────────────────────────────────
+
+ID     | Requirement
+-------|------------------------------------------------------------------------------
+BR-001 | Only HR Admin or System Admin users may create a new employee profile.
+BR-002 | New profiles must capture: First/Last Name, Employee ID (auto-generated), DOB, Email, Contact Number, Department, Role, Employment Type, and Join Date.
+BR-003 | Employees may update their own contact number, home address, emergency contact, and profile photo without HR Admin approval.
+BR-004 | Each profile must support one or more emergency contacts. Minimum one is required before a profile can be set to Active.
+BR-005 | HR Admins and employees may upload categorized documents with optional expiry dates to a profile.
+BR-006 | Automated expiry alerts at 30 days and 7 days before document expiry sent to employee and HR Admin.
+BR-007 | Employment status transitions enforced: Pending→Active, Active→On Leave/Suspended/Terminated, Suspended/On Leave→Active. Only HR Admin and System Admin may change status.
+BR-008 | All status, role, department, and compensation changes generate a permanent timestamped lifecycle event record.
+BR-009 | Every active profile must have at least one role and department assignment at all times.
+BR-010 | HR Admins and Managers may search and filter the employee list by department, role, employment type, status, and join date.
+
+──────────────────────────────────────────────────────────────────────────────
+5.2 Attendance & Leave Management (BR-011 to BR-027)
+──────────────────────────────────────────────────────────────────────────────
+
+ID     | Requirement
+-------|------------------------------------------------------------------------------
+BR-011 | Onsite employees may clock in/out via web or mobile. Records capture employee ID, timestamp, work mode, and IP address.
+BR-012 | Remote clock-ins validated against approved IP address ranges. Unapproved attempts blocked and logged.
+BR-013 | Geo-fencing-enabled employees must be within configured GPS boundary to clock in; otherwise blocked and HR Admin notified.
+BR-014 | Clock-out auto-calculates total hours, overtime, and shift compliance. Records not clocked out by midnight flagged as Incomplete.
+BR-015 | HR Admins may manually edit attendance records with mandatory reason. All edits fully logged.
+BR-016 | Real-time attendance analytics dashboard for HR Admins and Managers showing presence rates, absenteeism, late arrivals, and incomplete records.
+BR-017 | Any employee may submit a leave request with leave type, dates, optional reason, and supporting document. Current balance shown before submission.
+BR-018 | Leave balance validation: Annual/Paternity leave exceeding balance blocked; Sick/Unpaid leave allowed but flagged with warning.
+BR-019 | Leave requests routed to line manager for approval or rejection with mandatory rejection reason. 48-hour automated reminder if no action taken.
+BR-020 | Team leave calendar showing all approved and pending leave in monthly/weekly views with color-coding by status.
+BR-021 | Leave approval auto-deducts duration from the employee's balance immediately.
+BR-022 | Leave approval automatically pushes leave record to configured payroll platform within 60 seconds.
+BR-023 | HR Admins may create shift patterns with name, hours, working days, and break duration.
+BR-024 | Shift patterns assignable to individual employees or entire departments in bulk from a specified effective date.
+BR-025 | Employees may submit shift change requests subject to HR Admin approval with mandatory rejection reason.
+BR-026 | Overtime thresholds configurable independently per employment type (Full-time / Part-time / Contract).
+BR-027 | Overtime auto-calculated at clock-out and stored against attendance record; included in payroll data push.
+
+──────────────────────────────────────────────────────────────────────────────
+5.3 Organizational Hierarchy (BR-028 to BR-034)
+──────────────────────────────────────────────────────────────────────────────
+
+ID     | Requirement
+-------|------------------------------------------------------------------------------
+BR-028 | Visual drag-and-drop canvas for building and modifying the organizational hierarchy in real time.
+BR-029 | HR Admins may create department nodes with unique name, optional department head, and optional parent department.
+BR-030 | System supports unlimited reporting levels. Managers view aggregated data for all employees within their reporting scope including nested sub-departments.
+BR-031 | Hierarchy changes auto-update employee profile, reconfigure leave approval routing, and log the structural change as a lifecycle event.
+BR-032 | Five fixed roles: System Admin, HR Admin, Manager, Employee, Guest. Role assignment by System Admin only.
+BR-033 | Data scoped by role at API layer. Manager requests return only their reporting hierarchy. Out-of-scope requests return 403 Forbidden.
+BR-034 | Role changes take effect immediately without requiring the user to log out.
+
+──────────────────────────────────────────────────────────────────────────────
+5.4 Talent Development — Skill Intelligence Engine (BR-035 to BR-051)
+──────────────────────────────────────────────────────────────────────────────
+
+ID     | Requirement
+-------|------------------------------------------------------------------------------
+BR-035 | Employee profiles include a Skill Profile section. Skills added from the Skill Library or submitted for HR Admin approval.
+BR-036 | HR Admins maintain the Skill Library: create, edit, deactivate, and merge skill entries. Deactivated skills retained on existing profiles.
+BR-037 | Employee-submitted skills not in the library enter an HR Admin approval workflow with outcome notification to employee.
+BR-038 | Five-level proficiency scale: Awareness, Foundational, Competent, Advanced, Expert. Set by employee; validated/overridden by manager.
+BR-039 | Managers may validate or flag skill entries on direct reports. Flagged entries notify the employee.
+BR-040 | Certification records capture: name, issuing body, issue date, optional expiry date, and optional certificate upload.
+BR-041 | Certification expiry alerts: to employee at 60 and 14 days; to manager at 30 days; to HR Admin at 14 days.
+BR-042 | HR Admins define required skill set and minimum proficiency level per role, classified as Core or Preferred.
+BR-043 | Individual Skill Gap Report auto-generated per employee comparing profile against role requirements: Met, Below Proficiency, or Missing.
+BR-044 | Organisational Skill Gap Dashboard showing gap counts across workforce, filterable by department, role, skill category, and gap type.
+BR-045 | Development plans created for employees with title, start date, target completion date, and one or more goals.
+BR-046 | Development goals specify type (Skill Development / Certification / Behaviour / Project Experience), target skill/proficiency, due date, and status.
+BR-047 | Overall development plan completion percentage calculated automatically from goal statuses.
+BR-048 | When a plan is within 14 days of target completion and below 80% complete, automated alerts sent to employee and manager.
+BR-049 | OKR records linked to employees with objective title, time period (Q1–Q4 or Annual), owner, and status.
+BR-050 | Key Results track target value, current value, and auto-calculated progress percentage per OKR.
+BR-051 | Development goals linkable to Key Results, creating visible traceability between development activity and organizational targets.
+
+──────────────────────────────────────────────────────────────────────────────
+5.5 Reports & Analytics (BR-052 to BR-061)
+──────────────────────────────────────────────────────────────────────────────
+
+Role-sensitive dashboards for Employees, Managers, and HR Admins. Four exportable reports: Attendance, Leave Utilization, Talent Development, and Workforce Trends. System KPI Dashboard with configurable thresholds and alerts.
+
+──────────────────────────────────────────────────────────────────────────────
+5.6 Notifications & Alerts (BR-062 to BR-065)
+──────────────────────────────────────────────────────────────────────────────
+
+Multi-channel notification engine (in-app, email, mobile push). Per-user preference configuration by category. 11 defined trigger events including leave approvals, certification expiries, development plan deadlines, and payroll sync confirmations. 90-day notification history log.
+
+──────────────────────────────────────────────────────────────────────────────
+5.7 Secure Access & Authentication (BR-066 to BR-072)
+──────────────────────────────────────────────────────────────────────────────
+
+OAuth 2.0 SSO. Mandatory MFA for HR Admin and System Admin. 30-minute session timeout with a maximum of 3 concurrent sessions. Failed login lockout at 5 attempts. Responsive web for all devices and browsers.
+
+──────────────────────────────────────────────────────────────────────────────
+5.8 Payroll & API Integration (BR-073 to BR-083)
+──────────────────────────────────────────────────────────────────────────────
+
+ADP and Oracle payroll integration with configurable sync schedule. Payslip retrieval and salary sync. LMS integration for auto-updating skill and certification records. Calendar sync for approved leave and certification expiry dates.
+
+──────────────────────────────────────────────────────────────────────────────
+5.9 Native App & Chat Interface (BR-109 to BR-116)
+──────────────────────────────────────────────────────────────────────────────
+
+ID     | Requirement
+-------|------------------------------------------------------------------------------
+BR-109 | The system must provide native iOS and Android applications, published on the Apple App Store and Google Play Store and meeting each platform's submission and review guidelines.
+BR-110 | App must support biometric authentication (Face ID and Touch ID on iOS; fingerprint and face unlock on Android) as an alternative to password login, using the device's native secure enclave.
+BR-111 | A conversational Chat Interface must serve as the primary interaction layer within the native app. All platform features — including clock-in/out, leave requests, skill updates, development plan queries, approvals, and notification acknowledgements — must be accessible through the Chat Interface.
+BR-112 | The Chat Interface must interpret natural language commands for all key HR actions (e.g., "Clock me in", "Apply for leave from Monday to Wednesday", "Show my skill gaps", "Approve the leave request from Sarah"). The system must parse intent, confirm the action, and execute it within the chat thread.
+BR-113 | Chat responses must render role-appropriate rich cards and inline action buttons so users can complete actions directly within the conversation without leaving the chat view.
+BR-114 | All system notifications defined in Section 5.6 must be delivered as native push notifications and surfaced as chat messages within the Chat Interface, maintaining a persistent, auditable action history per user.
+BR-115 | The app must support offline attendance clock-in/out. Records are stored in a local encrypted queue and synced upon reconnection, with a visible sync-pending indicator.
+BR-116 | The native app must enforce identical role-based access control (RBAC) and data scoping as the web platform. All API-layer restrictions apply without exception.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+6. FUNCTIONAL REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+6.1 Employee Mobile Application (iOS & Android)
+──────────────────────────────────────────────────────────────────────────────
+
+FR-001: The app shall provide registration, login, and biometric authentication.
+FR-002: The app shall support clock-in/out with geo-fencing and offline queue.
+FR-003: The app shall allow leave request submission with balance display.
+FR-004: The app shall display personal skill profile, gap report, and development plans.
+FR-005: The app shall provide a Chat Interface interpreting natural language HR commands.
+FR-006: The app shall deliver push notifications for all system alert categories.
+FR-007: The app shall display personal attendance history and leave calendar.
+
+──────────────────────────────────────────────────────────────────────────────
+6.2 Web Application (All Roles)
+──────────────────────────────────────────────────────────────────────────────
+
+FR-008: The web app shall provide full HR functionality for Employee, Manager, HR Admin, and System Admin roles.
+FR-009: The web app shall provide a Manager team dashboard with leave calendar, attendance monitoring, and skill gap visibility.
+FR-010: The web app shall support the leave approval and rejection workflow with mandatory rejection reason.
+FR-011: The web app shall provide an HR Admin workforce dashboard, organizational hierarchy builder, and skill gap dashboard.
+FR-012: The web app shall support compliance report generation as a one-click PDF export.
+FR-013: The web app shall provide a System Admin interface for user/role management and integration configuration.
+FR-014: The web app shall be fully responsive across desktop, tablet, and mobile browsers.
+
+──────────────────────────────────────────────────────────────────────────────
+6.3 Backend API
+──────────────────────────────────────────────────────────────────────────────
+
+FR-015: The API shall provide RESTful endpoints for all platform functions with OpenAPI 3.0 documentation.
+FR-016: The API shall enforce RBAC at the API layer — out-of-scope requests return 403 Forbidden.
+FR-017: The API shall validate all input data and return actionable, plain-language error messages.
+FR-018: The API shall integrate with payroll platforms (ADP, Oracle) with configurable sync schedule and reconciliation validation.
+FR-019: The API shall integrate with LMS providers to auto-update skill and certification records.
+FR-020: The API shall integrate with calendar platforms (Google Calendar, Microsoft Outlook) for leave and certification events.
+FR-021: The API shall implement geo-fencing validation and IP address range enforcement for attendance.
+FR-022: The API shall process the offline attendance sync queue upon mobile reconnection.
+
+──────────────────────────────────────────────────────────────────────────────
+6.4 Data Management
+──────────────────────────────────────────────────────────────────────────────
+
+FR-023: The system shall store all HR data in a compliant, geo-residency-enforced primary database.
+FR-024: The system shall cache frequently accessed data to meet performance SLAs.
+FR-025: The system shall maintain a write-once, immutable audit trail for all entity changes and admin actions.
+FR-026: The system shall support data export in JSON and CSV formats for portability.
+FR-027: The system shall implement automated encrypted backups every 4 hours with geo-separated storage.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+7. NON-FUNCTIONAL REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+7.1 Performance Requirements
+──────────────────────────────────────────────────────────────────────────────
+
+NFR-001: Page load time shall be ≤3 seconds.
+NFR-002: API response time shall be ≤500ms at p95 under normal load.
+NFR-003: Push and in-app notifications delivered within ≤5 seconds of trigger.
+NFR-004: Payroll data push to ADP/Oracle shall complete within ≤60 seconds.
+NFR-005: System load tested at 5,000 concurrent users before launch.
+
+──────────────────────────────────────────────────────────────────────────────
+7.2 Scalability Requirements
+──────────────────────────────────────────────────────────────────────────────
+
+NFR-006: Auto-horizontal scaling triggered at 70% CPU utilization.
+NFR-007: Multi-tenant SaaS architecture supporting 100 to 100,000 active users.
+NFR-008: Multi-market configuration (UK and Sri Lanka) on a single codebase without platform rebuilding.
+NFR-009: Database optimization and indexing for query response times ≤100ms for standard queries.
+
+──────────────────────────────────────────────────────────────────────────────
+7.3 Security Requirements
+──────────────────────────────────────────────────────────────────────────────
+
+NFR-010: All data transmission shall use TLS 1.2/1.3 encryption.
+NFR-011: All data at rest shall be encrypted using AES-256.
+NFR-012: OAuth 2.0 implemented for SSO and all third-party integrations.
+NFR-013: RBAC enforced at the API layer with role-scoped data responses.
+NFR-014: Mandatory MFA for HR Admin and System Admin roles.
+NFR-015: Rate limiting and failed login lockout (at 5 attempts) shall be implemented.
+NFR-016: Penetration testing completed and zero unresolved Critical/High findings before launch and annually thereafter.
+NFR-017: HMAC webhook validation for all third-party event callbacks.
+
+──────────────────────────────────────────────────────────────────────────────
+7.4 Usability Requirements
+──────────────────────────────────────────────────────────────────────────────
+
+NFR-018: Responsive design across desktop, tablet, and mobile browsers (WCAG 2.1 Level AA).
+NFR-019: Guided tooltips and contextual help for complex features.
+NFR-020: Error messages shall be clear, actionable, and in plain language.
+NFR-021: Chat Interface shall successfully parse and execute natural language HR commands.
+
+──────────────────────────────────────────────────────────────────────────────
+7.5 Reliability & Availability Requirements
+──────────────────────────────────────────────────────────────────────────────
+
+NFR-022: System shall maintain ≥99.5% uptime SLA.
+NFR-023: High availability architecture with automated monitoring and failover.
+NFR-024: Recovery Time Objective (RTO): <8 hours; Recovery Point Objective (RPO): <4 hours.
+NFR-025: Offline attendance sync queue operational during network outages on mobile.
+NFR-026: Full disaster recovery drill completed and verified before launch.
+
+──────────────────────────────────────────────────────────────────────────────
+7.6 Maintainability Requirements
+──────────────────────────────────────────────────────────────────────────────
+
+NFR-027: Staging environment mirrors production configuration at all times.
+NFR-028: Zero-downtime blue-green deployments for all production releases.
+NFR-029: Unit test coverage ≥80% across all backend and frontend modules.
+NFR-030: Full OpenAPI 3.0 documentation for all API endpoints.
+NFR-031: Version control (Git) with defined branching strategy.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+8. REGULATORY AND COMPLIANCE REQUIREMENTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+8.1 UK General Data Protection Regulation (UK GDPR)
+──────────────────────────────────────────────────────────────────────────────
+
+REG-001: The system shall comply with UK GDPR for all employee personal data processing.
+REG-002: Every data collection point must have a documented lawful basis.
+REG-003: Data minimization principle enforced — only data genuinely required for HR operations is collected.
+REG-004: Subject rights functional: employee access, correction, and erasure (Right to be Forgotten processed within 30 days).
+REG-005: 72-hour breach notification to the UK Information Commissioner's Office (ICO) with automated alert workflows.
+REG-006: Data stored in geo-compliant UK data centers. No UK employee data transferred outside approved regions.
+
+──────────────────────────────────────────────────────────────────────────────
+8.2 Sri Lanka Personal Data Protection Act (PDPA)
+──────────────────────────────────────────────────────────────────────────────
+
+REG-007: The system shall comply with the Personal Data Protection Act, No. 9 of 2022.
+REG-008: Purpose limitation — employee data used exclusively for HR management purposes.
+REG-009: Explicit informed consent captured and stored digitally before employee profile activation.
+REG-010: Sri Lankan employee data stored only in approved geographic regions.
+REG-011: One-click PDF generation of compliance audit reports for the Sri Lanka Data Protection Authority.
+
+──────────────────────────────────────────────────────────────────────────────
+8.3 Payment Compliance (PCI DSS)
+──────────────────────────────────────────────────────────────────────────────
+
+REG-012: All SaaS subscription payment processing complies with PCI DSS standards.
+REG-013: Card data tokenized; all transmissions via TLS-encrypted gateway APIs.
+REG-014: Integration with PCI-compliant gateways (Stripe for UK; Direct Pay Online for Sri Lanka).
+REG-015: No raw card numbers stored in the HR platform at any point.
+
+──────────────────────────────────────────────────────────────────────────────
+8.4 Information Security Standards (ISO 27001 & ISO 27701)
+──────────────────────────────────────────────────────────────────────────────
+
+REG-016: Platform aligns with ISO/IEC 27001 (Information Security Management) and ISO 27701 (Privacy Information Management).
+REG-017: Internal security audits every 6 months with documented control improvement plans.
+
+──────────────────────────────────────────────────────────────────────────────
+8.5 Employment Law Alignment
+──────────────────────────────────────────────────────────────────────────────
+
+REG-018: Leave types, overtime thresholds, and lifecycle rules configurable to support alignment with local employment legislation.
+REG-019: UK targets: Employment Rights Act 1996 and Working Time Regulations 1998.
+REG-020: Sri Lanka targets: Shop and Office Employees Act and applicable sectoral regulations.
+
+Note: Client organizations are solely responsible for ensuring their configuration reflects applicable employment law. The platform provides configuration capability; it does not provide legal advice.
+
+──────────────────────────────────────────────────────────────────────────────
+8.6 Geo-Fencing Data Privacy
+──────────────────────────────────────────────────────────────────────────────
+
+REG-021: GPS coordinates captured during geo-fencing validation are processed in real time for validation purposes only and are not stored beyond confirmation of the attendance record.
+REG-022: No employee location data retained beyond the minimum required for attendance record accuracy, in compliance with UK GDPR and Sri Lanka PDPA data minimization principles.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+9. TECHNICAL ARCHITECTURE
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+9.1 Application Architecture
+──────────────────────────────────────────────────────────────────────────────
+
+9.1.1 Employee Mobile Application:
+- Type: Native Mobile Application
+- Platforms: iOS and Android
+- Technology: React Native with TypeScript
+- Key Capabilities: Biometric auth, offline clock-in queue, Chat Interface, push notifications
+
+9.1.2 Web Application (All Roles):
+- Type: Web Application (Responsive)
+- Technology: React 18+ with TypeScript
+- UI Framework: Material-UI (MUI) or Ant Design
+- State Management: Redux Toolkit or Zustand
+
+9.1.3 Backend API:
+- Runtime: Node.js 20+ with TypeScript
+- Framework: Express.js or Fastify
+- API Style: RESTful API with OpenAPI 3.0 documentation
+- Authentication: OAuth 2.0 SSO + JWT-based API authentication
+
+──────────────────────────────────────────────────────────────────────────────
+9.2 Database Architecture
+──────────────────────────────────────────────────────────────────────────────
+
+9.2.1 Primary Database:
+- Type: PostgreSQL 15+
+- ORM: Prisma or TypeORM
+- Data Residency: UK and Sri Lanka geo-compliant regions
+- Migrations: Prisma Migrate or TypeORM migrations
+
+9.2.2 Caching Layer:
+- Type: Redis
+- Use Cases: Session management, rate limiting, real-time attendance state, notification queuing
+- Data Residency: Geo-compliant regions matching primary DB
+
+──────────────────────────────────────────────────────────────────────────────
+9.3 Third-Party Integrations
+──────────────────────────────────────────────────────────────────────────────
+
+9.3.1 Payroll Processing:
+- ADP Workforce Now — primary UK payroll integration
+- Oracle HCM — enterprise payroll integration
+- Configurable sync schedule with reconciliation validation before confirmation
+
+9.3.2 Payment Gateway (SaaS Subscriptions):
+- Stripe — UK market subscription billing (PCI DSS compliant)
+- Direct Pay Online — Sri Lanka market subscription billing
+
+9.3.3 Identity & Authentication:
+- OAuth 2.0 SSO — integration with enterprise Identity Providers
+- Biometric auth via device native secure enclave (Face ID, Touch ID, fingerprint)
+
+9.3.4 LMS Integration:
+- Training completion and certification data sync from LMS providers
+- Auto-updates employee skill and certification records on course completion
+
+9.3.5 Calendar Services:
+- Google Calendar — approved leave and certification expiry event sync
+- Microsoft Outlook / Exchange — enterprise calendar integration
+
+9.3.6 Cloud Storage:
+- AWS S3 (UK region: eu-west-2) — primary document and file storage
+- Azure Blob Storage (UK South) — alternative; geo-separated backup storage
+
+9.3.7 Email & Notification Services:
+- SendGrid or Mailgun — transactional email delivery (EU region)
+- Firebase Cloud Messaging (FCM) / Apple Push Notification Service (APNS) — mobile push
+
+──────────────────────────────────────────────────────────────────────────────
+9.4 Development Environment
+──────────────────────────────────────────────────────────────────────────────
+
+- Package Manager: npm or yarn
+- Version Control: Git (GitHub / GitLab) with defined branching strategy
+- Containerization: Docker + Docker Compose for local development
+- API Testing: Postman or Insomnia
+- Code Quality: ESLint + Prettier, TypeScript strict mode
+- Testing: Jest + React Testing Library (unit/integration); Playwright or Cypress (E2E)
+
+──────────────────────────────────────────────────────────────────────────────
+9.5 Build Outputs
+──────────────────────────────────────────────────────────────────────────────
+
+- Web Applications: Production-ready static asset bundles (JS, CSS, HTML)
+- Mobile Application: iOS .ipa / Xcode project; Android .apk / .aab / Android Studio project
+- Backend API: Compiled TypeScript Node.js application with all dependencies and environment configuration
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+10. ASSUMPTIONS AND CONSTRAINTS
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+10.1 Assumptions
+──────────────────────────────────────────────────────────────────────────────
+
+ASM-001: All employees have access to internet-connected devices (smartphone or computer) to access the platform.
+ASM-002: Employees targeted for mobile clock-in have compatible iOS or Android smartphones.
+ASM-003: Client organizations have or will establish contracts with ADP or Oracle for payroll processing.
+ASM-004: Cloud infrastructure (AWS / Azure / GCP) is available, cost-effective, and reliable for the required data residency regions.
+ASM-005: Users are reasonably familiar with mobile and web applications; minimal training required for daily functions.
+ASM-006: English is the primary language for users in both UK and Sri Lanka target markets.
+ASM-007: Email and push notifications are sufficient for MVP; SMS notifications are a future enhancement.
+ASM-008: Client organizations will configure their geo-fencing boundaries and IP ranges accurately during onboarding.
+ASM-009: Third-party integrations (ADP, Oracle, LMS, Google Calendar) expose stable, documented APIs conforming to their published specifications.
+
+──────────────────────────────────────────────────────────────────────────────
+10.2 Constraints
+──────────────────────────────────────────────────────────────────────────────
+
+CON-001: Manual HR Admin review required for certain workflows (no AI automation at MVP).
+CON-002: Email and mobile push notifications only — SMS not supported at MVP launch.
+CON-003: Native admin mobile app out of scope; admin functions web-only at launch.
+CON-004: Geo-fencing uses GPS boundaries configured at onboarding; real-time GPS tracking of employee movement is explicitly not implemented (data minimization compliance).
+CON-005: Deployment, infrastructure provisioning, and CI/CD configuration are handled separately by the DevOps team and are not in scope for development delivery.
+CON-006: Platform initially limited to UK and Sri Lanka markets — EU/global expansion is a future enhancement.
+CON-007: Document storage limited to supported file types with a maximum file size per document per compliance storage policy.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+11. RISK MANAGEMENT
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+11.1 Technical Risks
+──────────────────────────────────────────────────────────────────────────────
+
+Risk ID | Risk Description                                        | Impact | Probability | Mitigation Strategy
+--------|--------------------------------------------------------|--------|-------------|-------------------------------------------------------------------
+TR-001  | API Integration Failures (ADP, Oracle, LMS)            | High   | Medium      | Isolated integration modules with retry logic and exponential backoff. Versioned API connectors. HR Admin alerts on persistent failure.
+TR-002  | Attendance Data Integrity / Geo-Fencing Inaccuracy     | High   | Medium      | Configurable geo-fence boundaries and IP rules tested pre-deployment. HR Admin manual override with full audit trail. Configurable grace periods.
+TR-003  | Database Performance Issues at Scale                   | High   | Medium      | Database optimization, indexing, and Redis caching. Load testing at 5,000 concurrent users before launch.
+TR-004  | API Security Vulnerabilities                           | High   | Medium      | Security audits, penetration testing before launch and annually. RBAC enforced at API layer. MFA mandatory for Admin roles. Rate limiting implemented.
+TR-005  | Mobile Offline Sync Conflicts                          | Medium | Low         | Last-write-wins conflict resolution with HR Admin visibility. Timestamp-based conflict detection. Full sync audit trail.
+TR-006  | Third-Party Service Outages                            | Medium | Low         | Monitor service status pages. Implement fallback options and graceful degradation. Error handling and HR Admin alerts.
+
+──────────────────────────────────────────────────────────────────────────────
+11.2 Business Risks
+──────────────────────────────────────────────────────────────────────────────
+
+Risk ID | Risk Description                                        | Impact | Probability | Mitigation Strategy
+--------|--------------------------------------------------------|--------|-------------|-------------------------------------------------------------------
+BR-001  | Low User Adoption / Employee Distrust of Geo-Fencing   | High   | Medium      | Structured Change Management Programme. User-group-specific training. System Champion appointments. Transparent communication on data usage.
+BR-002  | Payroll Sync Discrepancies                             | High   | Medium      | Automated reconciliation check before confirming each sync. Full audit log of all payroll push events. Staging environment testing per client before go-live.
+BR-003  | Data Migration Errors from Legacy HRMS                 | High   | Medium      | Phased batch migration with Data Validation Script verifying field-level accuracy. Rollback strategy for every migration phase.
+BR-004  | Talent Data Misuse (Skill Gap Analytics)               | Medium | Medium      | RBAC restricts skill gap visibility to employee and direct manager only. Manager onboarding training on appropriate use of talent intelligence.
+BR-005  | Insufficient Client Onboarding Velocity                | High   | Medium      | Streamlined self-serve onboarding. Dedicated onboarding support team for first 40 clients. Configurable templates for rapid deployment.
+
+──────────────────────────────────────────────────────────────────────────────
+11.3 Operational Risks
+──────────────────────────────────────────────────────────────────────────────
+
+Risk ID | Risk Description                                        | Impact | Probability | Mitigation Strategy
+--------|--------------------------------------------------------|--------|-------------|-------------------------------------------------------------------
+OR-001  | Data Breaches / Security Exposure                      | High   | Low         | AES-256 encryption at rest and in transit. RBAC enforced at API layer. Penetration testing before launch and annually. Incident response plan with 72-hour ICO notification workflow.
+OR-002  | System Downtime During Payroll Periods                 | High   | Low         | High Availability architecture with automated monitoring and failover. Load testing simulating month-end payroll peaks. SLA with cloud hosting provider.
+OR-003  | Regulatory Non-Compliance (GDPR / PDPA)                | High   | Low         | Compliance built into data architecture from day one. Right-to-be-Forgotten workflows. Internal audits every 6 months.
+OR-004  | Scalability Challenges at Rapid Client Growth          | Medium | Medium      | Auto-horizontal scaling at 70% CPU. Multi-tenant SaaS architecture. Performance testing at each major client milestone.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+12. SUCCESS CRITERIA
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+12.1 Technical Delivery (Evaluated at MVP Launch)
+──────────────────────────────────────────────────────────────────────────────
+
+ID           | Criterion
+-------------|-----------------------------------------------------------------------
+SC-TECH-001  | 100% of BR-001 through BR-116 (120 BRs) implemented, tested, and accepted in UAT before go-live.
+SC-TECH-002  | All 33 in-scope features functional and available in the production environment.
+SC-TECH-003  | Page load ≤3s | API response ≤500ms (p95) | Notifications ≤5s | Payroll push ≤60s — verified at 5,000 concurrent users.
+SC-TECH-004  | ≥99.5% system uptime achieved in each of the first 3 months post-launch including all month-end payroll windows.
+SC-TECH-005  | Pre-launch penetration test shows zero unresolved Critical or High findings. MFA enforced on all Admin accounts.
+SC-TECH-006  | Full disaster recovery drill completed. RTO <8 hours and RPO <4 hours verified.
+SC-TECH-007  | ADP and Oracle payroll integrations tested end-to-end in staging. Reconciliation validation passes.
+SC-TECH-008  | Google Calendar, Microsoft Outlook, LMS, and communication platform integrations live and operational at launch.
+SC-TECH-009  | Geo-fencing and IP validation tested and confirmed accurate against configured boundaries before launch.
+
+──────────────────────────────────────────────────────────────────────────────
+12.2 Business & Product Performance
+──────────────────────────────────────────────────────────────────────────────
+
+ID          | Criterion
+------------|-----------------------------------------------------------------------
+SC-BIZ-001  | Minimum 40 paying client organizations onboarded within the first 3 months in UK and Sri Lanka.
+SC-BIZ-002  | Minimum 250 paying clients onboarded by end of Month 12.
+SC-BIZ-003  | Monthly Recurring Revenue (MRR) growth of minimum 15% month-over-month for first 6 months.
+SC-BIZ-004  | ≥60% of surveyed clients report discontinuing at least one legacy HR tool after adopting the platform (6-month survey).
+SC-BIZ-005  | Active paying clients in both UK and Sri Lanka markets by Month 12, with ≥20% across multiple industries.
+SC-BIZ-006  | ≥70% of HR Admin users report minimum 5 hours/week reduction in administrative effort attributed to platform automation.
+
+──────────────────────────────────────────────────────────────────────────────
+12.3 User Adoption & Experience
+──────────────────────────────────────────────────────────────────────────────
+
+ID           | Criterion
+-------------|-----------------------------------------------------------------------
+SC-USER-001  | ≥80% of invited employees complete first login and perform one HR action within 7 days of account creation.
+SC-USER-002  | Within 3 months: ≥90% using digital clock-in weekly | ≥75% of managers have used leave approval | ≥60% have at least one skill in profile.
+SC-USER-003  | Within 6 months: ≥70% have an active development plan | ≥50% have had a skill entry validated by their manager.
+SC-USER-004  | DAU/MAU ratio ≥40% by Month 3.
+SC-USER-005  | CSAT survey at Month 3 and Month 6: ≥4.2 out of 5.0 across Employee, Manager, and HR Admin segments.
+SC-USER-006  | Usability-related support tickets <10% of all support tickets by Month 3.
+SC-USER-007  | ≥80% of clients with ADP or Oracle payroll have integration configured and actively syncing by Month 3.
+SC-USER-008  | ≥40% of clock-in and leave request actions performed via the native iOS or Android app by Month 6.
+
+──────────────────────────────────────────────────────────────────────────────
+12.4 Compliance & Risk
+──────────────────────────────────────────────────────────────────────────────
+
+ID           | Criterion
+-------------|-----------------------------------------------------------------------
+SC-COMP-001  | UK GDPR compliance verified at launch: consent module operational, breach notification tested, subject rights functional, data residency confirmed.
+SC-COMP-002  | Sri Lanka PDPA compliance verified at launch: consent management, audit trail, and data residency confirmed compliant.
+SC-COMP-003  | PCI DSS-compliant payment gateway integrated. No raw card data stored in the HR platform.
+SC-COMP-004  | ISO 27001 internal security audit at Month 6 shows zero Critical non-conformities.
+SC-COMP-005  | Zero data breach incidents and zero regulatory fines in the first 12 months of operation.
+SC-COMP-006  | Skill Gap Analytics bias audit passed pre-launch. Human override for all automated talent assessments operational.
+SC-COMP-007  | First three live payroll sync cycles per client complete with zero reconciliation discrepancies.
+
+
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+13. APPENDICES
+━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━
+
+──────────────────────────────────────────────────────────────────────────────
+13.1 Glossary
+──────────────────────────────────────────────────────────────────────────────
+
+Term        | Definition
+------------|-----------------------------------------------------------------------
+BRD         | Business Requirements Document
+SaaS        | Software as a Service
+UK GDPR     | United Kingdom General Data Protection Regulation
+PDPA        | Personal Data Protection Act (Sri Lanka, No. 9 of 2022)
+ICO         | Information Commissioner's Office (UK data protection authority)
+PCI DSS     | Payment Card Industry Data Security Standard
+RBAC        | Role-Based Access Control
+MFA         | Multi-Factor Authentication
+SSO         | Single Sign-On
+OAuth 2.0   | Open Authorization 2.0 — industry-standard protocol for authorization
+JWT         | JSON Web Token
+OKR         | Objectives and Key Results
+KPI         | Key Performance Indicator
+ATS         | Applicant Tracking System
+LMS         | Learning Management System
+ADP         | ADP Workforce Now — payroll processing platform
+Geo-Fencing | Virtual GPS boundary; employees must be within the boundary to clock in
+Skill Gap   | Difference between an employee's current skill proficiency and their role requirements
+Escrow      | N/A for this platform (applicable to Car Bidding BRD only)
+RTO         | Recovery Time Objective — maximum acceptable downtime after an incident
+RPO         | Recovery Point Objective — maximum acceptable data loss in time after an incident
+MRR         | Monthly Recurring Revenue
+DAU/MAU     | Daily Active Users / Monthly Active Users ratio — user engagement metric
+WCAG 2.1    | Web Content Accessibility Guidelines, Level AA — accessibility standard
+AES-256     | Advanced Encryption Standard with 256-bit key — encryption standard for data at rest
+TLS 1.2/1.3 | Transport Layer Security — encryption protocol for data in transit
+HMAC        | Hash-Based Message Authentication Code — webhook security validation
+API         | Application Programming Interface
+CDN         | Content Delivery Network
+
+──────────────────────────────────────────────────────────────────────────────
+13.2 Document History
+──────────────────────────────────────────────────────────────────────────────
+
+Version | Date           | Author           | Changes
+--------|----------------|------------------|------------------------
+v1.0    | February 2026  | Development Team | Initial BRD draft
+
+──────────────────────────────────────────────────────────────────────────────
+13.3 Approval Sign-off
+──────────────────────────────────────────────────────────────────────────────
+
+Role                | Name | Signature | Date
+--------------------|------|-----------|-----
+Project Sponsor     |      |           |
+Business Analyst    |      |           |
+Technical Lead      |      |           |
+Quality Assurance   |      |           |
+
+────────────────────────────────────────────────────────────────────────────────
+HR & TALENT DEVELOPMENT PLATFORM  |  Business Requirements Document — v1.0  |  February 2026
+STATUS: Stakeholders must review and approve this document before development begins.
+END OF DOCUMENT
+────────────────────────────────────────────────────────────────────────────────

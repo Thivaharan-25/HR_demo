@@ -1,0 +1,339 @@
+==============================================================================
+  PEOPLECORE — FULL DEMO PRESENTATION GUIDE
+  Step-by-Step Walkthrough for Presenters
+==============================================================================
+
+TOTAL ESTIMATED TIME: 20-30 minutes (adjustable per audience)
+
+------------------------------------------------------------------------------
+STEP 1 — OPENING HOOK  (2 min)
+------------------------------------------------------------------------------
+
+  WHAT TO SAY:
+    "How much time does your HR team lose every week chasing attendance sheets,
+    manually running payroll, and figuring out who is actually ready for a
+    promotion? Most companies still treat HR as a back-office function.
+    PeopleCore changes that — it turns your people data into a strategic asset."
+
+  POINT OUT (on landing page):
+    -> The animated parallax hero showing real screenshots of every module
+    -> Headline: "The Intelligent People Infrastructure"
+    -> Sub-copy: biometric attendance, AI-driven talent DNA, payroll compliance
+
+  KEY MESSAGE: PeopleCore is NOT just an HRMS. It is an intelligence layer
+  for your entire workforce.
+
+------------------------------------------------------------------------------
+STEP 2 — PRICING AND VALUE PROPOSITION  (2 min)
+------------------------------------------------------------------------------
+
+  SCROLL DOWN to the Pricing section on the landing page.
+
+  WHAT TO SAY:
+    "We have three tiers. Starter at $5/user/month gives small teams
+    everything they need: attendance, leave, directory, and a self-service
+    portal. Professional at $11 unlocks the full platform — Nexis AI,
+    payroll integrations, and advanced analytics. Enterprise is custom for
+    organisations that need white-labeling, SSO, and dedicated compliance."
+
+  HIGHLIGHT:
+    -> Starter  = affordable entry, no credit card risk
+    -> Professional = the 'wow' tier — this is what you demo live
+    -> 'Most Popular' badge on Professional
+    -> $11 vs competitors: Workday $20+, BambooHR $8-$15, Rippling $10+
+
+  KEY MESSAGE: Full AI-powered HR for less than a Netflix subscription
+  per employee.
+
+------------------------------------------------------------------------------
+STEP 3 — ONBOARDING: SETUP WIZARD  (3 min)
+------------------------------------------------------------------------------
+
+  CLICK "Start Free Trial" (hero button or pricing button — both work).
+
+  WHAT TO SAY:
+    "New customers land on a guided 9-step setup wizard — zero onboarding
+    calls needed. Configure your company profile, upload your org chart,
+    set up your first department, define leave policies. All of it in one
+    sitting."
+
+  POINT OUT:
+    -> Left form: clear step-by-step inputs
+    -> Right info panel: context-sensitive tips that change per step
+    -> "How It All Connects" — visual map of all 8 modules showing they
+       are one connected platform, not nine disconnected tools
+    -> "PeopleCore at a Glance" stats: 500+ companies, 98% satisfaction
+    -> Progress bar at the top tracking completion
+
+  KEY MESSAGE: Any HR manager can be up and running in under an hour.
+  No consultants. No migration nightmare.
+
+------------------------------------------------------------------------------
+STEP 4 — ADMIN DASHBOARD OVERVIEW  (2 min)
+------------------------------------------------------------------------------
+
+  CLICK "Enter Platform" and log in as Admin.
+
+  WHAT TO SAY:
+    "This is the admin command center. At a glance: total headcount,
+    today's attendance rate, pending leave requests, and payroll status.
+    Everything an HR director needs for their morning check-in — one screen."
+
+  POINT OUT:
+    -> Top KPI cards: Headcount, Present Today, Leave Pending, Payroll Status
+    -> Sidebar navigation: 8 modules accessible instantly
+    -> Dark/light mode toggle via the avatar in the bottom-left corner
+    -> Real-time feel — everything updates live as you interact
+
+  KEY MESSAGE: The daily driver for HR. Information density without
+  information overload.
+
+------------------------------------------------------------------------------
+STEP 5 — PEOPLE AND TALENT MODULE  (3 min)
+------------------------------------------------------------------------------
+
+  NAVIGATE to People, then click on an employee profile.
+
+  WHAT TO SAY:
+    "Every employee has a Talent DNA profile. Not just a name and job title —
+    a living record of their skills, proficiency levels, certifications, and
+    career history. The system knows what they can do today and what they
+    need to reach the next level."
+
+  POINT OUT:
+    -> Skills section with proficiency badges: Beginner through Expert
+    -> Department, manager chain, team membership visible at a glance
+    -> Tenure and hire date on the profile
+
+  THEN navigate to the Skills module:
+    -> Show the Skills Requests queue: pending proficiency upgrades
+    -> Click into a request: show From Level, To Level, evidence attached,
+       and validator details
+    -> Approve a request — watch it instantly update the employee profile
+
+  KEY MESSAGE: Skills data is structured, validated, and always current.
+  No more spreadsheet inventories that are 18 months out of date.
+
+------------------------------------------------------------------------------
+STEP 6 — ATTENDANCE AND LEAVE  (2 min)
+------------------------------------------------------------------------------
+
+  NAVIGATE to Attendance, then to Leave.
+
+  WHAT TO SAY:
+    "Attendance is tracked with clock-in/clock-out — supports biometric
+    hardware via API or the employee's own device. The leave module has full
+    policy configuration: custom leave types, approval workflows, balance
+    tracking, and a calendar view of who is out when."
+
+  POINT OUT:
+    -> Attendance log: timestamps, duration, status (Present/Late/Absent)
+    -> Leave calendar: team visibility prevents scheduling conflicts
+    -> Leave balance cards per employee
+    -> Approve/Reject buttons for pending requests
+
+  KEY MESSAGE: No more emailing managers to find out who is on leave.
+  Everything is transparent and fully auditable.
+
+------------------------------------------------------------------------------
+STEP 7 — PAYROLL MODULE  (2 min)
+------------------------------------------------------------------------------
+
+  NAVIGATE to Payroll.
+
+  WHAT TO SAY:
+    "Payroll is directly connected to attendance data. Overtime is calculated
+    automatically. Deductions for unexcused absences are applied at the
+    source. One-click export to ADP, Xero, or QuickBooks. Compliance reports
+    are generated automatically — no manual cross-referencing required."
+
+  POINT OUT:
+    -> Payroll summary table: gross/net breakdown per employee
+    -> Integration badges: ADP, Xero
+    -> Run Payroll button and the full audit trail
+    -> Tax and statutory deduction columns
+
+  KEY MESSAGE: Payroll that cannot make human errors because humans are
+  not doing the calculations.
+
+------------------------------------------------------------------------------
+STEP 8 — NEXIS AI AGENT — THE INTELLIGENCE LAYER  (4 min)
+------------------------------------------------------------------------------
+
+  CLICK the Nexis AI floating button in the bottom-right corner.
+
+  WHAT TO SAY:
+    "This is Nexis — our embedded AI co-pilot for HR. Not a generic chatbot.
+    It has full read access to your org data and answers questions that would
+    take an HR analyst hours to pull together."
+
+  DEMO PROMPTS — TYPE THESE LIVE:
+
+    1. "Who is at risk of leaving?"
+       -> Attrition risk scores with reasoning: tenure, engagement signals
+
+    2. "Who is ready for promotion in the engineering team?"
+       -> Performance signals, skill levels, tenure — ranked candidates
+
+    3. "What are the top skill gaps in the product team?"
+       -> Current skills mapped against role requirements, gaps highlighted
+
+    4. "Create a development plan for Sarah Chen"
+       -> Structured 90-day growth plan built from her live profile
+
+  WHAT TO SAY AFTER:
+    "Every one of those answers used to require an HR analyst to pull data
+    from four different systems, build a spreadsheet, and present it at a
+    Monday meeting. Nexis does it in seconds — and it is always working
+    with live data."
+
+  KEY MESSAGE: Nexis turns your HR system from a record-keeper into a
+  strategic advisor.
+
+------------------------------------------------------------------------------
+STEP 9 — EMPLOYEE SELF-SERVICE  (3 min)
+------------------------------------------------------------------------------
+
+  SWITCH to the Employee App view.
+
+  WHAT TO SAY:
+    "Let us flip to the employee side. This is what your team members see —
+    the same intelligence, but scoped to their own career and work day."
+
+  POINT OUT:
+    -> My Skills section: employee sees their own full skill profile
+    -> Add Skill: type the skill name, set initial proficiency level —
+       instant, no approval needed to add a skill to your own profile
+    -> Upgrade Proficiency: click Upgrade on any skill — the modal shows
+       the full Proficiency Progression Guide: what Beginner vs Intermediate
+       vs Expert actually means, what you need to demonstrate to reach each
+       level, and downloadable resources if they are attached
+    -> Evidence upload (if required by that skill): text description + file
+    -> Validator selection: if the skill requires manager validation, the
+       employee picks from available managers. If 'direct manager' is set,
+       it auto-routes to their assigned manager.
+    -> After submitting, the request appears in the admin Skills queue.
+
+  THEN show Nexis AI in the employee view:
+    -> "What skills should I develop to get promoted?"
+    -> "How does my attendance compare to my team this month?"
+
+  KEY MESSAGE: Employees are active participants in their own development —
+  not passive subjects in an HR database.
+
+------------------------------------------------------------------------------
+STEP 10 — INTEGRATIONS  (1 min)
+------------------------------------------------------------------------------
+
+  NAVIGATE to Integrations (admin sidebar).
+
+  WHAT TO SAY:
+    "PeopleCore does not live in isolation. It plugs into tools you already
+    use — Slack for notifications, Google Workspace for SSO, ADP and Xero
+    for payroll, and more. Connected in one click. Disconnected just as
+    easily."
+
+  POINT OUT:
+    -> Connected vs not-connected cards — cleanly aligned in the grid
+    -> Status badges: Connected / Available
+    -> Configure button for active integrations
+
+  KEY MESSAGE: PeopleCore fits your existing tech stack.
+  No rip-and-replace required.
+
+------------------------------------------------------------------------------
+STEP 11 — CLOSING: THE FULL CIRCLE  (2 min)
+------------------------------------------------------------------------------
+
+  WHAT TO SAY:
+    "Let me close the loop. A new hire joins your company. They are added
+    in PeopleCore that same day. Their attendance starts tracking immediately.
+    Their leave balance is calculated from day one. Their manager sets their
+    skill baseline. Payroll includes them in the next run automatically.
+
+    As they grow, they submit skill upgrade requests with evidence. Their
+    manager validates it. Nexis AI tracks their readiness for the next level
+    and flags them to the HR director before they even start looking elsewhere.
+
+    When it is time for their annual review, everything is already documented.
+    No chasing emails. No spreadsheet gymnastics. Just data-backed decisions,
+    made fast.
+
+    That is PeopleCore. One platform. From hire to retire."
+
+  FINAL CALL TO ACTION:
+    -> "Start your free trial today — Starter at $5/user/month."
+    -> "Talk to us about Professional if you want the full AI suite."
+
+==============================================================================
+  DEMO FLOW CHEAT SHEET  (quick reference card)
+==============================================================================
+
+   Step  1   Landing page: hero + value prop              2 min
+   Step  2   Pricing section: $5 / $11 / Custom           2 min
+   Step  3   Start Free Trial: Setup Wizard               3 min
+   Step  4   Enter Platform: Admin Dashboard              2 min
+   Step  5   People module: profile + skills              3 min
+   Step  6   Attendance + Leave modules                   2 min
+   Step  7   Payroll module                               2 min
+   Step  8   Nexis AI — 4 live prompts                    4 min
+   Step  9   Employee App: My Skills + Nexis              3 min
+   Step 10   Integrations page                            1 min
+   Step 11   Closing monologue + CTA                      2 min
+             ----------------------------------------
+             TOTAL                                       26 min
+
+==============================================================================
+  KEY OBJECTIONS AND RESPONSES
+==============================================================================
+
+  Q: "We already use BambooHR / Workday / SAP"
+  A: PeopleCore can co-exist or replace. The AI layer alone is worth the
+     switch — no legacy HRMS has Nexis-level intelligence built in.
+
+  Q: "Is the data secure?"
+  A: Role-based access, encrypted at rest and in transit, full audit trails
+     on every sensitive action. Enterprise tier adds SSO and dedicated infra.
+
+  Q: "How long does migration take?"
+  A: The setup wizard has you live in under an hour. Employee data imports
+     via CSV — no consultant required.
+
+  Q: "Can employees see each other's salary?"
+  A: No. The employee view is scoped strictly to their own data. Only admins
+     see org-wide compensation.
+
+  Q: "$11/month seems cheap — where is the catch?"
+  A: There is no catch. Our infrastructure costs are under $0.50/user/month.
+     We pass the efficiency to you and grow through volume.
+
+==============================================================================
+  KEY TALKING POINTS BY AUDIENCE
+==============================================================================
+
+  FOR C-SUITE / INVESTORS:
+    -> $5-$11/user SaaS with 90%+ gross margins
+    -> AI layer is a genuine moat — embedded, not bolted on
+    -> TAM: 500M+ knowledge workers who need modern HR tooling
+    -> Bottoms-up growth: employees love self-service, drive adoption
+
+  FOR HR DIRECTORS:
+    -> Eliminates 60-80% of manual HR admin
+    -> Single source of truth — no more data living in 5 places
+    -> Compliance-ready: payroll audit trails, leave policy enforcement
+    -> Nexis AI as a 24/7 analytical assistant
+
+  FOR IT / TECHNICAL BUYERS:
+    -> Clean REST API: biometric hardware, HRIS, payroll all connect
+    -> Role-based access control (Admin vs Employee)
+    -> SSO-ready via Google Workspace integration
+    -> One-click integrations: zero custom dev for standard stack
+
+  FOR EMPLOYEES:
+    -> Own your career data: skills, history, progression guide
+    -> Self-service: book leave, check payslips, update profile
+    -> AI gives personalised development advice, not just the manager gut feel
+
+==============================================================================
+  PeopleCore — From Hire to Retire.
+==============================================================================
