@@ -15,17 +15,17 @@ import NexisAI from "@/components/NexisAI";
 
 /* ─── TOKENS ──────────────────────────────────────────────────── */
 const LIGHT_C = {
-    primary:        "#6366F1",
-    primaryHover:   "#4F46E5",
-    primaryLight:   "#EEF2FF",
-    primaryMid:     "#C7D2FE",
-    bg:             "#F5F7FA",
+    primary:        "#0d9488",
+    primaryHover:   "#0f766e",
+    primaryLight:   "#f0fdfa",
+    primaryMid:     "#99f6e4",
+    bg:             "#f8fafc",
     white:          "#FFFFFF",
     sidebar:        "#FFFFFF",
-    border:         "#E5E9F0",
+    border:         "#e2e8f0",
     borderLight:    "#EFF2F8",
-    text:           "#0F172A",
-    textMid:        "#475569",
+    text:           "#0f172a",
+    textMid:        "#64748b",
     textMuted:      "#94A3B8",
     success:        "#10B981",
     successBg:      "#ECFDF5",
@@ -39,8 +39,8 @@ const LIGHT_C = {
     info:           "#3B82F6",
     infoBg:         "#EFF6FF",
     infoBorder:     "#BFDBFE",
-    navActive:      "#EEEFFE",
-    navHover:       "#F5F7FA",
+    navActive:      "#f0fdfa",
+    navHover:       "#f8fffe",
     tableHead:      "#F5F7FA",
     tableRow:       "#FFFFFF",
     shadow:         "0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04)",
@@ -49,10 +49,10 @@ const LIGHT_C = {
 };
 
 const DARK_C = {
-    primary:        "#818CF8",
-    primaryHover:   "#6366F1",
-    primaryLight:   "rgba(129,140,248,0.15)",
-    primaryMid:     "rgba(129,140,248,0.30)",
+    primary:        "#2dd4bf",
+    primaryHover:   "#0d9488",
+    primaryLight:   "rgba(45,212,191,0.15)",
+    primaryMid:     "rgba(45,212,191,0.30)",
     bg:             "#0C1118",
     white:          "#141C2E",
     sidebar:        "#0F1729",
@@ -73,7 +73,7 @@ const DARK_C = {
     info:           "#60A5FA",
     infoBg:         "rgba(96,165,250,0.10)",
     infoBorder:     "rgba(96,165,250,0.25)",
-    navActive:      "rgba(129,140,248,0.18)",
+    navActive:      "rgba(45,212,191,0.18)",
     navHover:       "#182035",
     tableHead:      "#141C2E",
     tableRow:       "#141C2E",
@@ -82,12 +82,34 @@ const DARK_C = {
     shadowLg:       "0 12px 40px rgba(0,0,0,0.60), 0 4px 8px rgba(0,0,0,0.40)",
 };
 
-// Global dark-mode flag — mutated during App render, read by Proxy on every access
+// Global dark-mode + theme flags — mutated during App render, read by Proxy on every access
 let _darkMode = false;
-const C = new Proxy({}, { get: (_, k) => (_darkMode ? DARK_C : LIGHT_C)[k] });
+let _themeKey  = "teal";
 
-// Theme context — carries the toggle function to any nested component that needs it
-const ThemeCtx = React.createContext({ isDark: false, toggleTheme: () => { } });
+// Per-theme primary color tokens (overlaid on top of LIGHT_C / DARK_C)
+const THEME_ACCENTS = {
+    teal:   { light: { primary: "#0d9488", primaryHover: "#0f766e", primaryLight: "#f0fdfa", primaryMid: "#99f6e4", navActive: "#f0fdfa" },
+               dark:  { primary: "#2dd4bf", primaryLight: "rgba(45,212,191,0.10)",  primaryMid: "rgba(45,212,191,0.25)",  navActive: "rgba(45,212,191,0.08)"  } },
+    indigo: { light: { primary: "#6366f1", primaryHover: "#4f46e5", primaryLight: "#eef2ff", primaryMid: "#c7d2fe", navActive: "#eef2ff" },
+               dark:  { primary: "#818cf8", primaryLight: "rgba(129,140,248,0.10)", primaryMid: "rgba(129,140,248,0.25)", navActive: "rgba(129,140,248,0.08)" } },
+    blue:   { light: { primary: "#3b82f6", primaryHover: "#2563eb", primaryLight: "#eff6ff", primaryMid: "#bfdbfe", navActive: "#eff6ff" },
+               dark:  { primary: "#60a5fa", primaryLight: "rgba(96,165,250,0.10)",  primaryMid: "rgba(96,165,250,0.25)",  navActive: "rgba(96,165,250,0.08)"  } },
+    purple: { light: { primary: "#8b5cf6", primaryHover: "#7c3aed", primaryLight: "#f5f3ff", primaryMid: "#ddd6fe", navActive: "#f5f3ff" },
+               dark:  { primary: "#a78bfa", primaryLight: "rgba(167,139,250,0.10)", primaryMid: "rgba(167,139,250,0.25)", navActive: "rgba(167,139,250,0.08)" } },
+    rose:   { light: { primary: "#f43f5e", primaryHover: "#e11d48", primaryLight: "#fff1f2", primaryMid: "#fecdd3", navActive: "#fff1f2" },
+               dark:  { primary: "#fb7185", primaryLight: "rgba(251,113,133,0.10)", primaryMid: "rgba(251,113,133,0.25)", navActive: "rgba(251,113,133,0.08)" } },
+};
+
+const C = new Proxy({}, {
+    get: (_, k) => {
+        const base   = (_darkMode ? DARK_C : LIGHT_C)[k];
+        const accent = THEME_ACCENTS[_themeKey]?.[_darkMode ? "dark" : "light"];
+        return (accent && k in accent) ? accent[k] : base;
+    }
+});
+
+// Theme context
+const ThemeCtx = React.createContext({ isDark: false, toggleTheme: () => {}, themeKey: "teal", setThemeKey: () => {} });
 
 // Basic icons mapping
 const iconMap = {
@@ -136,6 +158,10 @@ const iconMap = {
     book: "BookOpen",
     alert: "AlertTriangle",
     eyeOff: "EyeOff",
+    sparkles: "Sparkles",
+    calendarOff: "CalendarOff",
+    barChart: "BarChart2",
+    monitor: "Monitor",
 };
 
 const statusMap = {
@@ -333,35 +359,92 @@ const CardHeader = ({ title, subtitle, action }) => (
     </div>
 );
 
-const StatCard = ({ label, value, sub, variant = "default", trend, icon }) => {
-    const colMap = { success: C.success, warning: C.warning, danger: C.danger, info: C.info, primary: C.primary, default: C.textMid };
-    const bgMap  = { success: C.successBg, warning: C.warningBg, danger: C.dangerBg, info: C.infoBg, primary: C.primaryLight, default: C.tableHead };
-    const color  = colMap[variant] || colMap.default;
-    const bg     = bgMap[variant]  || bgMap.default;
-    const isUp   = typeof trend === "number" ? trend > 0 : null;
+// useCountUp hook — animates a number from 0 to target on mount
+const useCountUp = (target, duration = 800) => {
+    const [value, setValue] = React.useState(0);
+    React.useEffect(() => {
+        const num = parseFloat(String(target).replace(/[^0-9.]/g, "")) || 0;
+        if (num === 0) { setValue(0); return; }
+        const start = performance.now();
+        const raf = (ts) => {
+            const progress = Math.min((ts - start) / duration, 1);
+            const eased = 1 - Math.pow(1 - progress, 3); // easeOutCubic
+            setValue(Math.round(eased * num));
+            if (progress < 1) requestAnimationFrame(raf);
+        };
+        requestAnimationFrame(raf);
+    }, [target, duration]);
+    return value;
+};
+
+// Mini sparkline SVG (60×24, last N data points, no axes)
+const Sparkline = ({ data = [], color = "#0d9488" }) => {
+    if (!data || data.length < 2) return null;
+    const w = 60, h = 24, pad = 2;
+    const min = Math.min(...data);
+    const max = Math.max(...data);
+    const range = max - min || 1;
+    const pts = data.map((v, i) => {
+        const x = pad + (i / (data.length - 1)) * (w - pad * 2);
+        const y = h - pad - ((v - min) / range) * (h - pad * 2);
+        return `${x},${y}`;
+    });
+    return (
+        <svg width={w} height={h} viewBox={`0 0 ${w} ${h}`} style={{ display: "block" }}>
+            <polyline points={pts.join(" ")} fill="none" stroke={color} strokeWidth={1.5} strokeLinecap="round" strokeLinejoin="round" />
+        </svg>
+    );
+};
+
+const StatCard = ({ label, value, unit, sub, severity = "neutral", trend, trendValue, sparklineData, icon }) => {
+    const SEV = {
+        critical: { border: "#ef4444", numColor: "#dc2626", bgTint: "rgba(239,68,68,0.04)" },
+        warning:  { border: "#f59e0b", numColor: "#b45309", bgTint: "rgba(245,158,11,0.04)" },
+        positive: { border: "#10b981", numColor: "#059669", bgTint: "rgba(16,185,129,0.04)" },
+        neutral:  { border: "#cbd5e1", numColor: C.text,    bgTint: "transparent" },
+    };
+    const sev = SEV[severity] || SEV.neutral;
+    const numStr = String(value).replace(/[^0-9.]/g, "");
+    const numVal = parseFloat(numStr) || 0;
+    const prefix = String(value).match(/^[^0-9]*/)?.[0] || "";
+    const suffix = String(value).match(/[^0-9.]*$/)?.[0] || "";
+    const animCount = useCountUp(numVal, 800);
+    const isUp = typeof trend === "number" ? trend > 0 : null;
+
     return (
         <motion.div
-            initial={{ opacity: 0, y: 15 }}
+            initial={{ opacity: 0, y: 12 }}
             animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -4, boxShadow: C.shadowMd }}
-            style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: C.shadow, padding: "20px 22px", position: "relative", overflow: "hidden" }}
+            whileHover={{ y: -3, boxShadow: "0 4px 16px rgba(0,0,0,0.10)" }}
+            transition={{ duration: 0.2 }}
+            style={{
+                background: C.white,
+                border: `1px solid ${C.border}`,
+                borderLeft: `4px solid ${sev.border}`,
+                borderRadius: 12,
+                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
+                padding: "16px 20px",
+                position: "relative",
+                overflow: "hidden",
+            }}
         >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 14 }}>
-                {icon ? (
-                    <div style={{ width: 40, height: 40, borderRadius: 11, background: bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                        <Icon n={icon} size={19} color={color} strokeWidth={2} />
-                    </div>
-                ) : <div />}
+            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
+                <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
+                {sparklineData && <Sparkline data={sparklineData} color={sev.border} />}
+            </div>
+            <div style={{ fontSize: 40, fontWeight: 700, color: sev.numColor, letterSpacing: "-1px", lineHeight: 1, marginBottom: 6 }}>
+                {prefix}{animCount}{unit || suffix}
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                 {(trend !== undefined && trend !== null) && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 3, fontSize: 11, fontWeight: 700, padding: "3px 8px", borderRadius: 20, background: isUp === true ? C.successBg : isUp === false ? C.dangerBg : C.tableHead, color: isUp === true ? C.success : isUp === false ? C.danger : C.textMuted }}>
-                        {isUp === true ? "↑" : isUp === false ? "↓" : ""}{typeof trend === "number" ? `${Math.abs(trend)}%` : trend}
+                    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 11, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: isUp === true ? C.successBg : isUp === false ? C.dangerBg : C.tableHead, color: isUp === true ? C.success : isUp === false ? C.danger : C.textMuted }}>
+                        {isUp === true ? "↑" : isUp === false ? "↓" : ""}
+                        {typeof trend === "number" ? `${Math.abs(trend)}%` : trend}
                     </span>
                 )}
+                {trendValue && <span style={{ fontSize: 11, color: C.textMuted }}>{trendValue}</span>}
+                {sub && <span style={{ fontSize: 11, color: C.textMuted }}>{sub}</span>}
             </div>
-            <div style={{ fontSize: 30, fontWeight: 800, color: C.text, letterSpacing: "-0.6px", lineHeight: 1, marginBottom: 5 }}>{value}</div>
-            <div style={{ fontSize: 12.5, color: C.textMuted, fontWeight: 500 }}>{label}</div>
-            {sub && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 3 }}>{sub}</div>}
-            <div style={{ position: "absolute", bottom: 0, right: 0, width: 70, height: 70, background: `${color}08`, borderRadius: "70px 0 14px 0", pointerEvents: "none" }} />
         </motion.div>
     );
 };
@@ -496,54 +579,47 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 
-const TOP_NAV = [
-    { key: "dashboard", label: "Dashboard", icon: "dashboard" },
-    { key: "timesheet", label: "Timesheet", icon: "timesheet", sub: ["All Records", "Corrections", "Overtime", "Calendar", "Schedule"] },
-    { key: "leave", label: "Leave", icon: "leave", sub: ["My Requests", "All Leave Requests", "Leave Entitlements", "Leave Types", "Team Calendar"], badge: 8 },
-    { key: "people", label: "People", icon: "people", sub: ["Directory", "Onboarding", "Offboarding", "Lifecycle", "Teams", "Job Families", "Holidays"] },
-    { key: "performance", label: "Performance", icon: "trending", sub: ["Overview", "Goals & OKR", "Feedback", "Recognition", "Reviews"] },
-    { key: "skills", label: "Skills & Talent", icon: "briefcase", sub: ["Skill Library", "Learning Hub", "Skill Development", "Gap Analysis", "Dev Plans", "Talent DNA", "Succession"] },
-    { key: "payroll", label: "Payroll", icon: "invoices", sub: null, dynamicSub: true },
+// Full unified navigation — sidebar is the single navigation system
+const ALL_NAV_GROUPS = [
+    {
+        label: "CORE",
+        items: [
+            { key: "dashboard",   label: "Dashboard",      icon: "LayoutDashboard", sub: null },
+            { key: "timesheet",   label: "Timesheet",      icon: "Clock",           sub: ["All Records", "Corrections", "Overtime", "Calendar", "Schedule"] },
+            { key: "leave",       label: "Leave",          icon: "CalendarOff",     sub: ["My Requests", "All Leave Requests", "Leave Entitlements", "Leave Types", "Team Calendar"], badge: 8 },
+        ],
+    },
+    {
+        label: "PEOPLE & PERFORMANCE",
+        items: [
+            { key: "people",      label: "People",         icon: "Users",           sub: ["Directory", "Onboarding", "Offboarding", "Lifecycle", "Teams", "Job Families", "Holidays"] },
+            { key: "performance", label: "Performance",    icon: "TrendingUp",      sub: ["Overview", "Goals & OKR", "Feedback", "Recognition", "Reviews"] },
+            { key: "skills",      label: "Skills & Talent",icon: "Sparkles",        sub: ["Skill Library", "Learning Hub", "Skill Development", "Gap Analysis", "Dev Plans", "Talent DNA", "Succession"] },
+        ],
+    },
+    {
+        label: "FINANCE",
+        items: [
+            { key: "payroll",     label: "Payroll",        icon: "DollarSign",      sub: null, dynamicSub: true },
+        ],
+    },
 ];
 
-const SIDE_NAV = [
-    { key: "org", label: "Org Structure", icon: "org" },
-    { key: "allowance", label: "Allowance Setup", icon: "heart" },
-    { key: "permissions", label: "Permissions", icon: "shield" },
-    { key: "integrations", label: "Integrations", icon: "link" },
-    { key: "documents", label: "Documents", icon: "sign" },
-    { key: "reports", label: "Reports", icon: "trending" },
-    { key: "devices", label: "Devices", icon: "database" },
-    { key: "config", label: "Configurations", icon: "config" },
-    { key: "settings", label: "Settings", icon: "settings" },
+const ADMIN_NAV_ITEMS = [
+    { key: "org",          label: "Org Structure",icon: "GitBranch",   sub: null },
+    { key: "allowance",    label: "Allowances",   icon: "Heart",       sub: null },
+    { key: "permissions",  label: "Permissions",  icon: "ShieldCheck", sub: null },
+    { key: "integrations", label: "Integrations", icon: "Link",        sub: null },
+    { key: "documents",    label: "Documents",    icon: "FileText",    sub: null },
+    { key: "reports",      label: "Reports",      icon: "BarChart2",   sub: null },
+    { key: "devices",      label: "Devices",      icon: "Monitor",     sub: null },
+    { key: "settings",     label: "Settings",     icon: "Settings",    sub: ["General", "Configurations"] },
 ];
 
-const SIDE_NAV_GROUPS = [
-    {
-        label: "Organisation",
-        items: [
-            { key: "org",          label: "Org Structure",  icon: "org"      },
-            { key: "allowance",    label: "Allowances",     icon: "heart"    },
-        ],
-    },
-    {
-        label: "Access & Data",
-        items: [
-            { key: "permissions",  label: "Permissions",    icon: "shield"   },
-            { key: "integrations", label: "Integrations",   icon: "link"     },
-            { key: "documents",    label: "Documents",      icon: "sign"     },
-            { key: "reports",      label: "Reports",        icon: "trending" },
-        ],
-    },
-    {
-        label: "System",
-        items: [
-            { key: "devices",      label: "Devices",        icon: "database" },
-            { key: "config",       label: "Configurations", icon: "config"   },
-            { key: "settings",     label: "Settings",       icon: "settings" },
-        ],
-    },
-];
+// Keep for any code that still references TOP_NAV (payroll sub-nav etc.)
+const TOP_NAV = ALL_NAV_GROUPS.flatMap(g => g.items);
+// Keep SIDE_NAV_GROUPS alias for legacy references in other components
+const SIDE_NAV_GROUPS = ALL_NAV_GROUPS;
 
 /* Employee-only nav — limited to what employees can see */
 const EMP_NAV = [
@@ -796,272 +872,430 @@ const nextEmpId = (employees) => {
 
 
 /* ─── TOPBAR ──────────────────────────────────────────────────── */
-const Topbar = ({ active, onNav, onLogout, payrollSubNav = [], searchPages = {} }) => {
-    const [hoveredKey, setHoveredKey] = useState(null);
-    const timerRef = React.useRef(null);
-    const { isDark, toggleTheme } = React.useContext(ThemeCtx);
+
+// Breadcrumb resolver — maps active page key → { parent, label }
+const getBreadcrumb = (active) => {
+    for (const group of ALL_NAV_GROUPS) {
+        for (const item of group.items) {
+            if (active === item.key) return { parent: null, label: item.label };
+            const subs = item.sub || [];
+            const hit = subs.find(s => active === `${item.key}_${s.replace(/ /g, "_")}`);
+            if (hit) return { parent: item.label, label: hit };
+        }
+    }
+    for (const item of ADMIN_NAV_ITEMS) {
+        if (active === item.key) return { parent: "Admin", label: item.label, parentKey: ADMIN_NAV_ITEMS[0].key };
+        const subs = item.sub || [];
+        const hit = subs.find(s => active === `${item.key}_${s.replace(/ /g, "_")}`);
+        if (hit) return { parent: item.label, label: hit, parentKey: item.key };
+    }
+    return { parent: null, label: "Dashboard" };
+};
+
+const RECENT_SEARCHES = [
+    { label: "Leave Requests", key: "leave_All_Leave_Requests", icon: "CalendarOff" },
+    { label: "People Directory", key: "people_Directory",        icon: "Users"      },
+    { label: "Skill Gap Analysis", key: "skills_Gap_Analysis",  icon: "Sparkles"   },
+];
+
+const THEME_SWATCHES = [
+    { key: "teal",   label: "Teal",   color: "#0d9488" },
+    { key: "indigo", label: "Indigo", color: "#6366f1" },
+    { key: "blue",   label: "Blue",   color: "#3b82f6" },
+    { key: "purple", label: "Purple", color: "#8b5cf6" },
+    { key: "rose",   label: "Rose",   color: "#f43f5e" },
+];
+
+const TopActions = ({ onNav, onLogout }) => {
+    const { isDark, toggleTheme, themeKey, setThemeKey } = React.useContext(ThemeCtx);
     const currentUser = React.useContext(UserCtx);
-    const { employees, notifications, setNotifications } = React.useContext(DataCtx);
-    const [clockedIn, setClockedIn] = useState(false);
-    const [clockInTime, setClockInTime] = useState(null);
-    const [notiOpen, setNotiOpen] = useState(false);
-    const notiRef = React.useRef(null);
-    const [searchOpen, setSearchOpen] = useState(false);
-    const [searchQuery, setSearchQuery] = useState("");
-    const [searchIdx, setSearchIdx] = useState(0);
-    const searchRef = React.useRef(null);
+    const { notifications, setNotifications } = React.useContext(DataCtx);
 
-    // Cmd+K / Ctrl+K to toggle search
+    // Notification panel
+    const [notiOpen, setNotiOpen]   = useState(false);
+    const notiRef                   = React.useRef(null);
+
+    // Bell hover
+    const [bellHover, setBellHover] = useState(false);
+
+    // Avatar dropdown
+    const [avatarOpen, setAvatarOpen] = useState(false);
+    const avatarRef                   = React.useRef(null);
+
+    // Clock In
+    const [clockedIn, setClockedIn]       = useState(false);
+    const [clockStart, setClockStart]     = useState(null);
+    const [elapsed, setElapsed]           = useState("");
+    const [dotVisible, setDotVisible]     = useState(true);
+
+    // Elapsed timer
     React.useEffect(() => {
-        const handler = (e) => { if ((e.metaKey || e.ctrlKey) && e.key === "k") { e.preventDefault(); setSearchOpen(o => !o); setSearchQuery(""); setSearchIdx(0); } if (e.key === "Escape") setSearchOpen(false); };
-        window.addEventListener("keydown", handler);
-        return () => window.removeEventListener("keydown", handler);
-    }, []);
-    React.useEffect(() => { if (searchOpen && searchRef.current) searchRef.current.focus(); }, [searchOpen]);
+        if (!clockedIn || !clockStart) return;
+        const tick = () => {
+            const ms = Date.now() - clockStart;
+            const h  = Math.floor(ms / 3600000);
+            const m  = Math.floor((ms % 3600000) / 60000);
+            setElapsed(h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`);
+        };
+        tick();
+        const id = setInterval(tick, 1000);
+        return () => clearInterval(id);
+    }, [clockedIn, clockStart]);
 
-    // Close notification panel on click outside
+    // Pulsing dot when clocked in
+    React.useEffect(() => {
+        if (!clockedIn) return;
+        const id = setInterval(() => setDotVisible(v => !v), 2000);
+        return () => clearInterval(id);
+    }, [clockedIn]);
+
+    // Close notification panel on outside click
     React.useEffect(() => {
         if (!notiOpen) return;
-        const handler = (e) => { if (notiRef.current && !notiRef.current.contains(e.target)) setNotiOpen(false); };
-        document.addEventListener("mousedown", handler);
-        return () => document.removeEventListener("mousedown", handler);
+        const h = (e) => { if (notiRef.current && !notiRef.current.contains(e.target)) setNotiOpen(false); };
+        document.addEventListener("mousedown", h);
+        return () => document.removeEventListener("mousedown", h);
     }, [notiOpen]);
 
+    // Close avatar dropdown on outside click
+    React.useEffect(() => {
+        if (!avatarOpen) return;
+        const h = (e) => { if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false); };
+        document.addEventListener("mousedown", h);
+        return () => document.removeEventListener("mousedown", h);
+    }, [avatarOpen]);
+
     const unreadCount = (notifications || []).filter(n => !n.read).length;
-    const markRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    const markRead    = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
-    // Build search items — pages + employees
-    const searchItems = React.useMemo(() => {
-        const pages = [];
-        const pageLabels = { dashboard: "Dashboard", timesheet: "Timesheet", leave: "Leave Management", people: "People Directory", performance: "Performance", skills: "Skills & Talent", payroll: "Payroll", org: "Org Structure", allowance: "Allowances", permissions: "Permissions", integrations: "Integrations", documents: "Documents", reports: "Reports", devices: "Devices", config: "Configurations", settings: "Settings" };
-        Object.keys(pageLabels).forEach(k => pages.push({ type: "page", key: k, label: pageLabels[k], icon: "dashboard" }));
-        TOP_NAV.forEach(n => (n.sub || []).forEach(s => pages.push({ type: "page", key: `${n.key}_${s.replace(/ /g, "_")}`, label: `${n.label} → ${s}`, icon: n.icon })));
-        const emps = (employees || []).map(e => ({ type: "employee", key: "people", label: e.name, sub: `${e.dept} · ${e.level}`, icon: "user" }));
-        return [...pages, ...emps];
-    }, [employees]);
-
-    const q = searchQuery.toLowerCase().trim();
-    const searchResults = q ? searchItems.filter(i => i.label.toLowerCase().includes(q) || (i.sub || "").toLowerCase().includes(q)).slice(0, 8) : searchItems.filter(i => i.type === "page").slice(0, 6);
+    const userName     = currentUser?.name || "Admin";
+    const userTitle    = currentUser?.title || "HR Administrator";
+    const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
     const handleClockToggle = () => {
-        if (!clockedIn) {
-            const now = new Date();
-            setClockInTime(now.toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
-            setClockedIn(true);
+        if (!clockedIn) { setClockedIn(true); setClockStart(Date.now()); setElapsed("0m"); }
+        else            { setClockedIn(false); setClockStart(null); setElapsed(""); }
+    };
+
+    return (
+        <div style={{ position: "fixed", top: 14, right: 24, zIndex: 50, display: "flex", alignItems: "center", gap: 12, background: "transparent" }}>
+
+            {/* Clock In pill */}
+            <motion.button
+                whileTap={{ scale: 0.97 }}
+                onClick={handleClockToggle}
+                onMouseEnter={e => { if (!clockedIn) { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.color = "#0d9488"; } }}
+                onMouseLeave={e => { if (!clockedIn) { e.currentTarget.style.borderColor = _darkMode ? C.border : "#e2e8f0"; e.currentTarget.style.color = _darkMode ? C.text : "#1e293b"; } }}
+                style={{
+                    display: "flex", alignItems: "center", gap: 6,
+                    height: 38, padding: "0 16px",
+                    borderRadius: 999,
+                    border: clockedIn ? "1.5px solid #10b981" : `1.5px solid ${_darkMode ? C.border : "#e2e8f0"}`,
+                    background: clockedIn ? (_darkMode ? "rgba(16,185,129,0.12)" : "#f0fdf4") : (_darkMode ? C.white : "#ffffff"),
+                    color: clockedIn ? "#059669" : (_darkMode ? C.text : "#1e293b"),
+                    fontSize: 13, fontWeight: 500, cursor: "pointer",
+                    fontFamily: "inherit", whiteSpace: "nowrap",
+                    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
+                    transition: "border-color 0.15s, color 0.15s",
+                }}
+            >
+                {clockedIn ? (
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", flexShrink: 0, opacity: dotVisible ? 1 : 0.4, transition: "opacity 0.4s ease" }} />
+                ) : (
+                    <Lucide.Timer size={16} strokeWidth={1.75} style={{ flexShrink: 0 }} />
+                )}
+                <span>{clockedIn ? (elapsed || "0m") : "Clock In"}</span>
+            </motion.button>
+
+            {/* Bell (bare icon) */}
+            <div ref={notiRef} style={{ position: "relative" }}>
+                <div
+                    role="button"
+                    aria-label="Notifications"
+                    onClick={() => setNotiOpen(o => !o)}
+                    onMouseEnter={() => setBellHover(true)}
+                    onMouseLeave={() => setBellHover(false)}
+                    style={{ position: "relative", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 2 }}
+                >
+                    <Lucide.Bell size={22} color={bellHover || notiOpen ? "#111827" : "#374151"} strokeWidth={1.75} style={{ transition: "color 0.15s", display: "block" }} />
+                    {unreadCount > 0 && (
+                        unreadCount > 9 ? (
+                            <div style={{ position: "absolute", top: -5, right: -7, minWidth: 16, height: 16, borderRadius: 999, background: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", padding: "0 3px", lineHeight: 1 }}>9+</div>
+                        ) : (
+                            <div style={{ position: "absolute", top: -1, right: -1, width: 8, height: 8, borderRadius: "50%", background: "#ef4444", border: `1.5px solid ${_darkMode ? "#0F1729" : "#f8fafc"}` }} />
+                        )
+                    )}
+                </div>
+                <AnimatePresence>
+                    {notiOpen && (
+                        <motion.div initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }} transition={{ duration: 0.15, ease: "easeOut" }}
+                            style={{ position: "absolute", top: 38, right: 0, width: 360, background: C.white, borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.14)", border: `1px solid ${C.border}`, overflow: "hidden", zIndex: 500 }}>
+                            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Notifications</div>
+                                {unreadCount > 0 && (
+                                    <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>Mark all read</button>
+                                )}
+                            </div>
+                            <div style={{ maxHeight: 340, overflowY: "auto" }}>
+                                {(!notifications || notifications.length === 0) ? (
+                                    <div style={{ padding: "32px 16px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No notifications</div>
+                                ) : notifications.map(n => {
+                                    const typeIcon  = { leave: "CalendarDays", attendance: "Clock", payroll: "DollarSign", training: "BookOpen", performance: "TrendingUp", skill: "Sparkles" };
+                                    const typeColor = { leave: C.info, attendance: C.warning, payroll: C.success, training: C.primary, performance: "#8B5CF6", skill: "#0d9488" };
+                                    const NIcon = Lucide[typeIcon[n.type] || "Bell"] || Lucide.Bell;
+                                    return (
+                                        <div key={n.id} onClick={() => markRead(n.id)}
+                                            style={{ padding: "10px 16px", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: n.read ? "transparent" : C.primaryLight, borderBottom: `1px solid ${C.border}`, transition: "background 0.15s" }}
+                                            onMouseEnter={e => { if (n.read) e.currentTarget.style.background = C.bg; }}
+                                            onMouseLeave={e => { if (n.read) e.currentTarget.style.background = "transparent"; }}>
+                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: `${typeColor[n.type] || C.textMuted}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                                                <NIcon size={13} color={typeColor[n.type] || C.textMuted} />
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.45 }}>{n.msg}</div>
+                                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{n.time}</div>
+                                            </div>
+                                            {!n.read && <div style={{ width: 7, height: 7, borderRadius: "50%", background: C.primary, flexShrink: 0, marginTop: 5 }} />}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+
+            {/* Avatar circle */}
+            <div ref={avatarRef} style={{ position: "relative" }}>
+                <div
+                    onClick={() => setAvatarOpen(o => !o)}
+                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(13,148,136,0.12)"; }}
+                    onMouseLeave={e => { if (!avatarOpen) { e.currentTarget.style.borderColor = _darkMode ? C.border : "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; } }}
+                    style={{
+                        width: 36, height: 36, borderRadius: "50%",
+                        background: "linear-gradient(135deg, #0d9488, #6366f1)",
+                        display: "flex", alignItems: "center", justifyContent: "center",
+                        fontSize: 12, fontWeight: 600, color: "#fff", flexShrink: 0,
+                        border: avatarOpen ? "2px solid #0d9488" : `2px solid ${_darkMode ? C.border : "#e2e8f0"}`,
+                        boxShadow: avatarOpen ? "0 0 0 3px rgba(13,148,136,0.12)" : "none",
+                        cursor: "pointer", userSelect: "none",
+                        transition: "border-color 0.15s, box-shadow 0.15s",
+                    }}
+                >
+                    {userInitials}
+                </div>
+                <AnimatePresence>
+                    {avatarOpen && (
+                        <motion.div
+                            initial={{ opacity: 0, y: 8, scale: 0.96 }}
+                            animate={{ opacity: 1, y: 0, scale: 1 }}
+                            exit={{ opacity: 0, y: 6, scale: 0.96 }}
+                            transition={{ duration: 0.15, ease: "easeOut" }}
+                            style={{ position: "absolute", top: 46, right: 0, width: 220, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.14)", overflow: "hidden", zIndex: 600 }}
+                        >
+                            <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.border}` }}>
+                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{userName}</div>
+                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{userTitle}</div>
+                            </div>
+                            <div style={{ padding: "4px 0" }}>
+                                {[
+                                    { icon: "User",     label: "My Profile",  action: () => { onNav("settings"); setAvatarOpen(false); } },
+                                    { icon: "Settings", label: "Preferences", action: () => { onNav("settings"); setAvatarOpen(false); } },
+                                ].map(({ icon, label, action }) => {
+                                    const MIcon = Lucide[icon] || Lucide.Circle;
+                                    return (
+                                        <div key={label} onClick={action}
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", fontSize: 13, color: C.text, transition: "background 0.1s" }}
+                                            onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                            <MIcon size={14} color={C.textMid} />
+                                            {label}
+                                        </div>
+                                    );
+                                })}
+                                <div onClick={toggleTheme}
+                                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", fontSize: 13, color: C.text, transition: "background 0.1s" }}
+                                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                    {isDark ? <Lucide.Sun size={14} color={C.textMid} /> : <Lucide.Moon size={14} color={C.textMid} />}
+                                    <span style={{ flex: 1 }}>Dark Mode</span>
+                                    <div style={{ width: 32, height: 18, borderRadius: 999, background: isDark ? C.primary : "#cbd5e1", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
+                                        <div style={{ position: "absolute", top: 2, left: isDark ? 16 : 2, width: 14, height: 14, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+                                    </div>
+                                </div>
+                                {/* Theme color picker */}
+                                <div style={{ padding: "8px 16px 10px" }}>
+                                    <div style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Theme</div>
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                        {THEME_SWATCHES.map(t => (
+                                            <div
+                                                key={t.key}
+                                                title={t.label}
+                                                onClick={() => setThemeKey(t.key)}
+                                                style={{
+                                                    width: 22, height: 22, borderRadius: "50%",
+                                                    background: t.color,
+                                                    cursor: "pointer", flexShrink: 0,
+                                                    border: themeKey === t.key ? `2px solid ${t.color}` : "2px solid transparent",
+                                                    outline: themeKey === t.key ? `2px solid ${t.color}40` : "none",
+                                                    outlineOffset: 1,
+                                                    transition: "outline 0.15s, border 0.15s",
+                                                    boxShadow: themeKey === t.key ? `0 0 0 3px ${t.color}25` : "none",
+                                                }}
+                                            />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ height: 1, background: C.border }} />
+                            <div style={{ padding: "4px 0" }}>
+                                <div onClick={() => { onLogout?.(); setAvatarOpen(false); }}
+                                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", fontSize: 13, color: C.danger, fontWeight: 500, transition: "background 0.1s" }}
+                                    onMouseEnter={e => e.currentTarget.style.background = C.dangerBg}
+                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                    <Lucide.LogOut size={14} color={C.danger} />
+                                    Log Out
+                                </div>
+                            </div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+            </div>
+        </div>
+    );
+};
+
+
+/* ─── SIDEBAR ─────────────────────────────────────────────────── */
+const Sidebar = ({ active, onNav, onLogout, payrollSubNav = [] }) => {
+    const [collapsed, setCollapsed] = useState(false);
+    const [expandedKey, setExpandedKey] = useState(null);
+    const { isDark, toggleTheme } = React.useContext(ThemeCtx);
+    const currentUser = React.useContext(UserCtx);
+    const isAdmin = currentUser?.role === "hr_admin";
+    const userName = currentUser?.name || "Admin";
+    const userTitle = currentUser?.title || "HR Administrator";
+    const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
+    const expandedW = 240;
+    const collapsedW = 64;
+
+    // Auto-expand parent of active sub-page on mount/change
+    React.useEffect(() => {
+        const allItems = [...ALL_NAV_GROUPS.flatMap(g => g.items), ...ADMIN_NAV_ITEMS];
+        for (const item of allItems) {
+            const subs = item.dynamicSub ? payrollSubNav : (item.sub || []);
+            const childActive = subs.some(s => active === `${item.key}_${s.replace(/ /g, "_")}`);
+            if (childActive) { setExpandedKey(item.key); return; }
+        }
+    }, [active, payrollSubNav]);
+
+    const handleItemClick = (item) => {
+        const subs = item.dynamicSub ? payrollSubNav : (item.sub || []);
+        if (subs.length > 0) {
+            setExpandedKey(prev => prev === item.key ? null : item.key);
         } else {
-            setClockedIn(false);
-            setClockInTime(null);
+            onNav(item.key);
         }
     };
 
-    const handleMouseEnter = (key) => {
-        if (timerRef.current) clearTimeout(timerRef.current);
-        setHoveredKey(key);
-    };
-    const handleMouseLeave = () => {
-        timerRef.current = setTimeout(() => setHoveredKey(null), 220);
-    };
+    const renderItem = (item) => {
+        const NavIcon = Lucide[item.icon] || Lucide.Circle;
+        const subs = item.dynamicSub ? payrollSubNav : (item.sub || []);
+        const hasSubs = subs.length > 0;
+        const isParentActive = active === item.key || subs.some(s => active === `${item.key}_${s.replace(/ /g, "_")}`);
+        const isExpanded = expandedKey === item.key;
 
-    return (<>
-        <motion.div
-            initial={{ y: -20, opacity: 0 }}
-            animate={{ y: 0, opacity: 1 }}
-            style={{
-                background: _darkMode
-                    ? "linear-gradient(135deg, rgba(14,20,44,0.96) 0%, rgba(20,28,60,0.94) 100%)"
-                    : "linear-gradient(135deg, rgba(255,255,255,0.96) 0%, rgba(242,244,255,0.94) 100%)",
-                backdropFilter: "blur(24px) saturate(180%)",
-                WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                borderBottom: `1px solid ${_darkMode ? "rgba(99,102,241,0.18)" : "rgba(99,102,241,0.10)"}`,
-                flexShrink: 0,
-                zIndex: 200,
-                boxShadow: _darkMode
-                    ? "0 4px 32px rgba(0,0,0,0.40), 0 1px 0 rgba(99,102,241,0.20) inset"
-                    : "0 4px 24px rgba(99,102,241,0.10), 0 1px 0 rgba(255,255,255,0.90) inset",
-                height: 60,
-                display: "flex",
-                alignItems: "center",
-                padding: "0 20px",
-                gap: 0,
-            }}
-        >
-            {/* Logo */}
-            <div style={{ display: "flex", alignItems: "center", gap: 10, flexShrink: 0, marginRight: 24 }}>
-                <motion.div whileHover={{ rotate: 8, scale: 1.08 }} style={{ flexShrink: 0, filter: "drop-shadow(0 4px 8px rgba(13,148,136,0.35))" }}>
-                    <SelfvoraLogo size={34} />
-                </motion.div>
-                <span style={{ fontWeight: 800, fontSize: 16, letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
-                    <span style={{ color: C.text }}>Self</span><span style={{ color: "#0d9488" }}>vora</span>
-                </span>
-            </div>
-
-            {/* Nav items */}
-            <div style={{ display: "flex", alignItems: "center", height: "100%", flex: 1, gap: 2 }}>
-                {TOP_NAV.map((n) => {
-                    const effectiveSub = n.dynamicSub ? (payrollSubNav.length > 0 ? payrollSubNav : null) : n.sub;
-                    const isActive = active === n.key || (effectiveSub && active.startsWith(n.key + "_"));
-                    const isHovered = hoveredKey === n.key;
-                    return (
-                        <div
-                            key={n.key}
-                            onMouseEnter={() => handleMouseEnter(n.key)}
-                            onMouseLeave={handleMouseLeave}
-                            style={{ position: "relative", display: "flex", alignItems: "center", height: "100%" }}
-                        >
-                            <div
-                                onClick={() => { onNav(n.key); if (!n.sub) setHoveredKey(null); }}
-                                style={{
-                                    display: "flex",
-                                    alignItems: "center",
-                                    gap: 6,
-                                    padding: "6px 11px",
-                                    cursor: "pointer",
-                                    borderRadius: 8,
-                                    background: isActive ? C.primaryLight : isHovered ? C.bg : "transparent",
-                                    color: isActive ? C.primary : C.textMid,
-                                    fontWeight: isActive ? 700 : 500,
-                                    fontSize: 13,
-                                    whiteSpace: "nowrap",
-                                    userSelect: "none",
-                                    transition: "background 0.15s, color 0.15s",
-                                }}
-                            >
-                                <Icon n={n.icon} size={14} color={isActive ? C.primary : C.textMid} strokeWidth={isActive ? 2.2 : 1.75} />
-                                {n.label}
-                                {n.badge && <span style={{ fontSize: 10, fontWeight: 800, background: C.danger, color: "#fff", borderRadius: 10, padding: "1px 5px", lineHeight: 1 }}>{n.badge}</span>}
-                                {(n.sub || n.dynamicSub) && (
-                                    <motion.span animate={{ rotate: isHovered ? 180 : 0 }} transition={{ duration: 0.18 }} style={{ display: "flex" }}>
-                                        <Icon n="chevDown" size={11} color={isActive ? C.primary : C.textMuted} />
-                                    </motion.span>
-                                )}
-                            </div>
-
-                            {/* Dropdown */}
-                            {(n.sub || (n.dynamicSub && payrollSubNav.length > 0)) && (
-                                <AnimatePresence>
-                                    {isHovered && (
-                                        <motion.div
-                                            initial={{ opacity: 0, y: 8, scale: 0.97 }}
-                                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                                            exit={{ opacity: 0, y: 5, scale: 0.97 }}
-                                            transition={{ duration: 0.14, ease: "easeOut" }}
-                                            onMouseEnter={() => handleMouseEnter(n.key)}
-                                            onMouseLeave={handleMouseLeave}
-                                            style={{
-                                                position: "absolute",
-                                                top: "calc(100% + 4px)",
-                                                left: 0,
-                                                minWidth: 210,
-                                                background: C.white,
-                                                border: `1px solid ${C.border}`,
-                                                borderRadius: 14,
-                                                boxShadow: C.shadowLg,
-                                                padding: "6px",
-                                                zIndex: 300,
-                                            }}
-                                        >
-                                            <div style={{ padding: "6px 12px 8px", borderBottom: `1px solid ${C.borderLight}`, marginBottom: 3 }}>
-                                                <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.08em" }}>{n.label}</div>
-                                            </div>
-                                            {(effectiveSub || []).map((s) => {
-                                                const subKey = n.key + "_" + s.replace(/ /g, "_");
-                                                const isSubActive = active === subKey;
-                                                return (
-                                                    <div
-                                                        key={s}
-                                                        onClick={() => { onNav(subKey); setHoveredKey(null); }}
-                                                        style={{
-                                                            display: "flex",
-                                                            alignItems: "center",
-                                                            gap: 10,
-                                                            padding: "8px 12px",
-                                                            borderRadius: 9,
-                                                            cursor: "pointer",
-                                                            background: isSubActive ? C.primaryLight : "transparent",
-                                                            color: isSubActive ? C.primary : C.textMid,
-                                                            fontWeight: isSubActive ? 700 : 500,
-                                                            fontSize: 13,
-                                                            transition: "background 0.12s",
-                                                        }}
-                                                        onMouseEnter={e => { if (!isSubActive) e.currentTarget.style.background = C.bg; }}
-                                                        onMouseLeave={e => { if (!isSubActive) e.currentTarget.style.background = "transparent"; }}
-                                                    >
-                                                        <span style={{ width: 6, height: 6, borderRadius: "50%", background: isSubActive ? C.primary : C.borderLight, border: `1px solid ${isSubActive ? C.primary : C.border}`, flexShrink: 0 }} />
-                                                        {s}
-                                                    </div>
-                                                );
-                                            })}
-                                        </motion.div>
-                                    )}
-                                </AnimatePresence>
-                            )}
-                        </div>
-                    );
-                })}
-            </div>
-
-            {/* Right actions */}
-            <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0, marginLeft: 12 }}>
-                {/* Search trigger */}
-                <div onClick={() => { setSearchOpen(true); setSearchQuery(""); setSearchIdx(0); }} role="button" aria-label="Search pages and employees" style={{ display: "flex", alignItems: "center", gap: 8, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, padding: "7px 14px", width: 210, cursor: "pointer", transition: "border-color 0.2s" }} onMouseEnter={e => e.currentTarget.style.borderColor = C.primary} onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-                    <Icon n="search" size={14} color={C.textMuted} />
-                    <span style={{ fontSize: 13, color: C.textMuted, flex: 1 }}>Search…</span>
-                    <span style={{ fontSize: 11, color: C.textMuted, background: C.border, borderRadius: 4, padding: "1px 5px", fontWeight: 600, whiteSpace: "nowrap" }}>⌘K</span>
-                </div>
-                {/* Clock In / Out */}
-                <motion.button
-                    whileHover={{ scale: 1.04, boxShadow: clockedIn ? "0 6px 24px rgba(16,185,129,0.45)" : "0 6px 24px rgba(99,102,241,0.45)" }}
-                    whileTap={{ scale: 0.96 }}
-                    onClick={handleClockToggle}
-                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "7px 16px", borderRadius: 10, background: clockedIn ? "linear-gradient(135deg, #059669 0%, #10B981 100%)" : "linear-gradient(135deg, #6366F1 0%, #7C3AED 100%)", color: "#fff", border: "1px solid rgba(255,255,255,0.18)", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: clockedIn ? "0 3px 14px rgba(16,185,129,0.40), 0 1px 0 rgba(255,255,255,0.18) inset" : "0 3px 14px rgba(99,102,241,0.40), 0 1px 0 rgba(255,255,255,0.18) inset", letterSpacing: "0.1px", transition: "background 0.3s, box-shadow 0.3s" }}
+        return (
+            <div key={item.key}>
+                {/* Parent row */}
+                <div
+                    onClick={() => handleItemClick(item)}
+                    style={{
+                        display: "flex",
+                        alignItems: "center",
+                        gap: 10,
+                        padding: collapsed ? "10px 0" : "9px 12px",
+                        justifyContent: collapsed ? "center" : "flex-start",
+                        borderRadius: 8,
+                        cursor: "pointer",
+                        background: isParentActive && !hasSubs ? C.navActive : "transparent",
+                        color: isParentActive ? C.primary : C.textMid,
+                        fontWeight: isParentActive ? 600 : 500,
+                        fontSize: 13,
+                        transition: "background 0.2s, color 0.2s",
+                        position: "relative",
+                        userSelect: "none",
+                    }}
+                    onMouseEnter={e => { if (!isParentActive || hasSubs) e.currentTarget.style.background = C.navHover; }}
+                    onMouseLeave={e => { if (!isParentActive || hasSubs) e.currentTarget.style.background = isParentActive && !hasSubs ? C.navActive : "transparent"; }}
                 >
-                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: clockedIn ? "#6EE7B7" : "#A5F3FC", boxShadow: clockedIn ? "0 0 6px #6EE7B7" : "0 0 6px #A5F3FC", flexShrink: 0 }} />
-                    <Icon n="clock" size={13} color="#fff" />
-                    {clockedIn ? `Out · ${clockInTime}` : "Clock In"}
-                </motion.button>
-                {/* Bell + Notification Panel */}
-                <div ref={notiRef} style={{ position: "relative" }}>
-                    <motion.div whileHover={{ scale: 1.05 }} role="button" aria-label="Notifications" onClick={() => setNotiOpen(o => !o)}
-                        style={{ position: "relative", cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: `1px solid ${notiOpen ? C.primary : C.border}`, background: notiOpen ? C.primaryLight : C.white, flexShrink: 0, transition: "border-color 0.2s, background 0.2s" }}>
-                        <Icon n="bell" size={16} color={notiOpen ? C.primary : C.textMid} />
-                        {unreadCount > 0 && (
-                            <div style={{ position: "absolute", top: 4, right: 4, minWidth: 16, height: 16, borderRadius: 8, background: C.danger, border: `2px solid ${C.white}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff", padding: "0 3px" }}>
-                                {unreadCount}
-                            </div>
-                        )}
-                    </motion.div>
-                    <AnimatePresence>
-                        {notiOpen && (
-                            <motion.div initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }} transition={{ duration: 0.18, ease: "easeOut" }}
-                                style={{ position: "absolute", top: 44, right: 0, width: 360, background: C.white, borderRadius: 14, boxShadow: C.shadowLg, border: `1px solid ${C.border}`, overflow: "hidden", zIndex: 500 }}>
-                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Notifications</div>
-                                    {unreadCount > 0 && (
-                                        <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>
-                                            Mark all read
-                                        </button>
-                                    )}
-                                </div>
-                                <div style={{ maxHeight: 340, overflowY: "auto" }}>
-                                    {(!notifications || notifications.length === 0) ? (
-                                        <div style={{ padding: "32px 16px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No notifications</div>
-                                    ) : notifications.map(n => {
-                                        const typeIcon = { leave: "calendar", attendance: "clock", payroll: "dollar", training: "book", performance: "trending", skill: "star" };
-                                        const typeColor = { leave: C.info, attendance: C.warning, payroll: C.success, training: C.primary, performance: C.danger, skill: "#8B5CF6" };
+                    {/* Active indicator bar (only for leaf items) */}
+                    {isParentActive && !hasSubs && (
+                        <motion.div
+                            layoutId="sidebar-indicator"
+                            style={{ position: "absolute", left: 0, top: "16%", bottom: "16%", width: 3, borderRadius: 3, background: C.primary }}
+                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
+                        />
+                    )}
+                    <NavIcon size={16} color={isParentActive ? C.primary : C.textMid} strokeWidth={isParentActive ? 2.2 : 1.75} style={{ flexShrink: 0 }} />
+                    {!collapsed && (
+                        <>
+                            <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.label}</span>
+                            {item.badge && (
+                                <span style={{ fontSize: 10, fontWeight: 800, background: C.danger, color: "#fff", borderRadius: 999, padding: "1px 6px", lineHeight: 1.4 }}>{item.badge}</span>
+                            )}
+                            {hasSubs && (
+                                <motion.span animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} style={{ display: "flex", flexShrink: 0 }}>
+                                    <Lucide.ChevronDown size={12} color={C.textMuted} />
+                                </motion.span>
+                            )}
+                        </>
+                    )}
+                    {/* Collapsed badge dot */}
+                    {collapsed && item.badge && (
+                        <div style={{ position: "absolute", top: 6, right: 8, width: 8, height: 8, borderRadius: "50%", background: C.danger }} />
+                    )}
+                </div>
+
+                {/* Accordion sub-items */}
+                {!collapsed && hasSubs && (
+                    <AnimatePresence initial={false}>
+                        {isExpanded && (
+                            <motion.div
+                                key="sub"
+                                initial={{ height: 0, opacity: 0 }}
+                                animate={{ height: "auto", opacity: 1 }}
+                                exit={{ height: 0, opacity: 0 }}
+                                transition={{ duration: 0.25, ease: "easeInOut" }}
+                                style={{ overflow: "hidden" }}
+                            >
+                                <div style={{ paddingLeft: 28, paddingTop: 2, paddingBottom: 4, display: "flex", flexDirection: "column", gap: 1 }}>
+                                    {subs.map(s => {
+                                        const subKey = `${item.key}_${s.replace(/ /g, "_")}`;
+                                        const isSubActive = active === subKey;
                                         return (
-                                            <div key={n.id} onClick={() => markRead(n.id)}
-                                                style={{ padding: "12px 18px", display: "flex", gap: 12, alignItems: "flex-start", cursor: "pointer", background: n.read ? "transparent" : `${C.primaryLight}`, borderBottom: `1px solid ${C.borderLight}`, transition: "background 0.15s" }}
-                                                onMouseEnter={e => { if (n.read) e.currentTarget.style.background = C.bg; }}
-                                                onMouseLeave={e => { if (n.read) e.currentTarget.style.background = "transparent"; }}>
-                                                <div style={{ width: 32, height: 32, borderRadius: 8, background: `${typeColor[n.type] || C.textMuted}14`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                                                    <Icon n={typeIcon[n.type] || "bell"} size={15} color={typeColor[n.type] || C.textMuted} />
-                                                </div>
-                                                <div style={{ flex: 1, minWidth: 0 }}>
-                                                    <div style={{ fontSize: 13, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.45 }}>{n.msg}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 3 }}>{n.time}</div>
-                                                </div>
-                                                {!n.read && <div style={{ width: 8, height: 8, borderRadius: "50%", background: C.primary, flexShrink: 0, marginTop: 6 }} />}
+                                            <div
+                                                key={s}
+                                                onClick={() => onNav(subKey)}
+                                                style={{
+                                                    display: "flex",
+                                                    alignItems: "center",
+                                                    gap: 8,
+                                                    padding: "7px 12px",
+                                                    borderRadius: 8,
+                                                    cursor: "pointer",
+                                                    background: isSubActive ? C.navActive : "transparent",
+                                                    color: isSubActive ? C.primary : C.textMid,
+                                                    fontWeight: isSubActive ? 600 : 400,
+                                                    fontSize: 12.5,
+                                                    borderLeft: isSubActive ? `3px solid ${C.primary}` : "3px solid transparent",
+                                                    transition: "all 0.15s",
+                                                }}
+                                                onMouseEnter={e => { if (!isSubActive) e.currentTarget.style.background = C.navHover; }}
+                                                onMouseLeave={e => { if (!isSubActive) e.currentTarget.style.background = "transparent"; }}
+                                            >
+                                                {s}
                                             </div>
                                         );
                                     })}
@@ -1069,71 +1303,10 @@ const Topbar = ({ active, onNav, onLogout, payrollSubNav = [], searchPages = {} 
                             </motion.div>
                         )}
                     </AnimatePresence>
-                </div>
-                {/* Dark mode toggle */}
-                <motion.div whileHover={{ scale: 1.05 }} onClick={toggleTheme} aria-label="Toggle dark mode" role="button" style={{ cursor: "pointer", width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, flexShrink: 0 }}>
-                    {isDark ? <Lucide.Sun size={15} color={C.textMid} /> : <Lucide.Moon size={15} color={C.textMid} />}
-                </motion.div>
+                )}
             </div>
-        </motion.div>
-        {/* ── Global Search Modal ── */}
-        <AnimatePresence>
-            {searchOpen && (
-                <div style={{ position: "fixed", inset: 0, zIndex: 9998, display: "flex", alignItems: "flex-start", justifyContent: "center", paddingTop: 100 }}>
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setSearchOpen(false)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.35)", backdropFilter: "blur(4px)" }} />
-                    <motion.div initial={{ opacity: 0, y: -12, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: -12, scale: 0.97 }} transition={{ duration: 0.18, ease: "easeOut" }}
-                        style={{ position: "relative", width: "100%", maxWidth: 520, background: C.white, borderRadius: 16, boxShadow: C.shadowLg, overflow: "hidden", border: `1px solid ${C.border}` }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}` }}>
-                            <Icon n="search" size={18} color={C.textMuted} />
-                            <input ref={searchRef} value={searchQuery} onChange={e => { setSearchQuery(e.target.value); setSearchIdx(0); }}
-                                onKeyDown={e => {
-                                    if (e.key === "ArrowDown") { e.preventDefault(); setSearchIdx(i => Math.min(i + 1, searchResults.length - 1)); }
-                                    if (e.key === "ArrowUp") { e.preventDefault(); setSearchIdx(i => Math.max(i - 1, 0)); }
-                                    if (e.key === "Enter" && searchResults[searchIdx]) { onNav(searchResults[searchIdx].key); setSearchOpen(false); }
-                                }}
-                                placeholder="Search pages, employees…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 15, color: C.text, width: "100%", fontFamily: "inherit" }} />
-                            <span style={{ fontSize: 11, color: C.textMuted, background: C.bg, borderRadius: 5, padding: "2px 8px", fontWeight: 600, whiteSpace: "nowrap", border: `1px solid ${C.border}` }}>ESC</span>
-                        </div>
-                        <div style={{ maxHeight: 340, overflowY: "auto", padding: "6px" }}>
-                            {searchResults.length === 0 && <div style={{ padding: "24px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No results found</div>}
-                            {searchResults.map((item, i) => (
-                                <div key={`${item.key}-${item.label}-${i}`}
-                                    onClick={() => { onNav(item.key); setSearchOpen(false); }}
-                                    onMouseEnter={() => setSearchIdx(i)}
-                                    style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px", borderRadius: 10, cursor: "pointer", background: i === searchIdx ? C.primaryLight : "transparent", transition: "background 0.12s" }}>
-                                    <div style={{ width: 32, height: 32, borderRadius: 8, background: i === searchIdx ? `${C.primary}18` : C.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                        <Icon n={item.icon || "dashboard"} size={15} color={i === searchIdx ? C.primary : C.textMuted} />
-                                    </div>
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{item.label}</div>
-                                        {item.sub && <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1 }}>{item.sub}</div>}
-                                    </div>
-                                    <span style={{ fontSize: 10, fontWeight: 600, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px" }}>{item.type}</span>
-                                </div>
-                            ))}
-                        </div>
-                        {!q && <div style={{ padding: "8px 18px 12px", borderTop: `1px solid ${C.borderLight}`, fontSize: 11, color: C.textMuted }}>
-                            <span style={{ fontWeight: 600 }}>↑↓</span> navigate · <span style={{ fontWeight: 600 }}>↵</span> open · <span style={{ fontWeight: 600 }}>esc</span> close
-                        </div>}
-                    </motion.div>
-                </div>
-            )}
-        </AnimatePresence>
-    </>);
-};
-
-/* ─── SIDEBAR ─────────────────────────────────────────────────── */
-const Sidebar = ({ active, onNav, onLogout }) => {
-    const [collapsed, setCollapsed] = useState(false);
-    const [hoveredItem, setHoveredItem] = useState(null);
-    const [profilePopup, setProfilePopup] = useState(false);
-    const { isDark, toggleTheme } = React.useContext(ThemeCtx);
-    const currentUser = React.useContext(UserCtx);
-    const userName = currentUser?.name || "Admin";
-    const userTitle = currentUser?.title || "HR Administrator";
-    const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const expandedW = 234;
-    const collapsedW = 62;
+        );
+    };
 
     return (
         <motion.aside
@@ -1141,15 +1314,9 @@ const Sidebar = ({ active, onNav, onLogout }) => {
             animate={{ x: 0, opacity: 1, width: collapsed ? collapsedW : expandedW, minWidth: collapsed ? collapsedW : expandedW }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
             style={{
-                background: _darkMode
-                    ? "linear-gradient(180deg, rgba(14,20,44,0.97) 0%, rgba(18,26,54,0.95) 100%)"
-                    : "linear-gradient(180deg, rgba(255,255,255,0.97) 0%, rgba(238,241,255,0.94) 100%)",
-                backdropFilter: "blur(24px) saturate(180%)",
-                WebkitBackdropFilter: "blur(24px) saturate(180%)",
-                borderRight: `1px solid ${_darkMode ? "rgba(99,102,241,0.18)" : "rgba(99,102,241,0.10)"}`,
-                boxShadow: _darkMode
-                    ? "4px 0 32px rgba(0,0,0,0.40), -1px 0 0 rgba(99,102,241,0.15) inset"
-                    : "4px 0 24px rgba(99,102,241,0.08), -1px 0 0 rgba(255,255,255,0.90) inset",
+                background: _darkMode ? "#0F1729" : "#ffffff",
+                borderRight: `1px solid ${C.border}`,
+                boxShadow: "none",
                 display: "flex",
                 flexDirection: "column",
                 overflowY: "auto",
@@ -1159,164 +1326,91 @@ const Sidebar = ({ active, onNav, onLogout }) => {
                 position: "relative",
             }}
         >
-            {/* Toggle button + section label row */}
-            <div style={{ padding: collapsed ? "14px 0 8px" : "14px 14px 8px 18px", display: "flex", alignItems: "center", justifyContent: collapsed ? "center" : "space-between", transition: "padding 0.25s" }}>
-                {!collapsed && (
-                    <motion.span initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        style={{ fontSize: 10, fontWeight: 800, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.09em", whiteSpace: "nowrap" }}>
-                        Admin Panel
-                    </motion.span>
-                )}
-                <motion.div
-                    whileHover={{ scale: 1.1, background: C.primaryLight }}
-                    whileTap={{ scale: 0.95 }}
-                    onClick={() => setCollapsed(!collapsed)}
-                    style={{ width: 28, height: 28, borderRadius: 8, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", background: C.bg, border: `1px solid ${C.border}`, flexShrink: 0, transition: "background 0.15s" }}
+            {/* Logo + Collapse header */}
+            <div style={{
+                padding: collapsed ? "16px 0 14px" : "16px 16px 14px 20px",
+                display: "flex", alignItems: "center",
+                justifyContent: collapsed ? "center" : "space-between",
+                borderBottom: `1px solid ${C.border}`,
+                flexShrink: 0,
+            }}>
+                <div
+                    onClick={() => collapsed && setCollapsed(false)}
+                    style={{ display: "flex", alignItems: "center", gap: 10, cursor: collapsed ? "pointer" : "default", minWidth: 0 }}
                 >
-                    <motion.div animate={{ rotate: collapsed ? 180 : 0 }} transition={{ duration: 0.25 }}>
-                        <Icon n="panel" size={14} color={C.textMid} />
+                    <motion.div whileHover={{ rotate: 8, scale: 1.08 }} style={{ flexShrink: 0 }}>
+                        <SelfvoraLogo size={28} />
                     </motion.div>
-                </motion.div>
+                    {!collapsed && (
+                        <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
+                            <span style={{ color: C.text }}>Self</span><span style={{ color: "#0d9488" }}>vora</span>
+                        </span>
+                    )}
+                </div>
+                {!collapsed && (
+                    <motion.div
+                        whileHover={{ scale: 1.1 }}
+                        whileTap={{ scale: 0.95 }}
+                        onClick={() => setCollapsed(true)}
+                        style={{ cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 2 }}
+                    >
+                        <Lucide.PanelLeft size={18} color="#94a3b8" />
+                    </motion.div>
+                )}
             </div>
 
-            {/* Grouped nav items */}
-            <div style={{ padding: collapsed ? "0 6px" : "0 10px", display: "flex", flexDirection: "column", gap: 0, flex: 1, transition: "padding 0.25s", overflowY: "auto" }}>
-                {SIDE_NAV_GROUPS.map((group, gi) => (
-                    <div key={group.label} style={{ marginBottom: 6 }}>
-                        {/* Group label */}
+            {/* Nav items */}
+            <div style={{ padding: collapsed ? "8px 6px" : "8px 10px", display: "flex", flexDirection: "column", gap: 0, flex: 1, overflowY: "auto" }}>
+                {/* Core + People + Finance groups */}
+                {ALL_NAV_GROUPS.map((group, gi) => (
+                    <div key={group.label} style={{ marginBottom: 4 }}>
                         {!collapsed && (
-                            <div style={{ padding: "8px 10px 4px", fontSize: 9.5, fontWeight: 800, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.09em", whiteSpace: "nowrap" }}>
+                            <div style={{ padding: "8px 10px 3px", fontSize: 9.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.09em", whiteSpace: "nowrap" }}>
                                 {group.label}
                             </div>
                         )}
-                        {collapsed && gi > 0 && <div style={{ height: 1, background: C.borderLight, margin: "6px 4px" }} />}
-                        {/* Items */}
+                        {collapsed && gi > 0 && <div style={{ height: 1, background: C.border, margin: "6px 4px" }} />}
                         <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
-                            {group.items.map((n) => {
-                                const isActive = active === n.key;
-                                const isHovered = hoveredItem === n.key;
-                                return (
-                                    <div key={n.key} style={{ position: "relative" }}>
-                                        <motion.div
-                                            whileHover={{ x: collapsed ? 0 : 2 }}
-                                            onClick={() => onNav(n.key)}
-                                            onMouseEnter={(e) => {
-                                                setHoveredItem(n.key);
-                                                if (!isActive) e.currentTarget.style.background = C.navHover;
-                                            }}
-                                            onMouseLeave={(e) => {
-                                                setHoveredItem(null);
-                                                if (!isActive) e.currentTarget.style.background = "transparent";
-                                            }}
-                                            style={{
-                                                display: "flex",
-                                                alignItems: "center",
-                                                gap: 10,
-                                                padding: collapsed ? "9px 0" : "9px 12px",
-                                                justifyContent: collapsed ? "center" : "flex-start",
-                                                borderRadius: 10,
-                                                cursor: "pointer",
-                                                background: isActive ? C.navActive : "transparent",
-                                                color: isActive ? C.primary : C.textMid,
-                                                fontWeight: isActive ? 700 : 500,
-                                                fontSize: 13,
-                                                transition: "background 0.15s, color 0.15s, padding 0.25s",
-                                                position: "relative",
-                                                whiteSpace: "nowrap",
-                                                overflow: "hidden",
-                                            }}
-                                        >
-                                            {isActive && (
-                                                <motion.div
-                                                    layoutId="sidebar-indicator"
-                                                    style={{ position: "absolute", left: 0, top: "18%", bottom: "18%", width: 3, borderRadius: 3, background: C.primary }}
-                                                    transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                                                />
-                                            )}
-                                            <Icon n={n.icon} size={16} color={isActive ? C.primary : C.textMid} strokeWidth={isActive ? 2.2 : 1.75} style={{ flexShrink: 0 }} />
-                                            {!collapsed && n.label}
-                                        </motion.div>
-
-                                        {/* Tooltip when collapsed */}
-                                        <AnimatePresence>
-                                            {collapsed && isHovered && (
-                                                <motion.div
-                                                    initial={{ opacity: 0, x: -4, scale: 0.95 }}
-                                                    animate={{ opacity: 1, x: 0, scale: 1 }}
-                                                    exit={{ opacity: 0, x: -4, scale: 0.95 }}
-                                                    transition={{ duration: 0.12 }}
-                                                    style={{ position: "absolute", left: "calc(100% + 10px)", top: "50%", transform: "translateY(-50%)", background: C.text, color: "#fff", padding: "5px 10px", borderRadius: 7, fontSize: 12, fontWeight: 600, whiteSpace: "nowrap", boxShadow: C.shadowMd, zIndex: 500, pointerEvents: "none" }}
-                                                >
-                                                    {n.label}
-                                                    <div style={{ position: "absolute", left: -4, top: "50%", transform: "translateY(-50%)", width: 0, height: 0, borderTop: "5px solid transparent", borderBottom: "5px solid transparent", borderRight: `5px solid ${C.text}` }} />
-                                                </motion.div>
-                                            )}
-                                        </AnimatePresence>
-                                    </div>
-                                );
-                            })}
+                            {group.items.map(item => renderItem(item))}
                         </div>
                     </div>
                 ))}
+
+                {/* Admin section (role-gated) */}
+                {isAdmin && (
+                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
+                        {!collapsed && (
+                            <div style={{ padding: "0 10px 3px", fontSize: 9.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.09em" }}>
+                                ADMIN
+                            </div>
+                        )}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 1, marginTop: 2 }}>
+                            {ADMIN_NAV_ITEMS.map(item => renderItem(item))}
+                        </div>
+                    </div>
+                )}
             </div>
 
-            {/* Bottom profile avatar */}
-            <div style={{ padding: collapsed ? "10px 0" : "10px 14px", borderTop: `1px solid ${C.borderLight}`, display: "flex", justifyContent: collapsed ? "center" : "flex-start", position: "relative", transition: "padding 0.25s" }}
-                onMouseEnter={() => setProfilePopup(true)}
-                onMouseLeave={() => setProfilePopup(false)}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+            {/* Profile strip — display only, no popup (profile menu lives in topbar) */}
+            <div style={{ padding: collapsed ? "10px 0" : "10px 12px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: collapsed ? "center" : "flex-start" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "default" }}>
                     <div style={{ position: "relative", flexShrink: 0 }}>
-                        <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg, #6366f1, #8b5cf6)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff", boxShadow: profilePopup ? `0 0 0 3px ${C.primaryLight}` : "none", transition: "box-shadow 0.15s" }}>{userInitials}</div>
-                        <div style={{ position: "absolute", bottom: -1, right: -1, width: 9, height: 9, borderRadius: "50%", background: C.success, border: `2px solid ${C.sidebar}` }} />
+                        <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg, #0d9488, #0f766e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff" }}>
+                            {userInitials}
+                        </div>
+                        <div style={{ position: "absolute", bottom: -1, right: -1, width: 9, height: 9, borderRadius: "50%", background: C.success, border: `2px solid ${_darkMode ? "#0F1729" : "#ffffff"}` }} />
                     </div>
                     {!collapsed && (
                         <div style={{ overflow: "hidden" }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userName}</div>
-                            <div style={{ fontSize: 11, color: C.primary, fontWeight: 600, whiteSpace: "nowrap" }}>{userTitle}</div>
+                            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userName}</div>
+                            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 500, whiteSpace: "nowrap" }}>{userTitle}</div>
                         </div>
                     )}
                 </div>
-                <AnimatePresence>
-                    {profilePopup && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 6, scale: 0.96 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                            transition={{ duration: 0.14 }}
-                            style={{ position: "absolute", bottom: "calc(100% + 8px)", left: collapsed ? "calc(100% + 8px)" : 10, minWidth: 188, background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: C.shadowLg, overflow: "hidden", zIndex: 500 }}>
-                            <div style={{ padding: "12px 16px 10px", borderBottom: `1px solid ${C.borderLight}`, background: C.bg }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{userName}</div>
-                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1 }}>{userTitle}</div>
-                            </div>
-                            <div style={{ padding: "6px 6px" }}>
-                                <div onClick={() => { onNav("settings"); setProfilePopup(false); }}
-                                    style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 500 }}
-                                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                    <Icon n="user" size={14} color={C.textMid} />My Profile
-                                </div>
-                                <div onClick={toggleTheme}
-                                    style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, cursor: "pointer", color: C.text, fontSize: 13, fontWeight: 500 }}
-                                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                    {isDark ? <Lucide.Sun size={14} color={C.textMid} /> : <Lucide.Moon size={14} color={C.textMid} />}
-                                    {isDark ? "Light Mode" : "Dark Mode"}
-                                </div>
-                                <div style={{ height: 1, background: C.borderLight, margin: "4px 6px" }} />
-                                <div onClick={() => { onLogout && onLogout(); setProfilePopup(false); }}
-                                    style={{ display: "flex", alignItems: "center", gap: 9, padding: "8px 10px", borderRadius: 8, cursor: "pointer", color: C.danger, fontSize: 13, fontWeight: 600 }}
-                                    onMouseEnter={e => e.currentTarget.style.background = C.dangerBg}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                    <Lucide.LogOut size={14} color={C.danger} />Log Out
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
             </div>
 
             {/* Version */}
-            <div style={{ padding: collapsed ? "10px 6px" : "14px 18px", borderTop: `1px solid ${C.borderLight}`, textAlign: collapsed ? "center" : "left", transition: "padding 0.25s" }}>
+            <div style={{ padding: collapsed ? "8px 6px" : "8px 16px", borderTop: `1px solid ${C.border}`, textAlign: collapsed ? "center" : "left" }}>
                 {collapsed
                     ? <div style={{ fontSize: 9, color: C.textMuted, fontWeight: 600 }}>v2</div>
                     : <div style={{ fontSize: 10.5, color: C.textMuted, fontWeight: 500 }}>Selfvora v2.1 — © 2026</div>
@@ -2865,6 +2959,7 @@ const resolveCardValue = (card, employees, leaveRequests, company) => {
 const DashboardPage = () => {
     // ── CHANGE: add skillRequests + reviews; remove clockedIn (Clock In lives in Topbar only) ──
     const { employees, leaveRequests, setLeaveRequests, attendance, payroll, notifications, setNotifications, companyConfig, navigate, skillRequests, reviews, teams, goals, feedbacks, recognitions } = React.useContext(DataCtx);
+    const currentUser = React.useContext(UserCtx);
     const [alertDismissed, setAlertDismissed] = useState(false);
     const [guideDismissed, setGuideDismissed] = useState(() => {
         try { return JSON.parse(localStorage.getItem("pc_guide_dismissed") || "false"); } catch { return false; }
@@ -3108,892 +3203,301 @@ const DashboardPage = () => {
         );
     };
 
+    // ── Compute attrition risk (top flight-risk count) ───────────
+    const highRiskCount = React.useMemo(() => {
+        return employees.filter(emp => {
+            let score = 0;
+            const deptEmps = employees.filter(e => e.dept === emp.dept && e.id !== emp.id);
+            const avgSalary = deptEmps.length ? deptEmps.reduce((s, e) => s + e.salary, 0) / deptEmps.length : emp.salary;
+            const ratio = emp.salary / avgSalary;
+            if (ratio < 0.80) score += 28; else if (ratio < 0.90) score += 14;
+            if (emp.rating === 0) score += 18; else if (emp.rating < 3.5) score += 22; else if (emp.rating >= 4.5) score += 8;
+            const yrs = 2026 - parseInt((emp.startDate || "2024").split("-")[0]);
+            if (yrs < 1) score += 18; else if (yrs > 3) score += 8;
+            score += emp.name.length % 10;
+            return score >= 30;
+        }).length;
+    }, [employees]);
+
+    // ── Skill gap count ──────────────────────────────────────────
+    const skillGapCount = React.useMemo(() => {
+        return (skillRequests || []).filter(r => r.status === "pending").length;
+    }, [skillRequests]);
+
+    // ── OKR on-track pct ────────────────────────────────────────
+    const okrPct = React.useMemo(() => {
+        if (!goals || goals.length === 0) return 72;
+        const onTrack = goals.filter(g => (g.progress || 0) >= 60).length;
+        return Math.round((onTrack / goals.length) * 100);
+    }, [goals]);
+
+    // ── Clock In state for hero ──────────────────────────────────
+    const [heroClockedIn, setHeroClockedIn] = useState(false);
+    const [heroClockTime, setHeroClockTime] = useState(null);
+    const handleHeroClockToggle = () => {
+        if (!heroClockedIn) {
+            setHeroClockTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
+            setHeroClockedIn(true);
+        } else {
+            setHeroClockedIn(false);
+            setHeroClockTime(null);
+        }
+    };
+
+    // ── Greeting ─────────────────────────────────────────────────
+    const hour = new Date().getHours();
+    const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
+    const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
+    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
+    const nowDate = new Date();
+    const dateLabel = `${dayNames[nowDate.getDay()]} · ${nowDate.getDate()} ${monthNames[nowDate.getMonth()]} ${nowDate.getFullYear()}`;
+
+    // ── Action items for hero ────────────────────────────────────
+    const pendingLeaveList = leaveRequests.filter(l => l.status === "Pending");
+    const heroActions = [
+        ...(highRiskCount > 0 ? [{ type: "critical", icon: "AlertTriangle", msg: `${highRiskCount} employee${highRiskCount > 1 ? "s" : ""} flagged as high attrition risk`, cta: "Review", page: "people" }] : []),
+        ...(pendingLeaveList.length > 0 ? [{ type: "warning", icon: "Calendar", msg: `${pendingLeaveList.length} leave request${pendingLeaveList.length > 1 ? "s" : ""} pending your approval`, cta: "Approve", page: "leave_All_Leave_Requests" }] : []),
+        ...(skillGapCount > 0 ? [{ type: "info", icon: "Sparkles", msg: `${skillGapCount} skill validation${skillGapCount > 1 ? "s" : ""} waiting for review`, cta: "Review", page: "skills_Skill_Development" }] : []),
+    ].slice(0, 3);
+
     return (
         <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
 
+            {/* ── TIER 1: TODAY'S BRIEFING HERO ──────────────────────── */}
+            <motion.div
+                initial={{ opacity: 0, y: 12 }}
+                animate={{ opacity: 1, y: 0 }}
+                transition={{ duration: 0.3 }}
+                style={{
+                    background: _darkMode
+                        ? "linear-gradient(135deg, rgba(13,148,136,0.12) 0%, rgba(15,23,42,0.8) 100%)"
+                        : "linear-gradient(135deg, rgba(240,253,250,1) 0%, rgba(236,254,255,0.7) 60%, rgba(238,242,255,0.5) 100%)",
+                    border: `1px solid ${_darkMode ? "rgba(45,212,191,0.2)" : "rgba(13,148,136,0.15)"}`,
+                    borderRadius: 12,
+                    padding: "24px 28px",
+                    marginBottom: 16,
+                    position: "relative",
+                    overflow: "hidden",
+                }}
+            >
+                {/* Subtle background decoration */}
+                <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(13,148,136,0.06)", pointerEvents: "none" }} />
+                <div style={{ position: "absolute", bottom: -20, right: 80, width: 120, height: 120, borderRadius: "50%", background: "rgba(99,102,241,0.04)", pointerEvents: "none" }} />
 
-            {/* ── GETTING STARTED GUIDE ──────────────────────────────── */}
-            <AnimatePresence>
-                {companyConfig?.showGuide && !guideDismissed && (() => {
-                    const hasDepts    = (companyConfig?.departments?.length || 0) > 0;
-                    const hasEmployees = employees.length > 15; // more than seeded
-                    const hasEntities = (companyConfig?.entities?.length || 0) > 0;
-                    const hasPayroll  = false; // connect via payroll page
-                    const GUIDE_STEPS = [
-                        { key: "company",   done: !!(companyConfig?.company?.name), label: "Company created",         sub: "Your account is active",               icon: "Building2",  page: null },
-                        { key: "entities",  done: hasEntities,                      label: "Add legal entities",      sub: "Org structure → Entities tab",         icon: "Landmark",   page: "org" },
-                        { key: "depts",     done: hasDepts,                        label: "Set up departments",       sub: "Org structure → Departments",          icon: "LayoutGrid", page: "org" },
-                        { key: "employees", done: hasEmployees,                    label: "Add your first employee",  sub: "People → Add Employee",                icon: "Users",      page: "people_Onboarding" },
-                        { key: "leave",     done: false,                           label: "Configure leave policies", sub: "Leave → Leave Types",                  icon: "CalendarDays", page: "leave_Leave_Types" },
-                        { key: "payroll",   done: hasPayroll,                      label: "Connect payroll",          sub: "Payroll → Connect provider",           icon: "DollarSign", page: "payroll" },
-                    ];
-                    const done = GUIDE_STEPS.filter(s => s.done).length;
-                    const pct  = Math.round((done / GUIDE_STEPS.length) * 100);
-                    return (
-                        <motion.div key="guide" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }}
-                            style={{ marginBottom: 20, background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
-                            <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", gap: 12 }}>
-                                <div style={{ width: 34, height: 34, borderRadius: 9, background: `linear-gradient(135deg, ${C.primary}, #7C3AED)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                    <Lucide.Rocket size={16} color="#fff" strokeWidth={2} />
-                                </div>
-                                <div style={{ flex: 1, minWidth: 0 }}>
-                                    <div style={{ fontSize: 14, fontWeight: 800, color: C.text }}>Getting Started</div>
-                                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1 }}>{done} of {GUIDE_STEPS.length} complete</div>
-                                </div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                    <div style={{ width: 120, height: 5, background: C.borderLight, borderRadius: 3, overflow: "hidden" }}>
-                                        <motion.div animate={{ width: pct + "%" }} style={{ height: "100%", background: `linear-gradient(90deg, ${C.primary}, #7C3AED)`, borderRadius: 3 }} transition={{ duration: 0.6 }} />
-                                    </div>
-                                    <span style={{ fontSize: 11, fontWeight: 700, color: C.primary }}>{pct}%</span>
-                                    <button onClick={dismissGuide} title="Dismiss guide"
-                                        style={{ width: 26, height: 26, borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <Lucide.X size={12} color={C.textMuted} />
-                                    </button>
-                                </div>
-                            </div>
-                            <div style={{ padding: "12px 20px", display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 8 }}>
-                                {GUIDE_STEPS.map(gs => {
-                                    const GIcon = Lucide[gs.icon] || Lucide.Circle;
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, position: "relative" }}>
+                    {/* Left: greeting + actions */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 4 }}>
+                            {greeting}, {(currentUser?.name || "Admin").split(" ")[0]} 👋
+                        </div>
+                        <div style={{ fontSize: 13, color: C.textMid, marginBottom: heroActions.length > 0 ? 20 : 0 }}>{dateLabel}</div>
+
+                        {/* Action items */}
+                        {heroActions.length > 0 && (
+                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                {heroActions.map((action, i) => {
+                                    const AIcon = Lucide[action.icon] || Lucide.AlertTriangle;
+                                    const colors = { critical: { icon: C.danger, bg: C.dangerBg, border: C.dangerBorder }, warning: { icon: C.warning, bg: C.warningBg, border: C.warningBorder }, info: { icon: C.info, bg: C.infoBg, border: C.infoBorder } };
+                                    const col = colors[action.type] || colors.info;
                                     return (
-                                        <motion.div key={gs.key} whileHover={!gs.done && gs.page ? { y: -1 } : {}}
-                                            onClick={() => !gs.done && gs.page && navigate(gs.page)}
-                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 10, background: gs.done ? C.successBg : C.bg, border: `1px solid ${gs.done ? C.successBorder : C.border}`, cursor: !gs.done && gs.page ? "pointer" : "default", transition: "all 0.15s" }}>
-                                            <div style={{ width: 28, height: 28, borderRadius: 8, background: gs.done ? C.success : C.white, border: `1.5px solid ${gs.done ? C.success : C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                                {gs.done
-                                                    ? <Lucide.Check size={13} color="#fff" strokeWidth={2.5} />
-                                                    : <GIcon size={13} color={C.textMuted} strokeWidth={1.75} />
-                                                }
-                                            </div>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontSize: 12, fontWeight: gs.done ? 600 : 700, color: gs.done ? C.success : C.text, textDecoration: gs.done ? "line-through" : "none" }}>{gs.label}</div>
-                                                <div style={{ fontSize: 10, color: C.textMuted, marginTop: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{gs.sub}</div>
-                                            </div>
-                                            {!gs.done && gs.page && <Lucide.ChevronRight size={12} color={C.textMuted} />}
+                                        <motion.div
+                                            key={i}
+                                            initial={{ opacity: 0, x: -8 }}
+                                            animate={{ opacity: 1, x: 0 }}
+                                            transition={{ delay: 0.1 + i * 0.07 }}
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 9, background: col.bg, border: `1px solid ${col.border}` }}
+                                        >
+                                            <AIcon size={15} color={col.icon} style={{ flexShrink: 0 }} />
+                                            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: C.text }}>{action.msg}</span>
+                                            <button
+                                                onClick={() => navigate && navigate(action.page)}
+                                                style={{ fontSize: 12, fontWeight: 700, color: col.icon, background: "none", border: `1px solid ${col.border}`, borderRadius: 6, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
+                                            >
+                                                {action.cta} →
+                                            </button>
                                         </motion.div>
                                     );
                                 })}
                             </div>
-                        </motion.div>
-                    );
-                })()}
-            </AnimatePresence>
+                        )}
+                        {heroActions.length === 0 && (
+                            <div style={{ fontSize: 13, color: C.success, fontWeight: 500 }}>✓ All clear — no pending actions today</div>
+                        )}
+                    </div>
 
-            {/* ── ALERT BANNER ─────────────────────────────────────────── */}
-            <AnimatePresence>
-                {iCfg && iCfg.alertBanner && !alertDismissed && (
-                    <motion.div key="alert-banner"
-                        initial={{ height: 0, opacity: 0, y: -8 }}
-                        animate={{ height: "auto", opacity: 1, y: 0 }}
-                        exit={{ height: 0, opacity: 0, y: -8 }}
-                        transition={{ duration: 0.22, ease: "easeOut" }}
-                        style={{ overflow: "hidden", marginBottom: 16 }}>
-                        {(() => {
-                            const sev = iCfg.alertBanner.severity || "warning";
-                            const sty = SEVERITY_STYLES[sev] || SEVERITY_STYLES.warning;
-                            const AlertIcon = Lucide[iCfg.alertBanner.icon] || Lucide.AlertTriangle;
+                    {/* Right: Clock In/Out */}
+                    <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
+                        <motion.button
+                            whileHover={{ scale: 1.04, boxShadow: heroClockedIn ? "0 8px 28px rgba(16,185,129,0.40)" : "0 8px 28px rgba(13,148,136,0.45)" }}
+                            whileTap={{ scale: 0.96 }}
+                            onClick={handleHeroClockToggle}
+                            style={{
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 8,
+                                padding: "12px 22px",
+                                borderRadius: 10,
+                                background: heroClockedIn
+                                    ? "linear-gradient(135deg, #059669 0%, #10B981 100%)"
+                                    : "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
+                                color: "#fff",
+                                border: "none",
+                                fontSize: 14,
+                                fontWeight: 700,
+                                cursor: "pointer",
+                                fontFamily: "inherit",
+                                boxShadow: heroClockedIn ? "0 4px 16px rgba(16,185,129,0.35)" : "0 4px 16px rgba(13,148,136,0.35)",
+                                letterSpacing: "0.1px",
+                                transition: "background 0.3s, box-shadow 0.3s",
+                            }}
+                        >
+                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: heroClockedIn ? "#6EE7B7" : "#99F6E4", boxShadow: heroClockedIn ? "0 0 8px #6EE7B7" : "0 0 8px #99F6E4", flexShrink: 0 }} />
+                            <Lucide.Clock size={15} color="#fff" />
+                            {heroClockedIn ? `Clock Out · ${heroClockTime}` : "Clock In"}
+                        </motion.button>
+                        <div style={{ fontSize: 11, color: C.textMuted, textAlign: "right" }}>
+                            {heroClockedIn ? `Clocked in at ${heroClockTime}` : "Start your workday"}
+                        </div>
+                    </div>
+                </div>
+            </motion.div>
+
+            {/* ── TIER 2: KPI STRIP ───────────────────────────────────── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
+                <StatCard
+                    label="Attrition Risk"
+                    value={String(highRiskCount)}
+                    severity="critical"
+                    trend={-2}
+                    trendValue="vs last month"
+                    sparklineData={[2, 3, 2, 4, 3, highRiskCount + 1, highRiskCount]}
+                    sub="High risk employees"
+                />
+                <StatCard
+                    label="Skill Gaps"
+                    value={String(skillGapCount || 12)}
+                    severity="warning"
+                    trend={5}
+                    trendValue="vs last month"
+                    sparklineData={[8, 10, 9, 11, 10, 13, skillGapCount || 12]}
+                    sub="Pending validations"
+                />
+                <StatCard
+                    label="OKR On Track"
+                    value={`${okrPct}`}
+                    unit="%"
+                    severity="positive"
+                    trend={3}
+                    trendValue="vs last quarter"
+                    sparklineData={[60, 62, 65, 63, 68, 70, okrPct]}
+                    sub="Goals on track"
+                />
+                <StatCard
+                    label="Headcount"
+                    value={String(employees.length)}
+                    severity="neutral"
+                    trend={0}
+                    trendValue="no change"
+                    sparklineData={[14, 14, 15, 15, 15, 15, employees.length]}
+                    sub={`${active} active`}
+                />
+            </div>
+
+            {/* ── TIER 3: SECONDARY WIDGETS ───────────────────────────── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+                {/* Left: Attendance Today */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Today's Attendance</div>
+                        <div style={{ fontSize: 12, color: C.textMuted }}>{todayStr}</div>
+                    </div>
+                    <div style={{ padding: "16px 20px", display: "flex", gap: 12 }}>
+                        {[{ label: "Present", val: present, color: C.success, bg: C.successBg }, { label: "Late", val: late, color: C.warning, bg: C.warningBg }, { label: "Absent", val: absent, color: C.danger, bg: C.dangerBg }].map(item => (
+                            <div key={item.label} style={{ flex: 1, textAlign: "center", padding: "14px 8px", background: item.bg, borderRadius: 10 }}>
+                                <div style={{ fontSize: 28, fontWeight: 700, color: item.color }}>{item.val}</div>
+                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>{item.label}</div>
+                                <div style={{ marginTop: 8, height: 3, background: "rgba(0,0,0,0.08)", borderRadius: 2, overflow: "hidden" }}>
+                                    <div style={{ height: "100%", width: `${todayAtt.length ? (item.val / todayAtt.length * 100) : 0}%`, background: item.color, borderRadius: 2, transition: "width 0.6s ease" }} />
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+
+                {/* Right: Pending Leave Approvals */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Pending Leave Approvals</div>
+                        {pendingLeaves > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: C.warningBg, color: C.warning, borderRadius: 999, padding: "2px 8px" }}>{pendingLeaves}</span>}
+                    </div>
+                    <div style={{ maxHeight: 220, overflowY: "auto" }}>
+                        {pendingLeaveList.length === 0
+                            ? <div style={{ padding: "32px 20px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending leave requests</div>
+                            : pendingLeaveList.slice(0, 4).map(lr => <LeaveRow key={lr.id} lr={lr} compact />)
+                        }
+                    </div>
+                    {pendingLeaveList.length > 4 && (
+                        <div style={{ padding: "10px 20px", borderTop: `1px solid ${C.border}`, textAlign: "center" }}>
+                            <button onClick={() => navigate && navigate("leave_All_Leave_Requests")} style={{ fontSize: 12, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                View all {pendingLeaveList.length} requests →
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* Left bottom: Department Headcount */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}` }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Department Overview</div>
+                    </div>
+                    <div style={{ padding: "12px 20px" }}>
+                        {Object.entries(depts).sort((a, b) => b[1] - a[1]).map(([dept, count]) => {
+                            const maxCount = Math.max(...Object.values(depts));
                             return (
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "11px 16px", borderRadius: 10, background: sty.bg, border: `1px solid ${sty.border}` }}>
-                                    <AlertIcon size={16} color={sty.icon} style={{ flexShrink: 0 }} />
-                                    <span style={{ flex: 1, fontSize: 13, fontWeight: 600, color: sty.text }}>{interp(iCfg.alertBanner.message)}</span>
-                                    <button onClick={() => setAlertDismissed(true)} style={{ background: "none", border: "none", cursor: "pointer", padding: 2, display: "flex", alignItems: "center", opacity: 0.6 }}>
-                                        <Lucide.X size={14} color={sty.text} />
-                                    </button>
+                                <div key={dept} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
+                                    <div style={{ width: 96, fontSize: 12, color: C.textMid, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{dept}</div>
+                                    <div style={{ flex: 1, height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
+                                        <motion.div
+                                            initial={{ width: 0 }}
+                                            animate={{ width: `${(count / maxCount) * 100}%` }}
+                                            transition={{ duration: 0.6, ease: "easeOut" }}
+                                            style={{ height: "100%", background: C.primary, borderRadius: 3 }}
+                                        />
+                                    </div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: C.text, width: 20, textAlign: "right" }}>{count}</div>
                                 </div>
                             );
-                        })()}
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* ── KPI STAT CARDS ───────────────────────────────────────── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 16 }}>
-                {iCfg ? iCfg.kpiCards.map((card, idx) => {
-                    const val     = resolveCardValue(card, employees, leaveRequests, effectiveConfig?.company || { name: "" });
-                    const KpiIcon = Lucide[card.icon] || Lucide.Circle;
-                    return (
-                        <motion.div key={card.label}
-                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                            transition={{ delay: idx * 0.06, duration: 0.3 }}
-                            whileHover={{ y: -4, boxShadow: C.shadowMd }}
-                            title={card.tooltip}
-                            style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: C.shadow, padding: "16px 18px", position: "relative", overflow: "hidden", cursor: "default" }}>
-                            <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: card.color, borderRadius: "12px 0 0 12px" }} />
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                                <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, lineHeight: 1.3 }}>{card.label}</span>
-                                <div style={{ width: 28, height: 28, borderRadius: 8, background: `${card.color}15`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                    <KpiIcon size={14} color={card.color} />
-                                </div>
-                            </div>
-                            <div style={{ fontSize: 26, fontWeight: 800, color: C.text, letterSpacing: "-0.5px", lineHeight: 1, marginBottom: 6 }}>{val}</div>
-                            <div style={{ fontSize: 11, color: C.textMuted }}>{card.trend}</div>
-                        </motion.div>
-                    );
-                }) : (
-                    <>
-                        <StatCard label="Total Employees"    value={String(employees.length)}               variant="primary" sub={`${active} active`} />
-                        <StatCard label="Today's Attendance" value={`${present + late}/${todayAtt.length}`}  variant="success" sub={`${late} late · ${absent} absent`} />
-                        <StatCard label="Pending Leaves"     value={String(pendingLeaves)}                  variant="warning" sub={`${onLeave} currently on leave`} />
-                        <StatCard label="Payroll Pending"    value={String(pendingPayroll)}                 variant="info"    sub="March 2026" />
-                    </>
-                )}
-            </div>
-
-            {/* ── QUICK LINKS ──────────────────────────────────────────── */}
-            {iCfg && (
-                <div style={{ display: "flex", gap: 12, marginBottom: 22, flexWrap: "wrap" }}>
-                    {iCfg.quickLinks.map((link, idx) => {
-                        const QLIcon = Lucide[link.icon] || Lucide.ArrowRight;
-                        return (
-                            <motion.div key={link.page}
-                                initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.15 + idx * 0.08 }}
-                                whileHover={{ y: -3, boxShadow: C.shadowMd }} whileTap={{ scale: 0.97 }}
-                                onClick={() => navigate && navigate(link.page)}
-                                style={{ display: "flex", flexDirection: "column", gap: 6, padding: "14px 18px", borderRadius: 12, background: C.white, border: `1px solid ${C.border}`, cursor: "pointer", boxShadow: C.shadow, minWidth: 140, flex: "1 1 140px", maxWidth: 200 }}>
-                                <div style={{ width: 32, height: 32, borderRadius: 9, background: `${iCfg.accentColor}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                    <QLIcon size={16} color={iCfg.accentColor} />
-                                </div>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{link.label}</div>
-                                <div style={{ fontSize: 11, color: C.textMuted, lineHeight: 1.4 }}>{link.description}</div>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-            )}
-
-            {/* ── ZONE 4 + ZONE 5: PRIMARY CHART + SECONDARY PANEL ─────── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 20 }}>
-
-                {/* ── ZONE 4: Primary Chart (industry-aware) ── */}
-                {(() => {
-                    const chartType  = iCfg?.dashboardSections?.primaryChart || "attendance";
-                    const chartLabel = iCfg?.dashboardSections?.primaryChartLabel || "Today's Attendance";
-
-                    if (chartType === "skills") {
-                        // Technology: avg skill count per employee, grouped by dept
-                        const deptSkills = {};
-                        employees.filter(e => e.status !== "Inactive").forEach(e => {
-                            if (!deptSkills[e.dept]) deptSkills[e.dept] = { total: 0, count: 0 };
-                            deptSkills[e.dept].total += (e.skills || []).length;
-                            deptSkills[e.dept].count += 1;
-                        });
-                        const rows   = Object.entries(deptSkills).map(([dept, d]) => ({ dept, avg: d.count ? Math.round(d.total / d.count * 10) / 10 : 0 })).sort((a, b) => b.avg - a.avg);
-                        const maxAvg = Math.max(...rows.map(r => r.avg), 1);
-                        return (
-                            <Card>
-                                <CardHeader title={chartLabel} subtitle={`${rows.length} teams · avg skills per person`} />
-                                <div style={{ padding: "12px 20px" }}>
-                                    {rows.map(({ dept, avg }) => (
-                                        <div key={dept} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                                            <div style={{ width: 100, fontSize: 12, color: C.textMuted, fontWeight: 500 }}>{dept}</div>
-                                            <div style={{ flex: 1, height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                                                <div style={{ height: "100%", width: `${(avg / maxAvg) * 100}%`, background: iCfg.accentColor, borderRadius: 3 }} />
-                                            </div>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, width: 46, textAlign: "right" }}>{avg} avg</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    if (chartType === "payroll") {
-                        // Finance: sum netPay per dept
-                        const deptPay = {};
-                        payroll.forEach(p => {
-                            const emp = employees.find(e => e.id === p.empId);
-                            if (!emp) return;
-                            deptPay[emp.dept] = (deptPay[emp.dept] || 0) + (p.netPay || 0);
-                        });
-                        const rows   = Object.entries(deptPay).sort((a, b) => b[1] - a[1]);
-                        const maxPay = Math.max(...rows.map(r => r[1]), 1);
-                        const fmtK   = v => v >= 1000 ? `${Math.round(v / 1000)}K` : String(v);
-                        return (
-                            <Card>
-                                <CardHeader title={chartLabel} subtitle="Monthly net pay by department" />
-                                <div style={{ padding: "12px 20px" }}>
-                                    {rows.map(([dept, total]) => (
-                                        <div key={dept} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                                            <div style={{ width: 100, fontSize: 12, color: C.textMuted, fontWeight: 500 }}>{dept}</div>
-                                            <div style={{ flex: 1, height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                                                <div style={{ height: "100%", width: `${(total / maxPay) * 100}%`, background: iCfg.accentColor, borderRadius: 3 }} />
-                                            </div>
-                                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, width: 46, textAlign: "right" }}>{fmtK(total)}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    // "attendance" + fallback
-                    return (
-                        <Card>
-                            <CardHeader title={chartLabel} subtitle={todayStr} />
-                            <div style={{ padding: "16px 20px", display: "flex", gap: 12 }}>
-                                {[{ label: "Present", val: present, color: C.success }, { label: "Late", val: late, color: C.warning }, { label: "Absent", val: absent, color: C.danger }].map(item => (
-                                    <div key={item.label} style={{ flex: 1, textAlign: "center", padding: "14px 10px", background: C.bg, borderRadius: 10 }}>
-                                        <div style={{ fontSize: 28, fontWeight: 800, color: item.color }}>{item.val}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>{item.label}</div>
-                                        <div style={{ marginTop: 8, height: 4, background: C.borderLight, borderRadius: 2, overflow: "hidden" }}>
-                                            <div style={{ height: "100%", width: `${todayAtt.length ? (item.val / todayAtt.length * 100) : 0}%`, background: item.color, borderRadius: 2 }} />
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                    );
-                })()}
-
-                {/* ── ZONE 5: Secondary Panel (industry-aware) ── */}
-                {(() => {
-                    const panelType = iCfg?.secondaryPanel || null;
-
-                    if (panelType === "attrition") {
-                        // Technology: top 3 flight risks — deterministic score (no Math.random)
-                        const scored = employees.map(emp => {
-                            let score = 0;
-                            const deptEmps  = employees.filter(e => e.dept === emp.dept && e.id !== emp.id);
-                            const avgSalary = deptEmps.length ? deptEmps.reduce((s, e) => s + e.salary, 0) / deptEmps.length : emp.salary;
-                            const ratio     = emp.salary / avgSalary;
-                            if (ratio < 0.80) score += 28; else if (ratio < 0.90) score += 14;
-                            if (emp.rating === 0) score += 18; else if (emp.rating < 3.5) score += 22; else if (emp.rating >= 4.5) score += 8;
-                            const yrs = 2026 - parseInt((emp.startDate || "2024").split("-")[0]);
-                            if (yrs < 1) score += 18; else if (yrs > 3) score += 8;
-                            score += emp.name.length % 10;
-                            return { ...emp, riskScore: Math.min(score, 100) };
-                        }).sort((a, b) => b.riskScore - a.riskScore).slice(0, 3);
-                        return (
-                            <Card>
-                                <CardHeader title="Attrition Watchlist" subtitle="Nexis AI · top 3 flight risks" />
-                                <div style={{ padding: "4px 0" }}>
-                                    {scored.map(emp => {
-                                        const level = emp.riskScore >= 60 ? "High" : emp.riskScore >= 35 ? "Medium" : "Low";
-                                        const col   = emp.riskScore >= 60 ? C.danger : emp.riskScore >= 35 ? C.warning : C.success;
-                                        return (
-                                            <div key={emp.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                                <Avatar name={emp.name} size={32} />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp.name}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted }}>{emp.dept} · Score: {emp.riskScore}</div>
-                                                </div>
-                                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${col}1a`, color: col }}>{level}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                                <div style={{ padding: "10px 20px" }}>
-                                    <span onClick={() => navigate && navigate("nexis-ai")} style={{ fontSize: 12, color: iCfg.accentColor, fontWeight: 600, cursor: "pointer" }}>View full watchlist →</span>
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    if (panelType === "compliance") {
-                        // Healthcare: 3 employees with soonest cert expiry — seeded from name
-                        const CERTS = ["BLS Certification", "ACLS License", "CNA Registration", "Pharmacy License", "First Aid Card"];
-                        const certData = employees.slice(0, 5).map(emp => ({
-                            emp,
-                            cert: CERTS[emp.name.length % CERTS.length],
-                            days: 15 + (emp.name.charCodeAt(0) % 60),
-                        })).sort((a, b) => a.days - b.days).slice(0, 3);
-                        return (
-                            <Card>
-                                <CardHeader title="Certification Expiry" subtitle="Soonest renewals required" />
-                                <div style={{ padding: "4px 0" }}>
-                                    {certData.map(({ emp, cert, days }) => {
-                                        const col = days < 30 ? C.danger : days < 60 ? C.warning : C.success;
-                                        return (
-                                            <div key={emp.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                                <Avatar name={emp.name} size={32} />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp.name}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted }}>{cert}</div>
-                                                </div>
-                                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${col}1a`, color: col }}>{days}d left</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    if (panelType === "reviews") {
-                        // Finance: pending performance reviews from DataCtx
-                        const pendingRevs = (reviews || []).filter(r => r.status !== "Completed").slice(0, 3);
-                        return (
-                            <Card>
-                                <CardHeader title="Performance Reviews" subtitle={`${(reviews || []).filter(r => r.status !== "Completed").length} pending`} />
-                                <div style={{ padding: "4px 0" }}>
-                                    {pendingRevs.map(rev => {
-                                        const emp = employees.find(e => e.id === rev.empId);
-                                        const col = rev.status === "In Progress" ? C.info : C.warning;
-                                        return (
-                                            <div key={rev.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                                <Avatar name={emp?.name || "?"} size={32} />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp?.name || rev.empId}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted }}>{rev.cycle} · Due {rev.dueDate}</div>
-                                                </div>
-                                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${col}1a`, color: col }}>{rev.status}</span>
-                                            </div>
-                                        );
-                                    })}
-                                    {pendingRevs.length === 0 && <div style={{ padding: 20, textAlign: "center", fontSize: 13, color: C.textMuted }}>All reviews complete</div>}
-                                </div>
-                                <div style={{ padding: "10px 20px" }}>
-                                    <span onClick={() => navigate && navigate("performance_Reviews")} style={{ fontSize: 12, color: iCfg.accentColor, fontWeight: 600, cursor: "pointer" }}>Go to Reviews →</span>
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    if (panelType === "turnover") {
-                        // Retail: 3 most recent hires + deterministic exit count
-                        const recentJoins = [...employees].sort((a, b) => new Date(b.startDate) - new Date(a.startDate)).slice(0, 3);
-                        const exitCount   = Math.max(1, employees.length % 4);
-                        return (
-                            <Card>
-                                <CardHeader title="Recent Staff Changes" subtitle="New hires and exits this month" />
-                                {exitCount > 2 && (
-                                    <div style={{ margin: "4px 16px", padding: "8px 12px", borderRadius: 8, background: C.warningBg, border: `1px solid ${C.warningBorder}`, fontSize: 12, fontWeight: 600, color: C.warning }}>
-                                        ⚠ High turnover month — {exitCount} exits recorded
-                                    </div>
-                                )}
-                                <div style={{ padding: "4px 0" }}>
-                                    {recentJoins.map(emp => (
-                                        <div key={emp.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                            <Avatar name={emp.name} size={32} />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp.name}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted }}>{emp.dept} · Joined {emp.startDate}</div>
-                                            </div>
-                                            <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${C.success}1a`, color: C.success }}>New</span>
-                                        </div>
-                                    ))}
-                                </div>
-                                <div style={{ padding: "10px 20px" }}>
-                                    <span onClick={() => navigate && navigate("people_Offboarding")} style={{ fontSize: 12, color: iCfg.accentColor, fontWeight: 600, cursor: "pointer" }}>View offboarding →</span>
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    if (panelType === "overtime") {
-                        // Manufacturing: top 3 OT hours — seeded from employee ID number
-                        const empOT = employees.map(emp => {
-                            const idNum = parseInt((emp.id || "EMP000").replace(/\D/g, "")) || 1;
-                            return { ...emp, otHours: 20 + (idNum * 7) % 35 };
-                        }).sort((a, b) => b.otHours - a.otHours).slice(0, 3);
-                        return (
-                            <Card>
-                                <CardHeader title="Overtime This Month" subtitle="Top operators by hours · fatigue risk" />
-                                <div style={{ padding: "4px 0" }}>
-                                    {empOT.map(emp => {
-                                        const excess = emp.otHours > 40;
-                                        const col    = excess ? C.danger : C.warning;
-                                        return (
-                                            <div key={emp.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                                <Avatar name={emp.name} size={32} />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp.name}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted }}>{emp.dept}</div>
-                                                </div>
-                                                <div style={{ textAlign: "right" }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 700, color: col }}>{emp.otHours}h OT</div>
-                                                    {excess && <div style={{ fontSize: 10, color: col, fontWeight: 700 }}>⚠ Over limit</div>}
-                                                </div>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </Card>
-                        );
-                    }
-
-                    // fallback: department headcount bars
-                    return (
-                        <Card>
-                            <CardHeader title="Department Overview" subtitle={`${Object.keys(depts).length} departments`} />
-                            <div style={{ padding: "12px 20px" }}>
-                                {Object.entries(depts).sort((a, b) => b[1] - a[1]).map(([dept, count]) => (
-                                    <div key={dept} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                                        <div style={{ width: 100, fontSize: 12, color: C.textMuted, fontWeight: 500 }}>{dept}</div>
-                                        <div style={{ flex: 1, height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                                            <div style={{ height: "100%", width: `${(count / Math.max(...Object.values(depts))) * 100}%`, background: iCfg?.accentColor || C.primary, borderRadius: 3 }} />
-                                        </div>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text, width: 20, textAlign: "right" }}>{count}</div>
-                                    </div>
-                                ))}
-                            </div>
-                        </Card>
-                    );
-                })()}
-            </div>
-
-            {/* ── ZONE 6: PENDING ACTIONS (industry-aware order + content) ── */}
-            {(() => {
-                const panelType = iCfg?.secondaryPanel || null;
-
-                // Technology: Open Dev Requests (primary) + Leave Approvals (secondary)
-                if (panelType === "attrition") {
-                    const pendingReqs = (skillRequests || []).filter(r => r.status === "pending");
-                    return (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-                            <Card>
-                                <CardHeader title={`Open Development Requests (${pendingReqs.length})`} subtitle="Pending skill upgrade approvals" />
-                                {pendingReqs.slice(0, 5).map((req, i) => {
-                                    const emp = employees.find(e => e.id === req.empId);
-                                    return (
-                                        <div key={req.id || i} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                            <Avatar name={emp?.name || "?"} size={32} />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp?.name || req.empId}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted }}>{req.skill || "Skill upgrade"} · {req.requestedAt || "Pending review"}</div>
-                                            </div>
-                                            <Badge variant="warning">Pending</Badge>
-                                        </div>
-                                    );
-                                })}
-                                {pendingReqs.length === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending development requests</div>}
-                            </Card>
-                            <Card>
-                                <CardHeader title={`Leave Approvals (${pendingLeaves})`} subtitle="Approve or reject requests" />
-                                {leaveRequests.filter(l => l.status === "Pending").slice(0, 4).map(lr => <LeaveRow key={lr.id} lr={lr} compact />)}
-                                {pendingLeaves === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>}
-                            </Card>
-                        </div>
-                    );
-                }
-
-                // Healthcare: Shift Coverage Risk leave (elevated + impact column) + Notifications
-                if (panelType === "compliance") {
-                    return (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-                            <Card>
-                                <CardHeader title={`Shift Coverage Risk — Pending Leave (${pendingLeaves})`} subtitle="High-days leave affects shift planning" />
-                                {leaveRequests.filter(l => l.status === "Pending").slice(0, 5).map(lr => {
-                                    const emp    = employees.find(e => e.id === lr.empId);
-                                    const impact = lr.days > 3 ? "High" : "Low";
-                                    const iCol   = lr.days > 3 ? C.danger : C.success;
-                                    return (
-                                        <div key={lr.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                            <Avatar name={emp?.name || "?"} size={32} />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp?.name}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted }}>{lr.type} · {lr.days}d · {lr.from}</div>
-                                            </div>
-                                            <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4 }}>
-                                                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 10, background: `${iCol}1a`, color: iCol }}>{impact} Impact</span>
-                                                <div style={{ display: "flex", gap: 4 }}>
-                                                    <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
-                                                    <Btn variant="danger"  size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={11} /></Btn>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })}
-                                {pendingLeaves === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>}
-                            </Card>
-                            <Card>
-                                <CardHeader title={`Notifications (${unread} unread)`} />
-                                {notifications.slice(0, 5).map(n => (
-                                    <div key={n.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.borderLight}`, background: n.read ? "transparent" : C.primaryLight }}>
-                                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: n.read ? "transparent" : C.primary, flexShrink: 0 }} />
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600 }}>{n.msg}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{n.time}</div>
-                                        </div>
-                                    </div>
-                                ))}
-                            </Card>
-                        </div>
-                    );
-                }
-
-                // Finance: Compliance Action Items + Leave Approvals
-                if (panelType === "reviews") {
-                    const complianceItems = [
-                        { item: "Q2 Payroll Audit",          due: "2026-03-25", status: "Open"     },
-                        { item: "PAYE Submission Deadline",  due: "2026-03-31", status: "Due Soon" },
-                        { item: "NIC Reconciliation",        due: "2026-04-05", status: "Pending"  },
-                    ];
-                    const ciCol = s => s === "Open" ? C.danger : s === "Due Soon" ? C.warning : C.info;
-                    return (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-                            <Card>
-                                <CardHeader title="Compliance Action Items" subtitle="Regulatory tasks due this period" />
-                                <div style={{ padding: "4px 0" }}>
-                                    {complianceItems.map(ci => (
-                                        <div key={ci.item} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                            <Lucide.FileWarning size={16} color={ciCol(ci.status)} style={{ flexShrink: 0 }} />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{ci.item}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted }}>Due: {ci.due}</div>
-                                            </div>
-                                            <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${ciCol(ci.status)}1a`, color: ciCol(ci.status) }}>{ci.status}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </Card>
-                            <Card>
-                                <CardHeader title={`Leave Approvals (${pendingLeaves})`} subtitle="Approve or reject leave requests" />
-                                {leaveRequests.filter(l => l.status === "Pending").slice(0, 4).map(lr => <LeaveRow key={lr.id} lr={lr} compact />)}
-                                {pendingLeaves === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>}
-                            </Card>
-                        </div>
-                    );
-                }
-
-                // Retail: Shift Gaps + Leave Approvals
-                if (panelType === "turnover") {
-                    const shiftGaps = [
-                        { date: "Mon 16 Mar", shift: "Morning",   location: "Colombo Main", status: "Unfilled" },
-                        { date: "Tue 17 Mar", shift: "Afternoon", location: "Kandy Branch", status: "Filled"   },
-                        { date: "Wed 18 Mar", shift: "Morning",   location: "Galle Store",  status: "Unfilled" },
-                    ];
-                    return (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-                            <Card>
-                                <CardHeader title="This Week's Shift Gaps" subtitle="Coverage status across locations" />
-                                <div style={{ padding: "4px 0" }}>
-                                    {shiftGaps.map(sg => {
-                                        const col = sg.status === "Unfilled" ? C.danger : C.success;
-                                        return (
-                                            <div key={sg.date + sg.shift} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                                <Lucide.CalendarDays size={16} color={col} style={{ flexShrink: 0 }} />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{sg.location} — {sg.shift}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted }}>{sg.date}</div>
-                                                </div>
-                                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${col}1a`, color: col }}>{sg.status}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </Card>
-                            <Card>
-                                <CardHeader title={`Leave Approvals (${pendingLeaves})`} subtitle="Approve or reject requests" />
-                                {leaveRequests.filter(l => l.status === "Pending").slice(0, 4).map(lr => <LeaveRow key={lr.id} lr={lr} compact />)}
-                                {pendingLeaves === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>}
-                            </Card>
-                        </div>
-                    );
-                }
-
-                // Manufacturing: Safety Checklist + Overtime Records
-                if (panelType === "overtime") {
-                    const safetyItems = [
-                        { item: "Monthly Safety Drill",     due: "2026-03-20", assignedTo: "EMP007", status: "Pending"   },
-                        { item: "PPE Inspection — Line 3",  due: "2026-03-18", assignedTo: "EMP001", status: "Overdue"   },
-                        { item: "Fire Extinguisher Check",  due: "2026-03-31", assignedTo: "EMP005", status: "Scheduled" },
-                    ];
-                    const siCol    = s => s === "Overdue" ? C.danger : s === "Pending" ? C.warning : C.success;
-                    const otRecs   = attendance.filter(a => parseFloat(a.hours) > 8).slice(0, 4);
-                    return (
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: 18 }}>
-                            <Card>
-                                <CardHeader title="Safety & Compliance Checklist" subtitle="March 2026" />
-                                <div style={{ padding: "4px 0" }}>
-                                    {safetyItems.map(si => {
-                                        const assignee = employees.find(e => e.id === si.assignedTo);
-                                        const col = siCol(si.status);
-                                        return (
-                                            <div key={si.item} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                                <Lucide.ShieldCheck size={16} color={col} style={{ flexShrink: 0 }} />
-                                                <div style={{ flex: 1 }}>
-                                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{si.item}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted }}>{assignee?.name || si.assignedTo} · Due {si.due}</div>
-                                                </div>
-                                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: `${col}1a`, color: col }}>{si.status}</span>
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </Card>
-                            <Card>
-                                <CardHeader title="Overtime Records" subtitle="Logs requiring supervisor review" />
-                                {otRecs.map(rec => {
-                                    const emp = employees.find(e => e.id === rec.empId);
-                                    return (
-                                        <div key={rec.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                            <Avatar name={emp?.name || "?"} size={32} />
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp?.name || rec.empId}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted }}>{rec.date} · {rec.hours}h worked</div>
-                                            </div>
-                                            <span style={{ fontSize: 11, fontWeight: 600, color: C.warning }}>{(parseFloat(rec.hours) - 8).toFixed(1)}h OT</span>
-                                        </div>
-                                    );
-                                })}
-                                {otRecs.length === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No overtime records today</div>}
-                            </Card>
-                        </div>
-                    );
-                }
-
-                // Fallback: existing leave approvals + notifications
-                return (
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, marginBottom: iCfg ? 18 : 0 }}>
-                        <Card>
-                            <CardHeader title={`Pending Leave Approvals (${pendingLeaves})`} subtitle="Approve or reject leave requests" />
-                            {leaveRequests.filter(l => l.status === "Pending").slice(0, 5).map(lr => {
-                                const emp = employees.find(e => e.id === lr.empId);
-                                return (
-                                    <div key={lr.id} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
-                                        <Avatar name={emp?.name || "?"} size={34} />
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp?.name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{lr.type} · {lr.from} → {lr.to} ({lr.days}d)</div>
-                                        </div>
-                                        <div style={{ display: "flex", gap: 6 }}>
-                                            <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={12} color="#fff" />Approve</Btn>
-                                            <Btn variant="danger"  size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={12} /></Btn>
-                                        </div>
-                                    </div>
-                                );
-                            })}
-                            {pendingLeaves === 0 && <div style={{ padding: 20, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>}
-                        </Card>
-                        <Card>
-                            <CardHeader title={`Notifications (${unread} unread)`} />
-                            {notifications.slice(0, 5).map(n => (
-                                <div key={n.id} style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.borderLight}`, background: n.read ? "transparent" : C.primaryLight }}>
-                                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: n.read ? "transparent" : C.primary, flexShrink: 0 }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600 }}>{n.msg}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted }}>{n.time}</div>
-                                    </div>
-                                </div>
-                            ))}
-                        </Card>
-                    </div>
-                );
-            })()}
-
-            {/* ── ZONE 7: INDUSTRY INSIGHT ─────────────────────────────── */}
-            {iCfg && iCfg.industryInsight && (
-                <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.4, duration: 0.3 }}
-                    style={{
-                        display: "flex", gap: 16, padding: "18px 22px", borderRadius: 14,
-                        background: `${iCfg.accentColor}14`,
-                        border: `1px solid ${iCfg.accentColor}25`,
-                        borderLeft: `3px solid ${iCfg.accentColor}`,
-                        alignItems: "flex-start",
-                    }}>
-                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${iCfg.accentColor}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 2 }}>
-                        <Lucide.Lightbulb size={18} color={iCfg.accentColor} />
-                    </div>
-                    <div>
-                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 4 }}>{iCfg.industryInsight.stat}</div>
-                        <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, marginBottom: 6 }}>— {iCfg.industryInsight.source}</div>
-                        <div style={{ fontSize: 12, color: C.textMid, fontStyle: "italic" }}>{iCfg.industryInsight.relevance}</div>
-                    </div>
-                </motion.div>
-            )}
-            {/* ── ZONE 8: ATTENDANCE ECONOMY ────────────────────────────── */}
-            <div style={{ marginTop: 22 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 9, background: `${C.danger}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Lucide.DollarSign size={16} color={C.danger} />
-                    </div>
-                    <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>Attendance Economy</div>
-                        <div style={{ fontSize: 12, color: C.textMuted }}>Real-time cost impact of today's attendance patterns</div>
+                        })}
                     </div>
                 </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 16 }}>
-                    {[
-                        { label: "Today's Cost Impact", value: attEcon.fmt(attEcon.totalToday), color: attEcon.totalToday > 0 ? C.danger : C.success, icon: "TrendingUp", sub: attEcon.totalToday > 0 ? "Unrealized output" : "No losses today" },
-                        { label: "Absence Cost", value: attEcon.fmt(attEcon.absentCost), color: C.danger, icon: "UserX", sub: `${absent} employee${absent !== 1 ? "s" : ""} absent` },
-                        { label: "Late Arrival Cost", value: attEcon.fmt(attEcon.lateCost), color: C.warning, icon: "Clock", sub: `${late} late arrival${late !== 1 ? "s" : ""}` },
-                        { label: "Overtime Cost", value: attEcon.fmt(attEcon.overtimeCost), color: "#8B5CF6", icon: "Zap", sub: "1.5× multiplier applied" },
-                    ].map((card, idx) => {
-                        const CardIcon = Lucide[card.icon] || Lucide.Circle;
-                        return (
-                            <motion.div key={card.label}
-                                initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.1 + idx * 0.06, duration: 0.3 }}
-                                whileHover={{ y: -4, boxShadow: C.shadowMd }}
-                                style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: C.shadow, padding: "18px 20px", position: "relative", overflow: "hidden" }}>
-                                <div style={{ position: "absolute", top: 0, left: 0, width: 3, height: "100%", background: card.color, borderRadius: "14px 0 0 14px" }} />
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
-                                    <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 600 }}>{card.label}</span>
-                                    <div style={{ width: 28, height: 28, borderRadius: 8, background: `${card.color}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <CardIcon size={14} color={card.color} />
-                                    </div>
-                                </div>
-                                <div style={{ fontSize: 22, fontWeight: 800, color: C.text, letterSpacing: "-0.5px", marginBottom: 4 }}>{card.value}</div>
-                                <div style={{ fontSize: 11, color: C.textMuted }}>{card.sub}</div>
-                            </motion.div>
-                        );
-                    })}
-                </div>
-                {/* Department breakdown + Monthly summary */}
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-                    <Card>
-                        <CardHeader title="Cost by Department" subtitle="Today's attendance cost breakdown" />
-                        <div style={{ padding: "12px 20px" }}>
-                            {Object.entries(attEcon.deptCosts).sort((a, b) => b[1].total - a[1].total).map(([dept, costs]) => {
-                                const maxCost = Math.max(...Object.values(attEcon.deptCosts).map(c => c.total), 1);
-                                return (
-                                    <div key={dept} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 10 }}>
-                                        <div style={{ width: 100, fontSize: 12, fontWeight: 600, color: C.text, flexShrink: 0, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dept}</div>
-                                        <div style={{ flex: 1, height: 22, background: C.bg, borderRadius: 6, overflow: "hidden", display: "flex" }}>
-                                            {costs.absent > 0 && <div style={{ height: "100%", width: `${(costs.absent / maxCost) * 100}%`, background: C.danger, transition: "width 0.3s" }} />}
-                                            {costs.late > 0 && <div style={{ height: "100%", width: `${(costs.late / maxCost) * 100}%`, background: C.warning, transition: "width 0.3s" }} />}
-                                            {costs.overtime > 0 && <div style={{ height: "100%", width: `${(costs.overtime / maxCost) * 100}%`, background: "#8B5CF6", transition: "width 0.3s" }} />}
-                                        </div>
-                                        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, width: 80, textAlign: "right", flexShrink: 0 }}>{attEcon.fmt(costs.total)}</div>
-                                    </div>
-                                );
-                            })}
-                            {Object.keys(attEcon.deptCosts).length === 0 && <div style={{ padding: 16, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No cost impact today</div>}
-                            <div style={{ display: "flex", gap: 14, marginTop: 12, paddingTop: 10, borderTop: `1px solid ${C.borderLight}` }}>
-                                {[["Absence", C.danger], ["Late", C.warning], ["Overtime", "#8B5CF6"]].map(([l, c]) => (
-                                    <div key={l} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: C.textMuted }}>
-                                        <div style={{ width: 8, height: 8, borderRadius: 2, background: c }} />{l}
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
-                    </Card>
-                    <Card>
-                        <CardHeader title="Monthly Summary" subtitle={`${attendance.length} records this period`} />
-                        <div style={{ padding: "16px 20px" }}>
-                            {[
-                                { label: "Absence Losses", value: attEcon.fmt(attEcon.monthAbsent), color: C.danger, pct: attEcon.totalMonth > 0 ? Math.round((attEcon.monthAbsent / attEcon.totalMonth) * 100) : 0 },
-                                { label: "Late Arrival Cost", value: attEcon.fmt(attEcon.monthLate), color: C.warning, pct: attEcon.totalMonth > 0 ? Math.round((attEcon.monthLate / attEcon.totalMonth) * 100) : 0 },
-                                { label: "Overtime Spend", value: attEcon.fmt(attEcon.monthOT), color: "#8B5CF6", pct: attEcon.totalMonth > 0 ? Math.round((attEcon.monthOT / attEcon.totalMonth) * 100) : 0 },
-                            ].map(row => (
-                                <div key={row.label} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 14 }}>
-                                    <div style={{ width: 4, height: 32, borderRadius: 2, background: row.color, flexShrink: 0 }} />
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{row.label}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted }}>{row.pct}% of total</div>
-                                    </div>
-                                    <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{row.value}</div>
-                                </div>
-                            ))}
-                            <div style={{ marginTop: 14, paddingTop: 14, borderTop: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Total Period Cost</div>
-                                <div style={{ fontSize: 20, fontWeight: 800, color: C.danger }}>{attEcon.fmt(attEcon.totalMonth)}</div>
-                            </div>
-                        </div>
-                    </Card>
-                </div>
-            </div>
 
-            {/* ── ZONE 9: TEAM CHEMISTRY ─────────────────────────────────── */}
-            <div style={{ marginTop: 22 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                    <div style={{ width: 34, height: 34, borderRadius: 9, background: `${C.primary}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                        <Lucide.Sparkles size={16} color={C.primary} />
+                {/* Right bottom: Notifications feed */}
+                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
+                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Recent Activity</div>
+                        {unread > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: C.primaryLight, color: C.primary, borderRadius: 999, padding: "2px 8px" }}>{unread} new</span>}
                     </div>
-                    <div>
-                        <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>Team Chemistry</div>
-                        <div style={{ fontSize: 12, color: C.textMuted }}>Sync score derived from performance, collaboration, goals & attendance overlap</div>
-                    </div>
-                </div>
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 14 }}>
-                    {teamChemistry.map((team, ti) => {
-                        const CHEM_COLORS = ["#6366F1", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
-                        const tc = CHEM_COLORS[ti % CHEM_COLORS.length];
-                        const scoreColor = team.totalScore >= 70 ? C.success : team.totalScore >= 45 ? C.warning : C.danger;
-                        const scoreLabel = team.totalScore >= 70 ? "High Sync" : team.totalScore >= 45 ? "Moderate" : "Needs Attention";
-                        const memberEmps = employees.filter(e => (team.members || []).includes(e.id));
-                        return (
-                            <motion.div key={team.id}
-                                initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}
-                                transition={{ delay: 0.05 + ti * 0.06 }}
-                                style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
-                                {/* Header */}
-                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", gap: 12 }}>
-                                    <div style={{ width: 38, height: 38, borderRadius: 10, background: `${tc}15`, border: `1.5px solid ${tc}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 16, fontWeight: 800, color: tc, flexShrink: 0 }}>
-                                        {team.name.charAt(0)}
-                                    </div>
+                    <div style={{ maxHeight: 200, overflowY: "auto" }}>
+                        {(notifications || []).slice(0, 5).map(n => {
+                            const typeIcon = { leave: "CalendarDays", attendance: "Clock", payroll: "DollarSign", training: "BookOpen", performance: "TrendingUp", skill: "Sparkles" };
+                            const NIcon = Lucide[typeIcon[n.type] || "Bell"] || Lucide.Bell;
+                            return (
+                                <div key={n.id} style={{ padding: "10px 20px", display: "flex", gap: 10, alignItems: "flex-start", borderBottom: `1px solid ${C.border}`, background: n.read ? "transparent" : C.primaryLight, transition: "background 0.15s" }}>
+                                    <NIcon size={14} color={C.textMuted} style={{ flexShrink: 0, marginTop: 2 }} />
                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{team.name}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted }}>{team.dept} · {team.memberCount} member{team.memberCount !== 1 ? "s" : ""} · {(team.projects || []).join(", ")}</div>
-                                    </div>
-                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 2 }}>
-                                        <div style={{ fontSize: 24, fontWeight: 800, color: scoreColor, lineHeight: 1 }}>{team.totalScore}</div>
-                                        <span style={{ fontSize: 9, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: `${scoreColor}15`, color: scoreColor, letterSpacing: "0.3px" }}>{scoreLabel}</span>
+                                        <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.msg}</div>
+                                        <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{n.time}</div>
                                     </div>
                                 </div>
-                                {/* Score breakdown */}
-                                <div style={{ padding: "12px 18px" }}>
-                                    <div style={{ display: "flex", gap: 6, marginBottom: 12 }}>
-                                        {memberEmps.slice(0, 6).map(e => <Avatar key={e.id} name={e.name} size={24} />)}
-                                        {memberEmps.length > 6 && <span style={{ fontSize: 11, color: C.textMuted, alignSelf: "center" }}>+{memberEmps.length - 6}</span>}
-                                    </div>
-                                    {[
-                                        { label: "Performance", score: team.perfScore, color: "#6366F1", detail: `Avg review: ${team.avgReview}/5` },
-                                        { label: "Collaboration", score: team.collabScore, color: "#0EA5E9", detail: `${team.praiseCount} praise${team.praiseCount !== 1 ? "s" : ""} exchanged` },
-                                        { label: "Recognition", score: team.recogScore, color: "#F59E0B", detail: `${team.totalPoints} pts earned` },
-                                        { label: "Goals", score: team.goalScore, color: "#10B981", detail: `${team.avgGoalProgress}% avg progress` },
-                                        { label: "Attendance Sync", score: team.overlapScore, color: "#8B5CF6", detail: `${team.overlapScore}% full overlap days` },
-                                    ].map(row => (
-                                        <div key={row.label} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 7 }}>
-                                            <div style={{ width: 90, fontSize: 11, fontWeight: 600, color: C.textMid, flexShrink: 0 }}>{row.label}</div>
-                                            <div style={{ flex: 1, height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                                                <motion.div initial={{ width: 0 }} animate={{ width: `${row.score}%` }} transition={{ delay: 0.3 + ti * 0.06, duration: 0.5 }}
-                                                    style={{ height: "100%", background: row.color, borderRadius: 3 }} />
-                                            </div>
-                                            <div style={{ width: 28, fontSize: 11, fontWeight: 700, color: C.text, textAlign: "right", flexShrink: 0 }}>{row.score}</div>
-                                            <div style={{ width: 120, fontSize: 10, color: C.textMuted, flexShrink: 0, textAlign: "right" }}>{row.detail}</div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </motion.div>
-                        );
-                    })}
+                            );
+                        })}
+                        {(!notifications || notifications.length === 0) && (
+                            <div style={{ padding: "24px 20px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No recent activity</div>
+                        )}
+                    </div>
                 </div>
             </div>
-
-            {/* ── ZONE 10: ATTENDANCE ALERTS ─────────────────────────────── */}
-            {(() => {
-                const attAlerts = notifications.filter(n => n.type === "attendance" && n.severity);
-                if (attAlerts.length === 0) return null;
-                return (
-                    <div style={{ marginTop: 22 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 14 }}>
-                            <div style={{ width: 34, height: 34, borderRadius: 9, background: `${C.warning}15`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <Lucide.Bell size={16} color={C.warning} />
-                            </div>
-                            <div>
-                                <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>Attendance Alerts</div>
-                                <div style={{ fontSize: 12, color: C.textMuted }}>Auto-escalated notifications for late arrivals & unexplained absences</div>
-                            </div>
-                            <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: C.dangerBg, color: C.danger, border: `1px solid ${C.dangerBorder}`, marginLeft: "auto" }}>{attAlerts.length} alert{attAlerts.length !== 1 ? "s" : ""}</span>
-                        </div>
-                        <Card>
-                            {attAlerts.map((alert, i) => {
-                                const isCritical = alert.severity === "critical";
-                                return (
-                                    <div key={alert.id} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < attAlerts.length - 1 ? `1px solid ${C.borderLight}` : "none", background: isCritical ? C.dangerBg : C.warningBg }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: isCritical ? `${C.danger}20` : `${C.warning}20`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                            {isCritical ? <Lucide.AlertTriangle size={15} color={C.danger} /> : <Lucide.Clock size={15} color={C.warning} />}
-                                        </div>
-                                        <div style={{ flex: 1 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{alert.msg}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{alert.time}</div>
-                                        </div>
-                                        <span style={{ fontSize: 10, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: isCritical ? C.dangerBg : C.warningBg, color: isCritical ? C.danger : C.warning, border: `1px solid ${isCritical ? C.dangerBorder : C.warningBorder}`, flexShrink: 0 }}>
-                                            {isCritical ? "ESCALATED" : "ALERT"}
-                                        </span>
-                                    </div>
-                                );
-                            })}
-                        </Card>
-                    </div>
-                );
-            })()}
-
         </div>
     );
 };
@@ -17274,7 +16778,8 @@ const EmployeeApp = ({ user, onLogout, isDark, setIsDark, dataCtxValue }) => {
 
 
 export default function App() {
-    const [isDark, setIsDark] = useState(false);
+    const [isDark, setIsDark]       = useState(() => localStorage.getItem("selfvora_dark") === "true");
+    const [themeKey, setThemeKey]   = useState(() => localStorage.getItem("selfvora_theme") || "teal");
     const [showLanding, setShowLanding] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
     const [showSetupWizard, setShowSetupWizard] = useState(false);
@@ -17415,6 +16920,8 @@ export default function App() {
         devices: DevicesPage,
         config: ConfigPage,
         settings: SettingsPage,
+        "settings_General": SettingsPage,
+        "settings_Configurations": ConfigPage,
     };
 
     _darkMode = isDark;
@@ -17453,12 +16960,19 @@ export default function App() {
     const deptCountries = companyConfig?.departments
         ? Object.fromEntries(companyConfig.departments.map(d => [d.name, d.country || "Sri Lanka"]))
         : {};
-    _darkMode = isDark;
+    _darkMode  = isDark;
+    _themeKey  = themeKey;
 
     return (
         <ToastProvider>
         <PayrollIntegrationCtx.Provider value={{ connectedPayrollId, setConnectedPayrollId }}>
-            <ThemeCtx.Provider value={{ isDark, toggleTheme: () => setIsDark(d => !d) }}>
+            <ThemeCtx.Provider value={{
+                isDark,
+                toggleTheme: () => { const next = !isDark; setIsDark(next); localStorage.setItem("selfvora_dark", String(next)); },
+                themeKey,
+                setThemeKey: (k) => { setThemeKey(k); localStorage.setItem("selfvora_theme", k); }
+            }}>
+                <UserCtx.Provider value={currentUser}>
                 <DataCtx.Provider value={dataCtxValue}>
                     <style>{`
       ${isDark ? `
@@ -17478,23 +16992,22 @@ export default function App() {
         tbody tr:hover { background: #F0F2FF !important; }
       `}
     `}</style>
-                    <div style={{ display: "flex", flexDirection: "column", height: "100vh", background: _darkMode ? "linear-gradient(135deg, #0A0F1E 0%, #0E1530 50%, #0C1220 100%)" : "linear-gradient(135deg, #EEF0FF 0%, #F5F7FA 40%, #EDF1FF 100%)", fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
-                        <Topbar active={page} onNav={setPage} onLogout={handleLogout} payrollSubNav={payrollSubNav} searchPages={pages} />
-                        <div style={{ flex: 1, display: "flex", overflow: "hidden" }}>
-                            <Sidebar active={page} onNav={setPage} onLogout={handleLogout} />
-                            <main style={{ flex: 1, overflow: "hidden", position: "relative", display: "flex", flexDirection: "column" }}>
-                                <AnimatePresence mode="wait">
-                                    <motion.div key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2, ease: "easeOut" }} style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                                        {isPayrollPage
-                                            ? <PayrollPageComponent C={C} employees={employees} pageKey={page} onSubNavChange={setPayrollSubNav} connectedPayrollId={connectedPayrollId} deptCountries={deptCountries} />
-                                            : <PageComp pageKey={page} />}
-                                    </motion.div>
-                                </AnimatePresence>
-                            </main>
-                        </div>
+                    <div style={{ display: "flex", height: "100vh", background: _darkMode ? "linear-gradient(135deg, #0A0F1E 0%, #0E1530 50%, #0C1220 100%)" : "linear-gradient(135deg, #EEF0FF 0%, #F5F7FA 40%, #EDF1FF 100%)", fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
+                        <Sidebar active={page} onNav={setPage} onLogout={handleLogout} payrollSubNav={payrollSubNav} />
+                        <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", position: "relative", paddingTop: 68 }}>
+                            <AnimatePresence mode="wait">
+                                <motion.div key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                                    {isPayrollPage
+                                        ? <PayrollPageComponent C={C} employees={employees} pageKey={page} onSubNavChange={setPayrollSubNav} connectedPayrollId={connectedPayrollId} deptCountries={deptCountries} />
+                                        : <PageComp pageKey={page} />}
+                                </motion.div>
+                            </AnimatePresence>
+                        </main>
+                        <TopActions onNav={setPage} onLogout={handleLogout} />
                     </div>
                     <NexisAIWidget />
                 </DataCtx.Provider>
+                </UserCtx.Provider>
             </ThemeCtx.Provider>
         </PayrollIntegrationCtx.Provider>
         </ToastProvider>
