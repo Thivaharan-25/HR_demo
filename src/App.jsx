@@ -30,7 +30,7 @@ const LIGHT_C = {
     success:        "#10B981",
     successBg:      "#ECFDF5",
     successBorder:  "#A7F3D0",
-    warning:        "#F59E0B",
+    warning:        "#B45309",
     warningBg:      "#FFFBEB",
     warningBorder:  "#FDE68A",
     danger:         "#EF4444",
@@ -162,6 +162,7 @@ const iconMap = {
     calendarOff: "CalendarOff",
     barChart: "BarChart2",
     monitor: "Monitor",
+    nexisai: "BrainCircuit",
 };
 
 const statusMap = {
@@ -318,16 +319,14 @@ const Btn = ({ children, variant = "ghost", size = "md", onClick, style: sx, dis
     const base = { display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 600, cursor: "pointer", borderRadius: 9, border: "none", fontFamily: "inherit", transition: "background 0.2s, color 0.2s, border-color 0.2s" };
     const sizes = { sm: { padding: "5px 12px", fontSize: 12 }, md: { padding: "8px 16px", fontSize: 13 }, lg: { padding: "10px 20px", fontSize: 14 } };
     const variants = {
-        primary: { background: "linear-gradient(135deg, #6366F1, #7C3AED)", color: "#fff", border: "1px solid transparent", boxShadow: "0 2px 12px rgba(99,102,241,0.30)" },
-        secondary: { background: "linear-gradient(135deg, #6366F1, #7C3AED)", color: "#fff", border: "1px solid transparent", boxShadow: "0 2px 12px rgba(99,102,241,0.25)" },
+        primary: { background: C.primary, color: "#fff", border: "1px solid transparent" },
+        secondary: { background: C.primary, color: "#fff", border: "1px solid transparent" },
         outline: { background: C.white, color: C.textMid, border: `1px solid ${C.border}` },
         ghost: { background: "transparent", color: C.textMid, border: "1px solid transparent" },
         danger: { background: C.dangerBg, color: C.danger, border: `1px solid ${C.dangerBorder}` },
     };
     return (
         <motion.button
-            whileHover={{ scale: 1.02 }}
-            whileTap={{ scale: 0.98 }}
             onClick={onClick}
             disabled={disabled}
             style={{ ...base, ...sizes[size], ...variants[variant], opacity: disabled ? 0.5 : 1, pointerEvents: disabled ? "none" : "auto", ...(sx || {}) }}
@@ -337,23 +336,19 @@ const Btn = ({ children, variant = "ghost", size = "md", onClick, style: sx, dis
     );
 };
 
-const Card = ({ children, style: sx, noPad, initial = { opacity: 0, y: 10 }, animate = { opacity: 1, y: 0 } }) => (
-    <motion.div
-        initial={initial}
-        animate={animate}
-        transition={{ duration: 0.4, ease: "easeOut" }}
-        whileHover={{ boxShadow: C.shadowMd }}
-        style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: C.shadow, ...(noPad ? {} : { padding: "0" }), overflow: "hidden", transition: "box-shadow 0.2s", ...(sx || {}) }}
+const Card = ({ children, style: sx, noPad, initial, animate }) => (
+    <div
+        style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: C.shadow, ...(noPad ? {} : { padding: "0" }), overflow: "hidden", ...(sx || {}) }}
     >
         {children}
-    </motion.div>
+    </div>
 );
 
 const CardHeader = ({ title, subtitle, action }) => (
-    <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-            <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{subtitle}</div>}
+            <div style={{ fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: "-0.3px", fontFamily: "'Manrope', 'Inter', sans-serif" }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 3 }}>{subtitle}</div>}
         </div>
         {action && <div>{action}</div>}
     </div>
@@ -397,13 +392,6 @@ const Sparkline = ({ data = [], color = "#0d9488" }) => {
 };
 
 const StatCard = ({ label, value, unit, sub, severity = "neutral", trend, trendValue, sparklineData, icon }) => {
-    const SEV = {
-        critical: { border: "#ef4444", numColor: "#dc2626", bgTint: "rgba(239,68,68,0.04)" },
-        warning:  { border: "#f59e0b", numColor: "#b45309", bgTint: "rgba(245,158,11,0.04)" },
-        positive: { border: "#10b981", numColor: "#059669", bgTint: "rgba(16,185,129,0.04)" },
-        neutral:  { border: "#cbd5e1", numColor: C.text,    bgTint: "transparent" },
-    };
-    const sev = SEV[severity] || SEV.neutral;
     const numStr = String(value).replace(/[^0-9.]/g, "");
     const numVal = parseFloat(numStr) || 0;
     const prefix = String(value).match(/^[^0-9]*/)?.[0] || "";
@@ -411,47 +399,57 @@ const StatCard = ({ label, value, unit, sub, severity = "neutral", trend, trendV
     const animCount = useCountUp(numVal, 800);
     const isUp = typeof trend === "number" ? trend > 0 : null;
 
+    // Severity border hint (subtle, top edge only)
+    const sevBorderColor = { critical: C.danger, warning: C.warning, positive: C.success, neutral: C.border }[severity] || C.border;
+    const trendColor = isUp === true ? C.success : isUp === false ? C.danger : C.textMuted;
+    const trendBg   = isUp === true ? C.successBg : isUp === false ? C.dangerBg : C.tableHead;
+
     return (
-        <motion.div
-            initial={{ opacity: 0, y: 12 }}
-            animate={{ opacity: 1, y: 0 }}
-            whileHover={{ y: -3, boxShadow: "0 4px 16px rgba(0,0,0,0.10)" }}
-            transition={{ duration: 0.2 }}
-            style={{
-                background: C.white,
-                border: `1px solid ${C.border}`,
-                borderLeft: `4px solid ${sev.border}`,
-                borderRadius: 12,
-                boxShadow: "0 1px 3px rgba(0,0,0,0.08)",
-                padding: "16px 20px",
-                position: "relative",
-                overflow: "hidden",
-            }}
-        >
-            <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 8 }}>
-                <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.04em" }}>{label}</div>
-                {sparklineData && <Sparkline data={sparklineData} color={sev.border} />}
+        <div style={{
+            background: C.white,
+            border: `1px solid ${C.border}`,
+            borderTop: severity !== "neutral" ? `3px solid ${sevBorderColor}` : `1px solid ${C.border}`,
+            borderRadius: 14,
+            boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+            padding: "24px",
+        }}>
+            {/* Label + sparkline row */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+                <p style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1.3 }}>{label}</p>
+                {sparklineData && <Sparkline data={sparklineData} color={C.primary} />}
             </div>
-            <div style={{ fontSize: 40, fontWeight: 700, color: sev.numColor, letterSpacing: "-1px", lineHeight: 1, marginBottom: 6 }}>
-                {prefix}{animCount}{unit || suffix}
+            {/* Number + badge row */}
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
+                <div style={{ fontSize: 36, fontWeight: 800, color: C.text, letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+                    {prefix}{animCount.toLocaleString()}{unit || suffix}
+                </div>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, marginBottom: 2 }}>
+                    {(trend !== undefined && trend !== null) && (
+                        <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999, background: trendBg, color: trendColor, whiteSpace: "nowrap" }}>
+                            {typeof trend === "number" ? (isUp ? `+${Math.abs(trend)}%` : `-${Math.abs(trend)}%`) : trend}
+                        </span>
+                    )}
+                    {trendValue && <span style={{ fontSize: 11, color: C.textMuted }}>{trendValue}</span>}
+                    {sub && <span style={{ fontSize: 11, color: C.textMuted }}>{sub}</span>}
+                </div>
             </div>
-            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                {(trend !== undefined && trend !== null) && (
-                    <span style={{ display: "inline-flex", alignItems: "center", gap: 2, fontSize: 11, fontWeight: 600, padding: "2px 7px", borderRadius: 999, background: isUp === true ? C.successBg : isUp === false ? C.dangerBg : C.tableHead, color: isUp === true ? C.success : isUp === false ? C.danger : C.textMuted }}>
-                        {isUp === true ? "↑" : isUp === false ? "↓" : ""}
-                        {typeof trend === "number" ? `${Math.abs(trend)}%` : trend}
-                    </span>
-                )}
-                {trendValue && <span style={{ fontSize: 11, color: C.textMuted }}>{trendValue}</span>}
-                {sub && <span style={{ fontSize: 11, color: C.textMuted }}>{sub}</span>}
-            </div>
-        </motion.div>
+        </div>
     );
 };
 
-const TableHead = ({ cols }) => (
+const TableHead = ({ cols, onSelectAll, allSelected }) => (
     <thead>
         <tr style={{ background: C.tableHead }}>
+            {onSelectAll && (
+                <th style={{ padding: "10px 16px", width: 40, borderBottom: `1px solid ${C.border}` }}>
+                    <input 
+                        type="checkbox" 
+                        checked={allSelected} 
+                        onChange={onSelectAll} 
+                        style={{ width: 16, height: 16, cursor: "pointer", accentColor: C.primary }} 
+                    />
+                </th>
+            )}
             {cols.map((c, i) => (
                 <th key={i} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.6px", borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>{c}</th>
             ))}
@@ -468,23 +466,21 @@ const Avatar = ({ name, size = 32, color }) => {
     const initials = name ? name.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase() : "??";
     const bg = color || colors[name?.charCodeAt(0) % colors.length] || C.primary;
     return (
-        <motion.div
-            whileHover={{ scale: 1.1 }}
-            style={{ width: size, height: size, borderRadius: size * 0.35, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.38, fontWeight: 700, color: "#fff", flexShrink: 0, letterSpacing: "-0.3px", boxShadow: "0 2px 4px rgba(0,0,0,0.1)" }}
+        <div
+            style={{ width: size, height: size, borderRadius: size * 0.35, background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: size * 0.38, fontWeight: 700, color: "#fff", flexShrink: 0, letterSpacing: "-0.3px" }}
         >
             {initials}
-        </motion.div>
+        </div>
     );
 };
 
 const Input = ({ placeholder, value, onChange, style: sx, type = "text" }) => (
-    <motion.input
-        whileFocus={{ boxShadow: `0 0 0 2px ${C.primaryLight}`, borderColor: C.primary }}
+    <input
         type={type}
         value={value}
         onChange={onChange}
         placeholder={placeholder}
-        style={{ padding: "8px 12px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, color: C.text, outline: "none", background: C.white, width: "100%", boxSizing: "border-box", fontFamily: "inherit", transition: "all 0.2s", ...sx }}
+        style={{ padding: "8px 12px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, color: C.text, outline: "none", background: C.white, width: "100%", boxSizing: "border-box", fontFamily: "inherit", transition: "border-color 0.2s", ...sx }}
     />
 );
 
@@ -579,56 +575,49 @@ const Modal = ({ isOpen, onClose, title, children }) => {
     );
 };
 
-// Full unified navigation — sidebar is the single navigation system
+// ── Navigation groups with StarAdmin-style section labels ─────────────
 const ALL_NAV_GROUPS = [
     {
-        label: "CORE",
+        label: "MAIN MENU",
         items: [
             { key: "dashboard",   label: "Dashboard",      icon: "LayoutDashboard", sub: null },
-            { key: "timesheet",   label: "Timesheet",      icon: "Clock",           sub: ["All Records", "Corrections", "Overtime", "Calendar", "Schedule"] },
-            { key: "leave",       label: "Leave",          icon: "CalendarOff",     sub: ["My Requests", "All Leave Requests", "Leave Entitlements", "Leave Types", "Team Calendar"], badge: 8 },
+            { key: "people",      label: "People",         icon: "Users",           sub: null },
+            { key: "time_leave",  label: "Time & Leave",   icon: "CalendarClock",   sub: null, badgeKey: "pendingLeaves" },
+            { key: "performance", label: "Performance",    icon: "TrendingUp",      sub: null },
+            { key: "skills",      label: "Skills & Talent",icon: "Sparkles",        sub: null },
+            { key: "payroll",     label: "Payroll",        icon: "DollarSign",      sub: null },
         ],
     },
     {
-        label: "PEOPLE & PERFORMANCE",
+        label: "MANAGEMENT",
         items: [
-            { key: "people",      label: "People",         icon: "Users",           sub: ["Directory", "Onboarding", "Offboarding", "Lifecycle", "Teams", "Job Families", "Holidays"] },
-            { key: "performance", label: "Performance",    icon: "TrendingUp",      sub: ["Overview", "Goals & OKR", "Feedback", "Recognition", "Reviews"] },
-            { key: "skills",      label: "Skills & Talent",icon: "Sparkles",        sub: ["Skill Library", "Learning Hub", "Skill Development", "Gap Analysis", "Dev Plans", "Talent DNA", "Succession"] },
+            { key: "reports",     label: "Reports",        icon: "BarChart2",       sub: null },
+            { key: "settings",    label: "Settings",       icon: "Settings",        sub: null },
         ],
     },
     {
-        label: "FINANCE",
+        label: "AI",
         items: [
-            { key: "payroll",     label: "Payroll",        icon: "DollarSign",      sub: null, dynamicSub: true },
+            { key: "nexis_ai",    label: "Nexis AI",       icon: "BrainCircuit",    sub: null },
         ],
     },
 ];
 
-const ADMIN_NAV_ITEMS = [
-    { key: "org",          label: "Org Structure",icon: "GitBranch",   sub: null },
-    { key: "allowance",    label: "Allowances",   icon: "Heart",       sub: null },
-    { key: "permissions",  label: "Permissions",  icon: "ShieldCheck", sub: null },
-    { key: "integrations", label: "Integrations", icon: "Link",        sub: null },
-    { key: "documents",    label: "Documents",    icon: "FileText",    sub: null },
-    { key: "reports",      label: "Reports",      icon: "BarChart2",   sub: null },
-    { key: "devices",      label: "Devices",      icon: "Monitor",     sub: null },
-    { key: "settings",     label: "Settings",     icon: "Settings",    sub: ["General", "Configurations"] },
-];
+// Legacy ADMIN_NAV_ITEMS — kept empty so any code referencing it doesn't break
+const ADMIN_NAV_ITEMS = [];
 
 // Keep for any code that still references TOP_NAV (payroll sub-nav etc.)
 const TOP_NAV = ALL_NAV_GROUPS.flatMap(g => g.items);
 // Keep SIDE_NAV_GROUPS alias for legacy references in other components
 const SIDE_NAV_GROUPS = ALL_NAV_GROUPS;
 
-/* Employee-only nav — limited to what employees can see */
+/* Employee-only nav — simplified to 5 items */
 const EMP_NAV = [
     { key: "emp_dashboard", label: "Dashboard", icon: "dashboard" },
-    { key: "emp_timesheet", label: "My Timesheet", icon: "timesheet" },
-    { key: "emp_leave", label: "My Leave", icon: "leave" },
-    { key: "emp_skills", label: "My Skills", icon: "star" },
-    { key: "emp_documents", label: "My Documents", icon: "sign" },
+    { key: "emp_timesheet", label: "Time & Leave", icon: "leave" },
     { key: "emp_profile", label: "My Profile", icon: "user" },
+    { key: "emp_skills", label: "My Goals", icon: "trending" },
+    { key: "emp_documents", label: "Documents", icon: "sign" },
 ];
 
 /* Hardcoded users for demo */
@@ -703,21 +692,58 @@ const INITIAL_SKILL_LIBRARY = [
 
 const INITIAL_EMPLOYEES = [
     // country: ISO 3166-1 alpha-2 | bankDetails: primary bank account
-    { id: "EMP001", name: "James Perera",    email: "james@company.com",   phone: "+94 771234567",  country: "LK", familyId: "jf1", level: "Staff Engineer",    dept: "Engineering", managerId: null,     type: "Full-time", startDate: "2022-01-15", status: "Active",   salary: 185000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "Node.js", "TypeScript", "AWS"],           rating: 4.5, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Colombo Fort",   accountNumber: "8001234567",           accountHolderName: "James Perera",    paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP002", name: "Nimali Silva",    email: "nimali@company.com",  phone: "+94 772345678",  country: "LK", familyId: "jf4", level: "HR Manager",        dept: "HR & Admin",  managerId: null,     type: "Full-time", startDate: "2021-03-01", status: "Active",   salary: 165000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Recruitment", "Employee Relations", "Labour Law", "HRIS"],       rating: 4.7, bankDetails: { bankName: "People's Bank",        branchName: "Nugegoda",       accountNumber: "8002345678",           accountHolderName: "Nimali Silva",    paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP003", name: "David Chen",      email: "david@company.com",   phone: "+94 773456789",  country: "LK", familyId: "jf2", level: "Senior PM",         dept: "Product",     managerId: null,     type: "Full-time", startDate: "2023-08-01", status: "Active",   salary: 175000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Product Strategy", "Roadmapping", "User Research", "Analytics"], rating: 4.2, bankDetails: { bankName: "Commercial Bank",      branchName: "Bambalapitiya", accountNumber: "8003456789",           accountHolderName: "David Chen",      paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP004", name: "Ayesha Farook",   email: "ayesha@company.com",  phone: "+94 774567890",  country: "LK", familyId: "jf8", level: "QA Engineer",       dept: "QA",          managerId: "EMP003", type: "Full-time", startDate: "2022-11-01", status: "On Leave", salary: 110000, leaveBalance: { annual: 8,  medical: 5, emergency: 3 }, skills: ["Manual Testing", "Selenium", "API Testing"],                    rating: 3.8, bankDetails: { bankName: "Hatton National Bank", branchName: "Dehiwala",       accountNumber: "8004567890",           accountHolderName: "Ayesha Farook",   paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP005", name: "Rayan Kumar",     email: "rayan@company.com",   phone: "+94 775678901",  country: "LK", familyId: "jf1", level: "Senior Engineer",   dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-02-01", status: "Active",   salary: 145000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["Node.js", "PostgreSQL", "Docker", "Redis"],                     rating: 4.0, bankDetails: { bankName: "Sampath Bank",         branchName: "Kandy Road",     accountNumber: "8005678901",           accountHolderName: "Rayan Kumar",     paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP006", name: "Emma Thompson",   email: "emma@company.com",    phone: "+44 7891234567", country: "GB", familyId: "jf3", level: "Sales Manager",     dept: "Sales",       managerId: null,     type: "Full-time", startDate: "2020-06-15", status: "Active",   salary: 160000, leaveBalance: { annual: 16, medical: 7, emergency: 3 }, skills: ["Negotiation", "CRM", "Pipeline Management", "Presentation"],   rating: 4.4, bankDetails: { bankName: "Barclays",             branchName: "London City",    accountNumber: "GB29BARC20201530093459", accountHolderName: "Emma Thompson",   paymentMethod: "bank_transfer", currency: "GBP" } },
-    { id: "EMP007", name: "Arjun Mehta",     email: "arjun@company.com",   phone: "+94 776789012",  country: "LK", familyId: "jf6", level: "Lead DevOps",       dept: "DevOps",      managerId: null,     type: "Full-time", startDate: "2023-09-01", status: "Active",   salary: 155000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"],           rating: 4.1, bankDetails: { bankName: "Commercial Bank",      branchName: "Kandy",          accountNumber: "8007890123",           accountHolderName: "Arjun Mehta",     paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP008", name: "Kavya Pillai",    email: "kavya@company.com",   phone: "+94 777890123",  country: "LK", familyId: "jf4", level: "HR Executive",      dept: "HR & Admin",  managerId: "EMP002", type: "Full-time", startDate: "2023-05-15", status: "Active",   salary: 95000,  leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Recruitment", "HRIS", "Benefits Admin"],                        rating: 3.9, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Nawala",         accountNumber: "8008901234",           accountHolderName: "Kavya Pillai",    paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP009", name: "Chamara Silva",   email: "chamara@company.com", phone: "+94 778901234",  country: "LK", familyId: "jf5", level: "Finance Manager",   dept: "Finance",     managerId: null,     type: "Full-time", startDate: "2021-08-01", status: "Active",   salary: 150000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Financial Modelling", "Excel", "Budgeting", "Tax Compliance"], rating: 4.3, bankDetails: { bankName: "People's Bank",        branchName: "Wellawatte",     accountNumber: "8009012345",           accountHolderName: "Chamara Silva",   paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP010", name: "Priya Nair",      email: "priya@company.com",   phone: "+94 779012345",  country: "LK", familyId: "jf1", level: "Engineer",          dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-06-01", status: "Active",   salary: 105000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "CSS"],                                   rating: 3.5, bankDetails: { bankName: "Hatton National Bank", branchName: "Moratuwa",       accountNumber: "8010123456",           accountHolderName: "Priya Nair",      paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP011", name: "Rohan Peiris",    email: "rohan@company.com",   phone: "+94 770123456",  country: "LK", familyId: "jf3", level: "Account Executive", dept: "Sales",       managerId: "EMP006", type: "Full-time", startDate: "2024-01-15", status: "Active",   salary: 95000,  leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["CRM", "Prospecting", "Presentation"],                           rating: 3.6, bankDetails: { bankName: "Sampath Bank",         branchName: "Nugegoda",       accountNumber: "8011234567",           accountHolderName: "Rohan Peiris",    paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP012", name: "Tina Mendis",     email: "tina@company.com",    phone: "+94 771122334",  country: "LK", familyId: "jf7", level: "Senior Designer",   dept: "Design",      managerId: null,     type: "Full-time", startDate: "2022-04-01", status: "Active",   salary: 135000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Figma", "UI Design", "Prototyping", "Design Systems"],          rating: 4.6, bankDetails: { bankName: "Commercial Bank",      branchName: "Colombo 03",     accountNumber: "8012345678",           accountHolderName: "Tina Mendis",     paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP013", name: "Saman Wijesinghe",email: "saman@company.com",   phone: "+94 772233445",  country: "LK", familyId: "jf1", level: "Junior Engineer",   dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2025-11-01", status: "Active",   salary: 75000,  leaveBalance: { annual: 14, medical: 7, emergency: 2 }, skills: ["JavaScript", "HTML", "CSS"],                                    rating: 0,   bankDetails: { bankName: "People's Bank",        branchName: "Kelaniya",       accountNumber: "8013456789",           accountHolderName: "Saman Wijesinghe",paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP014", name: "Dilani Fernando", email: "dilani@company.com",  phone: "+94 773344556",  country: "LK", familyId: "jf5", level: "Senior Analyst",    dept: "Finance",     managerId: "EMP009", type: "Full-time", startDate: "2023-02-01", status: "Active",   salary: 120000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Excel", "Accounting", "Budgeting"],                             rating: 4.0, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Pettah",         accountNumber: "8014567890",           accountHolderName: "Dilani Fernando", paymentMethod: "bank_transfer", currency: "LKR" } },
-    { id: "EMP015", name: "Leila Hassan",    email: "leila@company.com",   phone: "+94 774455667",  country: "LK", familyId: "jf1", level: "Engineer",          dept: "Engineering", managerId: "EMP001", type: "Part-time", startDate: "2024-09-01", status: "Active",   salary: 85000,  leaveBalance: { annual: 7,  medical: 4, emergency: 2 }, skills: ["Python", "Django", "PostgreSQL"],                               rating: 3.7, bankDetails: { bankName: "Sampath Bank",         branchName: "Maharagama",     accountNumber: "8015678901",           accountHolderName: "Leila Hassan",    paymentMethod: "bank_transfer", currency: "LKR" } },
+    { id: "EMP001", name: "James Perera",    email: "james@company.com",   phone: "+94 771234567",  country: "LK", familyId: "jf1", level: "Staff Engineer",    dept: "Engineering", managerId: null,     type: "Full-time", startDate: "2022-01-15", status: "Active",   salary: 185000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "Node.js", "TypeScript", "AWS"],           rating: 4.5, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Colombo Fort",   accountNumber: "8001234567",           accountHolderName: "James Perera",    paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [
+        { date: "2022-01-15", type: "Joined", details: "Joined as Senior Engineer", user: "Admin", salary: 140000 },
+        { date: "2023-01-15", type: "Promotion", details: "Promoted to Lead Engineer", user: "Nimali Silva", salary: 160000 },
+        { date: "2024-03-01", type: "Promotion", details: "Promoted to Staff Engineer", user: "Nimali Silva", salary: 185000 },
+      ]
+    },
+    { id: "EMP002", name: "Nimali Silva",    email: "nimali@company.com",  phone: "+94 772345678",  country: "LK", familyId: "jf4", level: "HR Manager",        dept: "HR & Admin",  managerId: null,     type: "Full-time", startDate: "2021-03-01", status: "Active",   salary: 165000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Recruitment", "Employee Relations", "Labour Law", "HRIS"],       rating: 4.7, bankDetails: { bankName: "People's Bank",        branchName: "Nugegoda",       accountNumber: "8002345678",           accountHolderName: "Nimali Silva",    paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [
+        { date: "2021-03-01", type: "Joined", details: "Joined as Lead HR", user: "Admin", salary: 145000 },
+        { date: "2022-06-01", type: "Role Change", details: "Promoted to HR Manager", user: "Admin", salary: 165000 },
+      ]
+    },
+    { id: "EMP003", name: "David Chen",      email: "david@company.com",   phone: "+94 773456789",  country: "LK", familyId: "jf2", level: "Senior PM",         dept: "Product",     managerId: null,     type: "Full-time", startDate: "2023-08-01", status: "Active",   salary: 175000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Product Strategy", "Roadmapping", "User Research", "Analytics"], rating: 4.2, bankDetails: { bankName: "Commercial Bank",      branchName: "Bambalapitiya", accountNumber: "8003456789",           accountHolderName: "David Chen",      paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2023-08-01", type: "Joined", details: "Joined as Senior PM", user: "Admin", salary: 175000 }]
+    },
+    { id: "EMP004", name: "Ayesha Farook",   email: "ayesha@company.com",  phone: "+94 774567890",  country: "LK", familyId: "jf8", level: "QA Engineer",       dept: "QA",          managerId: "EMP003", type: "Full-time", startDate: "2022-11-01", status: "On Leave", salary: 110000, leaveBalance: { annual: 8,  medical: 5, emergency: 3 }, skills: ["Manual Testing", "Selenium", "API Testing"],                    rating: 3.8, bankDetails: { bankName: "Hatton National Bank", branchName: "Dehiwala",       accountNumber: "8004567890",           accountHolderName: "Ayesha Farook",   paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2022-11-01", type: "Joined", details: "Joined as QA Engineer", user: "David Chen", salary: 110000 }]
+    },
+    { id: "EMP005", name: "Rayan Kumar",     email: "rayan@company.com",   phone: "+94 775678901",  country: "LK", familyId: "jf1", level: "Senior Engineer",   dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-02-01", status: "Active",   salary: 145000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["Node.js", "PostgreSQL", "Docker", "Redis"],                     rating: 4.0, bankDetails: { bankName: "Sampath Bank",         branchName: "Kandy Road",     accountNumber: "8005678901",           accountHolderName: "Rayan Kumar",     paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2024-02-01", type: "Joined", details: "Joined as Senior Engineer", user: "James Perera", salary: 145000 }]
+    },
+    { id: "EMP006", name: "Emma Thompson",   email: "emma@company.com",    phone: "+44 7891234567", country: "GB", familyId: "jf3", level: "Sales Manager",     dept: "Sales",       managerId: null,     type: "Full-time", startDate: "2020-06-15", status: "Active",   salary: 160000, leaveBalance: { annual: 16, medical: 7, emergency: 3 }, skills: ["Negotiation", "CRM", "Pipeline Management", "Presentation"],   rating: 4.4, bankDetails: { bankName: "Barclays",             branchName: "London City",    accountNumber: "GB29BARC20201530093459", accountHolderName: "Emma Thompson",   paymentMethod: "bank_transfer", currency: "GBP" },
+      history: [{ date: "2020-06-15", type: "Joined", details: "Joined as Sales Manager", user: "Admin", salary: 160000 }]
+    },
+    { id: "EMP007", name: "Arjun Mehta",     email: "arjun@company.com",   phone: "+94 776789012",  country: "LK", familyId: "jf6", level: "Lead DevOps",       dept: "DevOps",      managerId: null,     type: "Full-time", startDate: "2023-09-01", status: "Active",   salary: 155000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"],           rating: 4.1, bankDetails: { bankName: "Commercial Bank",      branchName: "Kandy",          accountNumber: "8007890123",           accountHolderName: "Arjun Mehta",     paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2023-09-01", type: "Joined", details: "Joined as Lead DevOps", user: "Admin", salary: 155000 }]
+    },
+    { id: "EMP008", name: "Kavya Pillai",    email: "kavya@company.com",   phone: "+94 777890123",  country: "LK", familyId: "jf4", level: "HR Executive",      dept: "HR & Admin",  managerId: "EMP002", type: "Full-time", startDate: "2023-05-15", status: "Active",   salary: 95000,  leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Recruitment", "HRIS", "Benefits Admin"],                        rating: 3.9, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Nawala",         accountNumber: "8008901234",           accountHolderName: "Kavya Pillai",    paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2023-05-15", type: "Joined", details: "Joined as HR Executive", user: "Nimali Silva", salary: 95000 }]
+    },
+    { id: "EMP009", name: "Chamara Silva",   email: "chamara@company.com", phone: "+94 778901234",  country: "LK", familyId: "jf5", level: "Finance Manager",   dept: "Finance",     managerId: null,     type: "Full-time", startDate: "2021-08-01", status: "Active",   salary: 150000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Financial Modelling", "Excel", "Budgeting", "Tax Compliance"], rating: 4.3, bankDetails: { bankName: "People's Bank",        branchName: "Wellawatte",     accountNumber: "8009012345",           accountHolderName: "Chamara Silva",   paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2021-08-01", type: "Joined", details: "Joined as Finance Manager", user: "Admin", salary: 150000 }]
+    },
+    { id: "EMP010", name: "Priya Nair",      email: "priya@company.com",   phone: "+94 779012345",  country: "LK", familyId: "jf1", level: "Engineer",          dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-06-01", status: "Active",   salary: 105000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "CSS"],                                   rating: 3.5, bankDetails: { bankName: "Hatton National Bank", branchName: "Moratuwa",       accountNumber: "8010123456",           accountHolderName: "Priya Nair",      paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2024-06-01", type: "Joined", details: "Joined as Engineer", user: "James Perera", salary: 105000 }]
+    },
+    { id: "EMP011", name: "Rohan Peiris",    email: "rohan@company.com",   phone: "+94 770123456",  country: "LK", familyId: "jf3", level: "Account Executive", dept: "Sales",       managerId: "EMP006", type: "Full-time", startDate: "2024-01-15", status: "Active",   salary: 95000,  leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["CRM", "Prospecting", "Presentation"],                           rating: 3.6, bankDetails: { bankName: "Sampath Bank",         branchName: "Nugegoda",       accountNumber: "8011234567",           accountHolderName: "Rohan Peiris",    paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2024-01-15", type: "Joined", details: "Joined as Account Executive", user: "Emma Thompson", salary: 95000 }]
+    },
+    { id: "EMP012", name: "Tina Mendis",     email: "tina@company.com",    phone: "+94 771122334",  country: "LK", familyId: "jf7", level: "Senior Designer",   dept: "Design",      managerId: null,     type: "Full-time", startDate: "2022-04-01", status: "Active",   salary: 135000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Figma", "UI Design", "Prototyping", "Design Systems"],          rating: 4.6, bankDetails: { bankName: "Commercial Bank",      branchName: "Colombo 03",     accountNumber: "8012345678",           accountHolderName: "Tina Mendis",     paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2022-04-01", type: "Joined", details: "Joined as Senior Designer", user: "Admin", salary: 135000 }]
+    },
+    { id: "EMP013", name: "Saman Wijesinghe",email: "saman@company.com",   phone: "+94 772233445",  country: "LK", familyId: "jf1", level: "Junior Engineer",   dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2025-11-01", status: "Active",   salary: 75000,  leaveBalance: { annual: 14, medical: 7, emergency: 2 }, skills: ["JavaScript", "HTML", "CSS"],                                    rating: 0,   bankDetails: { bankName: "People's Bank",        branchName: "Kelaniya",       accountNumber: "8013456789",           accountHolderName: "Saman Wijesinghe",paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2025-11-01", type: "Joined", details: "Joined as Junior Engineer", user: "James Perera", salary: 75000 }]
+    },
+    { id: "EMP014", name: "Dilani Fernando", email: "dilani@company.com",  phone: "+94 773344556",  country: "LK", familyId: "jf5", level: "Senior Analyst",    dept: "Finance",     managerId: "EMP009", type: "Full-time", startDate: "2023-02-01", status: "Active",   salary: 120000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Excel", "Accounting", "Budgeting"],                             rating: 4.0, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Pettah",         accountNumber: "8014567890",           accountHolderName: "Dilani Fernando", paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2023-02-01", type: "Joined", details: "Joined as Senior Analyst", user: "Chamara Silva", salary: 120000 }]
+    },
+    { id: "EMP015", name: "Leila Hassan",    email: "leila@company.com",   phone: "+94 774455667",  country: "LK", familyId: "jf1", level: "Engineer",          dept: "Engineering", managerId: "EMP001", type: "Part-time", startDate: "2024-09-01", status: "Active",   salary: 85000,  leaveBalance: { annual: 7,  medical: 4, emergency: 2 }, skills: ["Python", "Django", "PostgreSQL"],                               rating: 3.7, bankDetails: { bankName: "Sampath Bank",         branchName: "Maharagama",     accountNumber: "8015678901",           accountHolderName: "Leila Hassan",    paymentMethod: "bank_transfer", currency: "LKR" },
+      history: [{ date: "2024-09-01", type: "Joined", details: "Joined as Engineer", user: "James Perera", salary: 85000 }]
+    },
 ];
 
 const INITIAL_TEAMS = [
@@ -906,417 +932,371 @@ const THEME_SWATCHES = [
     { key: "rose",   label: "Rose",   color: "#f43f5e" },
 ];
 
-const TopActions = ({ onNav, onLogout }) => {
-    const { isDark, toggleTheme, themeKey, setThemeKey } = React.useContext(ThemeCtx);
+// ── Contextual sub-nav per module — shown in the TopBar ──────────────
+// ── Contextual CTA button per module — shown in TopBar right side ─
+// Keyed by specific page — "New Leave" only on leave pages, not attendance
+const MODULE_ACTIONS = {
+    "leave":                    { label: "New Leave",    icon: "Plus"     },
+    "leave_My_Requests":        { label: "New Leave",    icon: "Plus"     },
+    "leave_All_Leave_Requests": { label: "New Leave",    icon: "Plus"     },
+    "leave_Leave_Types":        { label: "New Leave",    icon: "Plus"     },
+    "calendar":                 { label: "New Leave",    icon: "Plus"     },
+    "people":                   { label: "Add Employee", icon: "UserPlus" },
+    "performance":              { label: "New Review",   icon: "Plus"     },
+    "skills":                   { label: "Add Skill",    icon: "Plus"     },
+};
+
+const MODULE_SUB_NAV = {
+    time_leave: [
+        { label: "Attendance",     key: "time_leave",                  activeFor: ["time_leave", "timesheet", "timesheet_All_Records", "timesheet_Corrections", "timesheet_Overtime"] },
+        { label: "Leave Requests", key: "leave_All_Leave_Requests",     activeFor: ["leave_All_Leave_Requests", "leave_My_Requests", "leave_Leave_Types", "leave"] },
+        { label: "Calendar",       key: "calendar",                    activeFor: ["calendar", "leave_Team_Calendar", "timesheet_Calendar"] },
+        { label: "Balance",        key: "leave_Leave_Entitlements",    activeFor: ["leave_Leave_Entitlements"] },
+        { label: "Schedules",      key: "timesheet_Schedule",          activeFor: ["timesheet_Schedule"] },
+    ],
+
+    people: [
+        { label: "Directory",    key: "people",               activeFor: ["people", "people_Profile", "people_Directory", "people_Lifecycle"] },
+        { label: "Onboarding",   key: "people_Onboarding",    activeFor: ["people_Onboarding"] },
+        { label: "Teams",        key: "people_Teams",          activeFor: ["people_Teams"] },
+        { label: "Job Families", key: "people_Job_Families",  activeFor: ["people_Job_Families"] },
+        { label: "Offboarding",  key: "people_Offboarding",   activeFor: ["people_Offboarding"] },
+    ],
+    performance: [
+        { label: "Overview",    key: "performance",               activeFor: ["performance"] },
+        { label: "Goals & OKR", key: "performance_Goals_&_OKR",  activeFor: ["performance_Goals_&_OKR"] },
+        { label: "Feedback",    key: "performance_Feedback",      activeFor: ["performance_Feedback", "performance_Recognition"] },
+        { label: "Reviews",     key: "performance_Reviews",       activeFor: ["performance_Reviews"] },
+    ],
+    skills: [
+        { label: "Library",      key: "skills",                    activeFor: ["skills"] },
+        { label: "Development",  key: "skills_Skill_Development",  activeFor: ["skills_Skill_Development"] },
+        { label: "Gap Analysis", key: "skills_Gap_Analysis",       activeFor: ["skills_Gap_Analysis"] },
+        { label: "Dev Plans",    key: "skills_Dev_Plans",          activeFor: ["skills_Dev_Plans"] },
+        { label: "Succession",   key: "skills_Succession",         activeFor: ["skills_Succession"] },
+    ],
+    settings: [
+        { label: "General",      key: "settings",      activeFor: ["settings", "config"] },
+        { label: "Organisation", key: "org",            activeFor: ["org"] },
+        { label: "Policies",     key: "allowance",      activeFor: ["allowance"] },
+        { label: "Integrations", key: "integrations",  activeFor: ["integrations"] },
+        { label: "Access",       key: "permissions",   activeFor: ["permissions"] },
+        { label: "Hardware",     key: "devices",       activeFor: ["devices"] },
+        { label: "Data",         key: "documents",     activeFor: ["documents"] },
+    ],
+};
+
+const getModuleFromPage = (pageKey) => {
+    if (!pageKey) return "dashboard";
+    if (pageKey.startsWith("timesheet") || pageKey.startsWith("leave") || pageKey === "time_leave" || pageKey === "calendar" || pageKey.includes("Calendar")) return "time_leave";
+    if (pageKey.startsWith("people") || pageKey === "org") return "people";
+    if (pageKey.startsWith("performance")) return "performance";
+    if (pageKey.startsWith("skills")) return "skills";
+    if (pageKey.startsWith("payroll")) return "payroll";
+    if (["settings", "config", "allowance", "permissions", "integrations", "documents", "devices"].some(k => pageKey.startsWith(k))) return "settings";
+    return pageKey;
+};
+
+const TopBar = ({ onNav, onLogout, page, onAction }) => {
     const currentUser = React.useContext(UserCtx);
     const { notifications, setNotifications } = React.useContext(DataCtx);
+    const { isDark, toggleTheme } = React.useContext(ThemeCtx);
 
-    // Notification panel
-    const [notiOpen, setNotiOpen]   = useState(false);
-    const notiRef                   = React.useRef(null);
-
-    // Bell hover
-    const [bellHover, setBellHover] = useState(false);
-
-    // Avatar dropdown
+    const [notiOpen, setNotiOpen] = useState(false);
     const [avatarOpen, setAvatarOpen] = useState(false);
-    const avatarRef                   = React.useRef(null);
+    const notiRef = React.useRef(null);
+    const avatarRef = React.useRef(null);
 
-    // Clock In
-    const [clockedIn, setClockedIn]       = useState(false);
-    const [clockStart, setClockStart]     = useState(null);
-    const [elapsed, setElapsed]           = useState("");
-    const [dotVisible, setDotVisible]     = useState(true);
-
-    // Elapsed timer
     React.useEffect(() => {
-        if (!clockedIn || !clockStart) return;
-        const tick = () => {
-            const ms = Date.now() - clockStart;
-            const h  = Math.floor(ms / 3600000);
-            const m  = Math.floor((ms % 3600000) / 60000);
-            setElapsed(h > 0 ? `${h}h ${String(m).padStart(2, "0")}m` : `${m}m`);
+        if (!notiOpen && !avatarOpen) return;
+        const h = (e) => {
+            if (notiOpen && notiRef.current && !notiRef.current.contains(e.target)) setNotiOpen(false);
+            if (avatarOpen && avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false);
         };
-        tick();
-        const id = setInterval(tick, 1000);
-        return () => clearInterval(id);
-    }, [clockedIn, clockStart]);
-
-    // Pulsing dot when clocked in
-    React.useEffect(() => {
-        if (!clockedIn) return;
-        const id = setInterval(() => setDotVisible(v => !v), 2000);
-        return () => clearInterval(id);
-    }, [clockedIn]);
-
-    // Close notification panel on outside click
-    React.useEffect(() => {
-        if (!notiOpen) return;
-        const h = (e) => { if (notiRef.current && !notiRef.current.contains(e.target)) setNotiOpen(false); };
         document.addEventListener("mousedown", h);
         return () => document.removeEventListener("mousedown", h);
-    }, [notiOpen]);
-
-    // Close avatar dropdown on outside click
-    React.useEffect(() => {
-        if (!avatarOpen) return;
-        const h = (e) => { if (avatarRef.current && !avatarRef.current.contains(e.target)) setAvatarOpen(false); };
-        document.addEventListener("mousedown", h);
-        return () => document.removeEventListener("mousedown", h);
-    }, [avatarOpen]);
+    }, [notiOpen, avatarOpen]);
 
     const unreadCount = (notifications || []).filter(n => !n.read).length;
-    const markRead    = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
+    const markRead = (id) => setNotifications(prev => prev.map(n => n.id === id ? { ...n, read: true } : n));
     const markAllRead = () => setNotifications(prev => prev.map(n => ({ ...n, read: true })));
 
-    const userName     = currentUser?.name || "Admin";
-    const userTitle    = currentUser?.title || "HR Administrator";
+    const userName = currentUser?.name || "Admin";
+    const firstName = userName.split(" ")[0];
+    const userTitle = currentUser?.title || "HR Administrator";
     const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
 
-    const handleClockToggle = () => {
-        if (!clockedIn) { setClockedIn(true); setClockStart(Date.now()); setElapsed("0m"); }
-        else            { setClockedIn(false); setClockStart(null); setElapsed(""); }
+    // Derive current module for sub-nav + action button
+    const currentModule = getModuleFromPage(page);
+    const subNav = MODULE_SUB_NAV[currentModule] || [];
+    const moduleAction = MODULE_ACTIONS[page] || null;
+    const isSubActive = (item) => item.activeFor ? item.activeFor.some(k => page === k) : page === item.key;
+
+    const iconBtnStyle = {
+        width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center",
+        borderRadius: "50%", cursor: "pointer", transition: "background 0.15s", flexShrink: 0,
     };
 
     return (
-        <div style={{ position: "fixed", top: 14, right: 24, zIndex: 50, display: "flex", alignItems: "center", gap: 12, background: "transparent" }}>
-
-            {/* Clock In pill */}
-            <motion.button
-                whileTap={{ scale: 0.97 }}
-                onClick={handleClockToggle}
-                onMouseEnter={e => { if (!clockedIn) { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.color = "#0d9488"; } }}
-                onMouseLeave={e => { if (!clockedIn) { e.currentTarget.style.borderColor = _darkMode ? C.border : "#e2e8f0"; e.currentTarget.style.color = _darkMode ? C.text : "#1e293b"; } }}
-                style={{
-                    display: "flex", alignItems: "center", gap: 6,
-                    height: 38, padding: "0 16px",
-                    borderRadius: 999,
-                    border: clockedIn ? "1.5px solid #10b981" : `1.5px solid ${_darkMode ? C.border : "#e2e8f0"}`,
-                    background: clockedIn ? (_darkMode ? "rgba(16,185,129,0.12)" : "#f0fdf4") : (_darkMode ? C.white : "#ffffff"),
-                    color: clockedIn ? "#059669" : (_darkMode ? C.text : "#1e293b"),
-                    fontSize: 13, fontWeight: 500, cursor: "pointer",
-                    fontFamily: "inherit", whiteSpace: "nowrap",
-                    boxShadow: "0 1px 4px rgba(0,0,0,0.08)",
-                    transition: "border-color 0.15s, color 0.15s",
-                }}
-            >
-                {clockedIn ? (
-                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", flexShrink: 0, opacity: dotVisible ? 1 : 0.4, transition: "opacity 0.4s ease" }} />
-                ) : (
-                    <Lucide.Timer size={16} strokeWidth={1.75} style={{ flexShrink: 0 }} />
-                )}
-                <span>{clockedIn ? (elapsed || "0m") : "Clock In"}</span>
-            </motion.button>
-
-            {/* Bell (bare icon) */}
-            <div ref={notiRef} style={{ position: "relative" }}>
-                <div
-                    role="button"
-                    aria-label="Notifications"
-                    onClick={() => setNotiOpen(o => !o)}
-                    onMouseEnter={() => setBellHover(true)}
-                    onMouseLeave={() => setBellHover(false)}
-                    style={{ position: "relative", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 2 }}
-                >
-                    <Lucide.Bell size={22} color={bellHover || notiOpen ? "#111827" : "#374151"} strokeWidth={1.75} style={{ transition: "color 0.15s", display: "block" }} />
-                    {unreadCount > 0 && (
-                        unreadCount > 9 ? (
-                            <div style={{ position: "absolute", top: -5, right: -7, minWidth: 16, height: 16, borderRadius: 999, background: "#ef4444", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 700, color: "#fff", padding: "0 3px", lineHeight: 1 }}>9+</div>
-                        ) : (
-                            <div style={{ position: "absolute", top: -1, right: -1, width: 8, height: 8, borderRadius: "50%", background: "#ef4444", border: `1.5px solid ${_darkMode ? "#0F1729" : "#f8fafc"}` }} />
-                        )
-                    )}
+        <div style={{
+            height: 64, flexShrink: 0,
+            background: C.white, borderBottom: `1px solid ${C.border}`,
+            display: "flex", alignItems: "center", justifyContent: "space-between",
+            padding: "0 28px", zIndex: 200,
+        }}>
+            {/* Left: Search + contextual sub-nav */}
+            <div style={{ display: "flex", alignItems: "center", height: "100%", gap: 24 }}>
+                {/* Search */}
+                <div style={{ position: "relative" }}>
+                    <Lucide.Search size={14} color={C.textMuted} strokeWidth={2}
+                        style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                    <input
+                        placeholder="Search employees or logs…"
+                        style={{
+                            paddingLeft: 34, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
+                            background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
+                            fontSize: 13, color: C.text, width: 230, outline: "none",
+                            fontFamily: "inherit",
+                        }}
+                        onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = `0 0 0 2px ${C.primaryLight}`; }}
+                        onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = "none"; }}
+                    />
                 </div>
-                <AnimatePresence>
-                    {notiOpen && (
-                        <motion.div initial={{ opacity: 0, y: 8, scale: 0.96 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 8, scale: 0.96 }} transition={{ duration: 0.15, ease: "easeOut" }}
-                            style={{ position: "absolute", top: 38, right: 0, width: 360, background: C.white, borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.14)", border: `1px solid ${C.border}`, overflow: "hidden", zIndex: 500 }}>
-                            <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Notifications</div>
-                                {unreadCount > 0 && (
-                                    <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>Mark all read</button>
-                                )}
-                            </div>
-                            <div style={{ maxHeight: 340, overflowY: "auto" }}>
-                                {(!notifications || notifications.length === 0) ? (
-                                    <div style={{ padding: "32px 16px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No notifications</div>
-                                ) : notifications.map(n => {
-                                    const typeIcon  = { leave: "CalendarDays", attendance: "Clock", payroll: "DollarSign", training: "BookOpen", performance: "TrendingUp", skill: "Sparkles" };
-                                    const typeColor = { leave: C.info, attendance: C.warning, payroll: C.success, training: C.primary, performance: "#8B5CF6", skill: "#0d9488" };
-                                    const NIcon = Lucide[typeIcon[n.type] || "Bell"] || Lucide.Bell;
-                                    return (
-                                        <div key={n.id} onClick={() => markRead(n.id)}
-                                            style={{ padding: "10px 16px", display: "flex", gap: 10, alignItems: "flex-start", cursor: "pointer", background: n.read ? "transparent" : C.primaryLight, borderBottom: `1px solid ${C.border}`, transition: "background 0.15s" }}
-                                            onMouseEnter={e => { if (n.read) e.currentTarget.style.background = C.bg; }}
-                                            onMouseLeave={e => { if (n.read) e.currentTarget.style.background = "transparent"; }}>
-                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: `${typeColor[n.type] || C.textMuted}18`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
-                                                <NIcon size={13} color={typeColor[n.type] || C.textMuted} />
-                                            </div>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.45 }}>{n.msg}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{n.time}</div>
-                                            </div>
-                                            {!n.read && <div style={{ width: 7, height: 7, borderRadius: "50%", background: C.primary, flexShrink: 0, marginTop: 5 }} />}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+
+                {/* Contextual sub-nav tabs */}
+                {subNav.length > 0 && (
+                    <nav style={{ display: "flex", alignItems: "stretch", height: "100%", gap: 0 }}>
+                        {subNav.map(item => {
+                            const active = isSubActive(item);
+                            return (
+                                <button
+                                    key={item.key}
+                                    onClick={() => onNav(item.key)}
+                                    style={{
+                                        padding: "0 14px", height: "100%", border: "none",
+                                        borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
+                                        background: "transparent", cursor: "pointer",
+                                        fontSize: 13.5, fontWeight: active ? 700 : 500,
+                                        color: active ? C.primary : C.textMid,
+                                        fontFamily: "inherit", whiteSpace: "nowrap",
+                                        transition: "color 0.15s, border-color 0.15s",
+                                    }}
+                                    onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.text; }}
+                                    onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.textMid; }}
+                                >
+                                    {item.label}
+                                </button>
+                            );
+                        })}
+                    </nav>
+                )}
             </div>
 
-            {/* Avatar circle */}
-            <div ref={avatarRef} style={{ position: "relative" }}>
-                <div
-                    onClick={() => setAvatarOpen(o => !o)}
-                    onMouseEnter={e => { e.currentTarget.style.borderColor = "#0d9488"; e.currentTarget.style.boxShadow = "0 0 0 3px rgba(13,148,136,0.12)"; }}
-                    onMouseLeave={e => { if (!avatarOpen) { e.currentTarget.style.borderColor = _darkMode ? C.border : "#e2e8f0"; e.currentTarget.style.boxShadow = "none"; } }}
-                    style={{
-                        width: 36, height: 36, borderRadius: "50%",
-                        background: "linear-gradient(135deg, #0d9488, #6366f1)",
-                        display: "flex", alignItems: "center", justifyContent: "center",
-                        fontSize: 12, fontWeight: 600, color: "#fff", flexShrink: 0,
-                        border: avatarOpen ? "2px solid #0d9488" : `2px solid ${_darkMode ? C.border : "#e2e8f0"}`,
-                        boxShadow: avatarOpen ? "0 0 0 3px rgba(13,148,136,0.12)" : "none",
-                        cursor: "pointer", userSelect: "none",
-                        transition: "border-color 0.15s, box-shadow 0.15s",
-                    }}
-                >
-                    {userInitials}
+            {/* Right: icon actions */}
+            <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+
+                {/* Contextual CTA button */}
+                {moduleAction && (
+                    <>
+                        <motion.button
+                            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                            onClick={() => onAction?.()}
+                            style={{
+                                display: "flex", alignItems: "center", gap: 6,
+                                padding: "8px 16px", borderRadius: 9, border: "none",
+                                background: C.primary, color: "#fff",
+                                fontSize: 13, fontWeight: 700, cursor: "pointer",
+                                fontFamily: "inherit", marginRight: 8,
+                                boxShadow: `0 2px 10px ${C.primary}40`,
+                            }}>
+                            <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />
+                            {moduleAction.label}
+                        </motion.button>
+                        <div style={{ width: 1, height: 24, background: C.border, marginRight: 6 }} />
+                    </>
+                )}
+
+                {/* Dark mode */}
+                <div onClick={toggleTheme} style={iconBtnStyle}
+                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    {isDark ? <Lucide.Sun size={18} color={C.textMid} strokeWidth={1.75} /> : <Lucide.Moon size={18} color={C.textMid} strokeWidth={1.75} />}
                 </div>
-                <AnimatePresence>
-                    {avatarOpen && (
-                        <motion.div
-                            initial={{ opacity: 0, y: 8, scale: 0.96 }}
-                            animate={{ opacity: 1, y: 0, scale: 1 }}
-                            exit={{ opacity: 0, y: 6, scale: 0.96 }}
-                            transition={{ duration: 0.15, ease: "easeOut" }}
-                            style={{ position: "absolute", top: 46, right: 0, width: 220, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 8px 32px rgba(0,0,0,0.14)", overflow: "hidden", zIndex: 600 }}
-                        >
-                            <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.border}` }}>
-                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{userName}</div>
-                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{userTitle}</div>
+
+                {/* Bell */}
+                <div ref={notiRef} style={{ position: "relative" }}>
+                    <div role="button" aria-label="Notifications" onClick={() => setNotiOpen(o => !o)}
+                        style={{ ...iconBtnStyle, position: "relative", background: notiOpen ? C.bg : "transparent" }}
+                        onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                        onMouseLeave={e => { if (!notiOpen) e.currentTarget.style.background = "transparent"; }}>
+                        <Lucide.Bell size={18} color={C.textMid} strokeWidth={1.75} />
+                        {unreadCount > 0 && (
+                            <div style={{ position: "absolute", top: 6, right: 6, minWidth: 15, height: 15, borderRadius: 999, background: C.danger, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff", padding: "0 3px", lineHeight: 1 }}>
+                                {unreadCount > 9 ? "9+" : unreadCount}
                             </div>
-                            <div style={{ padding: "4px 0" }}>
-                                {[
-                                    { icon: "User",     label: "My Profile",  action: () => { onNav("settings"); setAvatarOpen(false); } },
-                                    { icon: "Settings", label: "Preferences", action: () => { onNav("settings"); setAvatarOpen(false); } },
-                                ].map(({ icon, label, action }) => {
-                                    const MIcon = Lucide[icon] || Lucide.Circle;
-                                    return (
-                                        <div key={label} onClick={action}
-                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", fontSize: 13, color: C.text, transition: "background 0.1s" }}
-                                            onMouseEnter={e => e.currentTarget.style.background = C.bg}
-                                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                            <MIcon size={14} color={C.textMid} />
-                                            {label}
+                        )}
+                    </div>
+                    <AnimatePresence>
+                        {notiOpen && (
+                            <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 6 }} transition={{ duration: 0.12 }}
+                                style={{ position: "absolute", top: 50, right: 0, width: 320, background: C.white, borderRadius: 14, boxShadow: C.shadowLg, border: `1px solid ${C.border}`, overflow: "hidden", zIndex: 500 }}>
+                                <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.border}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Notifications</div>
+                                    {unreadCount > 0 && <button onClick={markAllRead} style={{ fontSize: 11, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit", padding: 0 }}>Mark all read</button>}
+                                </div>
+                                <div style={{ maxHeight: 300, overflowY: "auto" }}>
+                                    {(!notifications || notifications.length === 0) ? (
+                                        <div style={{ padding: "28px 16px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No notifications</div>
+                                    ) : notifications.slice(0, 8).map(n => (
+                                        <div key={n.id} onClick={() => markRead(n.id)}
+                                            style={{ padding: "10px 16px", cursor: "pointer", background: n.read ? "transparent" : C.primaryLight, borderBottom: `1px solid ${C.borderLight}`, transition: "background 0.15s" }}
+                                            onMouseEnter={e => { if (n.read) e.currentTarget.style.background = C.bg; }}
+                                            onMouseLeave={e => { if (n.read) e.currentTarget.style.background = "transparent"; }}>
+                                            <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.45 }}>{n.msg}</div>
+                                            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 3 }}>{n.time}</div>
                                         </div>
-                                    );
-                                })}
-                                <div onClick={toggleTheme}
-                                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", fontSize: 13, color: C.text, transition: "background 0.1s" }}
-                                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                    {isDark ? <Lucide.Sun size={14} color={C.textMid} /> : <Lucide.Moon size={14} color={C.textMid} />}
-                                    <span style={{ flex: 1 }}>Dark Mode</span>
-                                    <div style={{ width: 32, height: 18, borderRadius: 999, background: isDark ? C.primary : "#cbd5e1", position: "relative", flexShrink: 0, transition: "background 0.2s" }}>
-                                        <div style={{ position: "absolute", top: 2, left: isDark ? 16 : 2, width: 14, height: 14, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 3px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
-                                    </div>
+                                    ))}
                                 </div>
-                                {/* Theme color picker */}
-                                <div style={{ padding: "8px 16px 10px" }}>
-                                    <div style={{ fontSize: 11, fontWeight: 600, color: C.textMuted, marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.06em" }}>Theme</div>
-                                    <div style={{ display: "flex", gap: 8 }}>
-                                        {THEME_SWATCHES.map(t => (
-                                            <div
-                                                key={t.key}
-                                                title={t.label}
-                                                onClick={() => setThemeKey(t.key)}
-                                                style={{
-                                                    width: 22, height: 22, borderRadius: "50%",
-                                                    background: t.color,
-                                                    cursor: "pointer", flexShrink: 0,
-                                                    border: themeKey === t.key ? `2px solid ${t.color}` : "2px solid transparent",
-                                                    outline: themeKey === t.key ? `2px solid ${t.color}40` : "none",
-                                                    outlineOffset: 1,
-                                                    transition: "outline 0.15s, border 0.15s",
-                                                    boxShadow: themeKey === t.key ? `0 0 0 3px ${t.color}25` : "none",
-                                                }}
-                                            />
-                                        ))}
-                                    </div>
-                                </div>
-                            </div>
-                            <div style={{ height: 1, background: C.border }} />
-                            <div style={{ padding: "4px 0" }}>
-                                <div onClick={() => { onLogout?.(); setAvatarOpen(false); }}
-                                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 16px", cursor: "pointer", fontSize: 13, color: C.danger, fontWeight: 500, transition: "background 0.1s" }}
-                                    onMouseEnter={e => e.currentTarget.style.background = C.dangerBg}
-                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                                    <Lucide.LogOut size={14} color={C.danger} />
-                                    Log Out
-                                </div>
-                            </div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
+                </div>
+
+                {/* Help */}
+                <div style={iconBtnStyle}
+                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                    <Lucide.HelpCircle size={18} color={C.textMid} strokeWidth={1.75} />
+                </div>
             </div>
         </div>
     );
 };
 
 
+// ── Sidebar always-dark color tokens (independent of light/dark theme) ──
+const SB = {
+    bg:          "#2d3133",
+    border:      "rgba(255,255,255,0.07)",
+    label:       "rgba(255,255,255,0.30)",
+    text:        "#94a3b8",
+    textHover:   "#ffffff",
+    textActive:  "#ffffff",
+    itemHover:   "rgba(255,255,255,0.05)",
+    itemActive:  "rgba(255,255,255,0.08)",
+    separator:   "rgba(255,255,255,0.08)",
+    footerCard:  "rgba(255,255,255,0.06)",
+    footerBorder:"rgba(255,255,255,0.10)",
+};
+
+/* ─── SIDEBAR NAV ITEM — module-level so hover state is stable ── */
+const SidebarNavItem = ({ item, isActive, onNav, collapsed, badgeCount, nexisHighlight }) => {
+    const [hovered, setHovered] = useState(false);
+    const NavIcon = Lucide[item.icon] || Lucide.Circle;
+
+    const bg        = isActive ? SB.itemActive : hovered ? SB.itemHover : "transparent";
+    const iconColor = isActive ? "#fff" : nexisHighlight ? (hovered ? "#a78bfa" : "#8b5cf6") : hovered ? SB.textHover : SB.text;
+    const textColor = isActive ? SB.textActive : nexisHighlight ? (hovered ? "#a78bfa" : "#8b5cf6") : hovered ? SB.textHover : SB.text;
+
+    return (
+        <div
+            onClick={() => onNav(item.key)}
+            onMouseEnter={() => setHovered(true)}
+            onMouseLeave={() => setHovered(false)}
+            style={{
+                display: "flex", alignItems: "center", gap: 10,
+                padding: collapsed ? "11px 0" : "9px 12px",
+                justifyContent: collapsed ? "center" : "flex-start",
+                borderRadius: 9, cursor: "pointer", background: bg,
+                fontWeight: isActive ? 600 : 500, fontSize: 13,
+                transition: "background 0.15s", userSelect: "none",
+                position: "relative",
+                ...(isActive ? { borderLeft: `3px solid ${C.primary}`, borderRadius: "0 9px 9px 0" } : { borderLeft: "3px solid transparent", borderRadius: "0 9px 9px 0" }),
+            }}
+            role="menuitem"
+            aria-label={item.label}
+            title={collapsed ? item.label : ""}
+        >
+            <NavIcon size={17} color={iconColor} strokeWidth={isActive ? 2 : 1.6} style={{ flexShrink: 0 }} />
+            {!collapsed && (
+                <>
+                    <motion.span
+                        animate={{ opacity: 1 }}
+                        style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis", color: textColor, letterSpacing: "-0.1px" }}>
+                        {item.label}
+                    </motion.span>
+                    {badgeCount > 0 && (
+                        <span style={{ fontSize: 10, fontWeight: 700, color: "#fff", background: "#ef4444", borderRadius: 20, padding: "1px 7px", lineHeight: 1.6 }}>{badgeCount}</span>
+                    )}
+                </>
+            )}
+            {collapsed && badgeCount > 0 && (
+                <div style={{ position: "absolute", top: 8, right: 10, width: 7, height: 7, borderRadius: "50%", background: "#ef4444", border: "2px solid #2d3133" }} />
+            )}
+        </div>
+    );
+};
+
 /* ─── SIDEBAR ─────────────────────────────────────────────────── */
-const Sidebar = ({ active, onNav, onLogout, payrollSubNav = [] }) => {
-    const [collapsed, setCollapsed] = useState(false);
-    const [expandedKey, setExpandedKey] = useState(null);
-    const { isDark, toggleTheme } = React.useContext(ThemeCtx);
+const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
+    const [collapsed, setCollapsed] = useState(true);
     const currentUser = React.useContext(UserCtx);
-    const isAdmin = currentUser?.role === "hr_admin";
-    const userName = currentUser?.name || "Admin";
-    const userTitle = currentUser?.title || "HR Administrator";
+    const { leaveRequests } = React.useContext(DataCtx);
+    const userName    = currentUser?.name  || "Admin";
+    const userTitle   = currentUser?.title || "HR Administrator";
     const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
-    const expandedW = 240;
-    const collapsedW = 64;
+    const expandedW = 256;
+    const collapsedW = 80;
 
-    // Auto-expand parent of active sub-page on mount/change
-    React.useEffect(() => {
-        const allItems = [...ALL_NAV_GROUPS.flatMap(g => g.items), ...ADMIN_NAV_ITEMS];
-        for (const item of allItems) {
-            const subs = item.dynamicSub ? payrollSubNav : (item.sub || []);
-            const childActive = subs.some(s => active === `${item.key}_${s.replace(/ /g, "_")}`);
-            if (childActive) { setExpandedKey(item.key); return; }
-        }
-    }, [active, payrollSubNav]);
+    const pendingLeaveCount = (leaveRequests || []).filter(l => l.status === "Pending").length;
 
-    const handleItemClick = (item) => {
-        const subs = item.dynamicSub ? payrollSubNav : (item.sub || []);
-        if (subs.length > 0) {
-            setExpandedKey(prev => prev === item.key ? null : item.key);
-        } else {
-            onNav(item.key);
-        }
+    const getActiveNav = (pageKey) => {
+        if (!pageKey) return "dashboard";
+        if (pageKey.startsWith("timesheet") || pageKey.startsWith("leave") || pageKey === "time_leave" || pageKey === "calendar") return "time_leave";
+        if (pageKey.startsWith("people") || pageKey === "org") return "people";
+        if (pageKey.startsWith("performance")) return "performance";
+        if (pageKey.startsWith("skills")) return "skills";
+        if (pageKey.startsWith("payroll")) return "payroll";
+        if (["settings", "config", "allowance", "permissions", "integrations", "documents", "devices"].some(k => pageKey.startsWith(k))) return "settings";
+        if (pageKey.startsWith("reports")) return "reports";
+        return pageKey;
+    };
+    const activeNav = getActiveNav(active);
+
+    const handleNavClick = (key) => {
+        if (key === "nexis_ai") { onNexisAI?.(); return; }
+        onNav(key);
     };
 
     const renderItem = (item) => {
-        const NavIcon = Lucide[item.icon] || Lucide.Circle;
-        const subs = item.dynamicSub ? payrollSubNav : (item.sub || []);
-        const hasSubs = subs.length > 0;
-        const isParentActive = active === item.key || subs.some(s => active === `${item.key}_${s.replace(/ /g, "_")}`);
-        const isExpanded = expandedKey === item.key;
-
+        const isActive = activeNav === item.key;
+        const isNexis = item.key === "nexis_ai";
+        const badgeCount = item.badgeKey === "pendingLeaves" ? pendingLeaveCount : 0;
         return (
-            <div key={item.key}>
-                {/* Parent row */}
-                <div
-                    onClick={() => handleItemClick(item)}
-                    style={{
-                        display: "flex",
-                        alignItems: "center",
-                        gap: 10,
-                        padding: collapsed ? "10px 0" : "9px 12px",
-                        justifyContent: collapsed ? "center" : "flex-start",
-                        borderRadius: 8,
-                        cursor: "pointer",
-                        background: isParentActive && !hasSubs ? C.navActive : "transparent",
-                        color: isParentActive ? C.primary : C.textMid,
-                        fontWeight: isParentActive ? 600 : 500,
-                        fontSize: 13,
-                        transition: "background 0.2s, color 0.2s",
-                        position: "relative",
-                        userSelect: "none",
-                    }}
-                    onMouseEnter={e => { if (!isParentActive || hasSubs) e.currentTarget.style.background = C.navHover; }}
-                    onMouseLeave={e => { if (!isParentActive || hasSubs) e.currentTarget.style.background = isParentActive && !hasSubs ? C.navActive : "transparent"; }}
-                >
-                    {/* Active indicator bar (only for leaf items) */}
-                    {isParentActive && !hasSubs && (
-                        <motion.div
-                            layoutId="sidebar-indicator"
-                            style={{ position: "absolute", left: 0, top: "16%", bottom: "16%", width: 3, borderRadius: 3, background: C.primary }}
-                            transition={{ type: "spring", stiffness: 350, damping: 30 }}
-                        />
-                    )}
-                    <NavIcon size={16} color={isParentActive ? C.primary : C.textMid} strokeWidth={isParentActive ? 2.2 : 1.75} style={{ flexShrink: 0 }} />
-                    {!collapsed && (
-                        <>
-                            <span style={{ flex: 1, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.label}</span>
-                            {item.badge && (
-                                <span style={{ fontSize: 10, fontWeight: 800, background: C.danger, color: "#fff", borderRadius: 999, padding: "1px 6px", lineHeight: 1.4 }}>{item.badge}</span>
-                            )}
-                            {hasSubs && (
-                                <motion.span animate={{ rotate: isExpanded ? 180 : 0 }} transition={{ duration: 0.2 }} style={{ display: "flex", flexShrink: 0 }}>
-                                    <Lucide.ChevronDown size={12} color={C.textMuted} />
-                                </motion.span>
-                            )}
-                        </>
-                    )}
-                    {/* Collapsed badge dot */}
-                    {collapsed && item.badge && (
-                        <div style={{ position: "absolute", top: 6, right: 8, width: 8, height: 8, borderRadius: "50%", background: C.danger }} />
-                    )}
-                </div>
-
-                {/* Accordion sub-items */}
-                {!collapsed && hasSubs && (
-                    <AnimatePresence initial={false}>
-                        {isExpanded && (
-                            <motion.div
-                                key="sub"
-                                initial={{ height: 0, opacity: 0 }}
-                                animate={{ height: "auto", opacity: 1 }}
-                                exit={{ height: 0, opacity: 0 }}
-                                transition={{ duration: 0.25, ease: "easeInOut" }}
-                                style={{ overflow: "hidden" }}
-                            >
-                                <div style={{ paddingLeft: 28, paddingTop: 2, paddingBottom: 4, display: "flex", flexDirection: "column", gap: 1 }}>
-                                    {subs.map(s => {
-                                        const subKey = `${item.key}_${s.replace(/ /g, "_")}`;
-                                        const isSubActive = active === subKey;
-                                        return (
-                                            <div
-                                                key={s}
-                                                onClick={() => onNav(subKey)}
-                                                style={{
-                                                    display: "flex",
-                                                    alignItems: "center",
-                                                    gap: 8,
-                                                    padding: "7px 12px",
-                                                    borderRadius: 8,
-                                                    cursor: "pointer",
-                                                    background: isSubActive ? C.navActive : "transparent",
-                                                    color: isSubActive ? C.primary : C.textMid,
-                                                    fontWeight: isSubActive ? 600 : 400,
-                                                    fontSize: 12.5,
-                                                    borderLeft: isSubActive ? `3px solid ${C.primary}` : "3px solid transparent",
-                                                    transition: "all 0.15s",
-                                                }}
-                                                onMouseEnter={e => { if (!isSubActive) e.currentTarget.style.background = C.navHover; }}
-                                                onMouseLeave={e => { if (!isSubActive) e.currentTarget.style.background = "transparent"; }}
-                                            >
-                                                {s}
-                                            </div>
-                                        );
-                                    })}
-                                </div>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
-                )}
-            </div>
+            <SidebarNavItem
+                key={item.key}
+                item={item}
+                isActive={isActive}
+                onNav={handleNavClick}
+                collapsed={collapsed}
+                badgeCount={badgeCount}
+                nexisHighlight={isNexis}
+            />
         );
     };
 
     return (
         <motion.aside
-            initial={{ x: -20, opacity: 0 }}
-            animate={{ x: 0, opacity: 1, width: collapsed ? collapsedW : expandedW, minWidth: collapsed ? collapsedW : expandedW }}
+            role="navigation"
+            aria-label="Main navigation"
+            onClick={() => { if (collapsed) setCollapsed(false); }}
+            animate={{ width: collapsed ? collapsedW : expandedW, minWidth: collapsed ? collapsedW : expandedW }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
             style={{
-                background: _darkMode ? "#0F1729" : "#ffffff",
-                borderRight: `1px solid ${C.border}`,
-                boxShadow: "none",
+                background: SB.bg,
+                background: SB.bg,
+                boxShadow: collapsed ? "none" : "4px 0 24px rgba(0,0,0,0.20)",
+                borderRight: `1px solid ${SB.border}`,
                 display: "flex",
                 flexDirection: "column",
                 overflowY: "auto",
@@ -1326,95 +1306,111 @@ const Sidebar = ({ active, onNav, onLogout, payrollSubNav = [] }) => {
                 position: "relative",
             }}
         >
-            {/* Logo + Collapse header */}
+            {/* ── Logo row ────────────────────────────────────────── */}
             <div style={{
-                padding: collapsed ? "16px 0 14px" : "16px 16px 14px 20px",
+                height: 64, flexShrink: 0,
                 display: "flex", alignItems: "center",
-                justifyContent: collapsed ? "center" : "space-between",
-                borderBottom: `1px solid ${C.border}`,
-                flexShrink: 0,
+                padding: collapsed ? "0 25px" : "0 20px",
+                gap: 14,
+                overflow: "hidden",
+                cursor: collapsed ? "pointer" : "default"
             }}>
-                <div
-                    onClick={() => collapsed && setCollapsed(false)}
-                    style={{ display: "flex", alignItems: "center", gap: 10, cursor: collapsed ? "pointer" : "default", minWidth: 0 }}
-                >
-                    <motion.div whileHover={{ rotate: 8, scale: 1.08 }} style={{ flexShrink: 0 }}>
-                        <SelfvoraLogo size={28} />
-                    </motion.div>
-                    {!collapsed && (
-                        <span style={{ fontWeight: 800, fontSize: 15, letterSpacing: "-0.5px", whiteSpace: "nowrap" }}>
-                            <span style={{ color: C.text }}>Self</span><span style={{ color: "#0d9488" }}>vora</span>
-                        </span>
-                    )}
+                <div style={{ flexShrink: 0 }}>
+                    <SelfvoraLogo size={30} />
                 </div>
+                <motion.div
+                    animate={{ opacity: collapsed ? 0 : 1 }}
+                    transition={{ duration: 0.18 }}
+                    style={{ flex: 1, overflow: "hidden", whiteSpace: "nowrap" }}
+                >
+                    <div style={{ fontWeight: 800, fontSize: 15.5, letterSpacing: "-0.5px" }}>
+                        <span style={{ color: "#fff" }}>Self</span><span style={{ color: C.primary }}>vora</span>
+                    </div>
+                    <div style={{ fontSize: 10, color: SB.text, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 1 }}>HR Portal</div>
+                </motion.div>
                 {!collapsed && (
-                    <motion.div
-                        whileHover={{ scale: 1.1 }}
-                        whileTap={{ scale: 0.95 }}
-                        onClick={() => setCollapsed(true)}
-                        style={{ cursor: "pointer", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", padding: 2 }}
+                    <button 
+                        onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} 
+                        style={{ 
+                            background: "transparent", border: "none", cursor: "pointer", color: SB.text, padding: 4, 
+                            display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, transition: "background 0.2s" 
+                        }}
+                        onMouseEnter={e => { e.currentTarget.style.background = SB.hover; e.currentTarget.style.color = "#fff"; }}
+                        onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = SB.text; }}
+                        title="Collapse Sidebar"
+                        aria-label="Collapse Sidebar"
                     >
-                        <Lucide.PanelLeft size={18} color="#94a3b8" />
-                    </motion.div>
+                        <Lucide.PanelLeftClose size={18} strokeWidth={2} />
+                    </button>
                 )}
             </div>
 
-            {/* Nav items */}
-            <div style={{ padding: collapsed ? "8px 6px" : "8px 10px", display: "flex", flexDirection: "column", gap: 0, flex: 1, overflowY: "auto" }}>
-                {/* Core + People + Finance groups */}
+            {/* ── Nav groups ──────────────────────────────────────── */}
+            <div style={{ padding: "8px 12px", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
                 {ALL_NAV_GROUPS.map((group, gi) => (
-                    <div key={group.label} style={{ marginBottom: 4 }}>
-                        {!collapsed && (
-                            <div style={{ padding: "8px 10px 3px", fontSize: 9.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.09em", whiteSpace: "nowrap" }}>
+                    <div key={gi} style={{ marginTop: gi > 0 ? 8 : 0 }}>
+                        {!collapsed && group.label && (
+                            <motion.div
+                                animate={{ opacity: collapsed ? 0 : 1 }}
+                                style={{
+                                    fontSize: 10, fontWeight: 700, color: SB.label,
+                                    letterSpacing: "1.2px", textTransform: "uppercase",
+                                    padding: "10px 4px 4px",
+                                    userSelect: "none", whiteSpace: "nowrap", overflow: "hidden",
+                                }}>
                                 {group.label}
-                            </div>
+                            </motion.div>
                         )}
-                        {collapsed && gi > 0 && <div style={{ height: 1, background: C.border, margin: "6px 4px" }} />}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 1 }}>
+                        {collapsed && gi > 0 && (
+                            <div style={{ height: 1, background: SB.separator, margin: "8px 4px" }} />
+                        )}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                             {group.items.map(item => renderItem(item))}
                         </div>
                     </div>
                 ))}
-
-                {/* Admin section (role-gated) */}
-                {isAdmin && (
-                    <div style={{ marginTop: 8, paddingTop: 8, borderTop: `1px solid ${C.border}` }}>
-                        {!collapsed && (
-                            <div style={{ padding: "0 10px 3px", fontSize: 9.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.09em" }}>
-                                ADMIN
-                            </div>
-                        )}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 1, marginTop: 2 }}>
-                            {ADMIN_NAV_ITEMS.map(item => renderItem(item))}
-                        </div>
-                    </div>
-                )}
             </div>
 
-            {/* Profile strip — display only, no popup (profile menu lives in topbar) */}
-            <div style={{ padding: collapsed ? "10px 0" : "10px 12px", borderTop: `1px solid ${C.border}`, display: "flex", justifyContent: collapsed ? "center" : "flex-start" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "default" }}>
+            {/* ── Footer: profile card + sign-out ─────────────────── */}
+            <div style={{ padding: "8px 12px 12px", borderTop: `1px solid ${SB.border}` }}>
+                <div style={{
+                    background: SB.footerCard,
+                    border: `1px solid ${SB.footerBorder}`,
+                    borderRadius: 12,
+                    padding: collapsed ? "10px 0" : "10px 12px",
+                    display: "flex", alignItems: "center", gap: collapsed ? 0 : 10,
+                    justifyContent: collapsed ? "center" : "flex-start",
+                    overflow: "hidden",
+                }}>
+                    {/* Avatar */}
                     <div style={{ position: "relative", flexShrink: 0 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 9, background: "linear-gradient(135deg, #0d9488, #0f766e)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: "#fff" }}>
+                        <div style={{
+                            width: 32, height: 32, borderRadius: 10,
+                            background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 11, fontWeight: 800, color: "#fff",
+                        }}>
                             {userInitials}
                         </div>
-                        <div style={{ position: "absolute", bottom: -1, right: -1, width: 9, height: 9, borderRadius: "50%", background: C.success, border: `2px solid ${_darkMode ? "#0F1729" : "#ffffff"}` }} />
+                        <div style={{ position: "absolute", bottom: -1, right: -1, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "2px solid #2d3133" }} />
                     </div>
+                    {/* Name + role — hidden when collapsed */}
+                    <motion.div
+                        animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
+                        transition={{ duration: 0.15 }}
+                        style={{ flex: collapsed ? "none" : 1, minWidth: 0, overflow: "hidden" }}>
+                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userName}</div>
+                        <div style={{ fontSize: 10.5, color: SB.text, fontWeight: 400, whiteSpace: "nowrap", marginTop: 1 }}>{userTitle}</div>
+                    </motion.div>
                     {!collapsed && (
-                        <div style={{ overflow: "hidden" }}>
-                            <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userName}</div>
-                            <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 500, whiteSpace: "nowrap" }}>{userTitle}</div>
+                        <div onClick={onLogout} title="Sign out"
+                            style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 7, flexShrink: 0, transition: "background 0.15s" }}
+                            onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.18)"}
+                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                            <Lucide.LogOut size={13} color="rgba(255,255,255,0.45)" strokeWidth={1.75} />
                         </div>
                     )}
                 </div>
-            </div>
-
-            {/* Version */}
-            <div style={{ padding: collapsed ? "8px 6px" : "8px 16px", borderTop: `1px solid ${C.border}`, textAlign: collapsed ? "center" : "left" }}>
-                {collapsed
-                    ? <div style={{ fontSize: 9, color: C.textMuted, fontWeight: 600 }}>v2</div>
-                    : <div style={{ fontSize: 10.5, color: C.textMuted, fontWeight: 500 }}>Selfvora v2.1 — © 2026</div>
-                }
             </div>
         </motion.aside>
     );
@@ -1489,283 +1485,123 @@ const LoginPage = ({ onLogin }) => {
             minHeight: "100vh", display: "flex", background: C.bg,
             fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif",
         }}>
-            {/* Left decorative panel */}
-            <motion.div
-                initial={{ x: -60, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.7, ease: "easeOut" }}
-                style={{
-                    width: "42%", background: `linear-gradient(145deg, #4F46E5 0%, #6366F1 45%, #8A7CF0 100%)`,
-                    display: "flex", flexDirection: "column", justifyContent: "space-between",
-                    padding: "48px 52px", position: "relative", overflow: "hidden",
-                }}
-            >
-                <SmokeCard />
-                {/* Background circles */}
-                {[["60%", "-8%", 320], ["-10%", "60%", 280], ["80%", "75%", 160]].map(([t, l, s], i) => (
-                    <div key={i} style={{
-                        position: "absolute", top: t, left: l,
-                        width: s, height: s, borderRadius: "50%",
-                        background: "rgba(255,255,255,0.06)", pointerEvents: "none",
-                    }} />
-                ))}
-                {/* Logo */}
-                <div style={{ display: "flex", alignItems: "center", gap: 12, position: "relative", zIndex: 1 }}>
-                    <div style={{ filter: "drop-shadow(0 4px 12px rgba(13,148,136,0.45))" }}>
-                        <SelfvoraLogo size={44} />
-                    </div>
-                    <span style={{ fontWeight: 800, fontSize: 22, letterSpacing: "-0.5px" }}>
-                        <span style={{ color: "#fff" }}>Self</span><span style={{ color: "#5eead4" }}>vora</span>
+            {/* Left panel — clean branding */}
+            <div style={{
+                width: "35%", background: "#0d9488",
+                display: "flex", flexDirection: "column", justifyContent: "center",
+                padding: "48px 44px",
+            }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
+                    <SelfvoraLogo size={40} />
+                    <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: "-0.5px" }}>
+                        <span style={{ color: "#fff" }}>Self</span><span style={{ color: "#99f6e4" }}>vora</span>
                     </span>
                 </div>
-                {/* Middle copy */}
-                <div style={{ position: "relative", zIndex: 1 }}>
-                    <div style={{
-                        display: "inline-flex", alignItems: "center", gap: 8,
-                        background: "rgba(255,255,255,0.15)", borderRadius: 20,
-                        padding: "6px 14px", marginBottom: 24,
-                    }}>
-                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: "#4ADE80" }} />
-                        <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>HR Platform — v2.0</span>
-                    </div>
-                    <h1 style={{
-                        fontSize: 38, fontWeight: 900, color: "#fff",
-                        margin: "0 0 16px", lineHeight: 1.15, letterSpacing: "-1px",
-                    }}>
-                        Your workplace,<br />simplified.
-                    </h1>
-                    <p style={{ fontSize: 15, color: "rgba(255,255,255,0.72)", lineHeight: 1.6, margin: 0, maxWidth: 320 }}>
-                        Attendance, leave, documents, onboarding — all in one place. Sign in to get started.
-                    </p>
-                </div>
-                {/* Bottom testimonial card */}
-                <motion.div
-                    initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.4, duration: 0.5 }}
-                    style={{
-                        background: "rgba(255,255,255,0.12)", backdropFilter: "blur(12px)",
-                        borderRadius: 16, padding: "20px 24px", border: "1px solid rgba(255,255,255,0.18)",
-                        position: "relative", zIndex: 1,
-                    }}
-                >
-                    <div style={{ display: "flex", gap: 4, marginBottom: 12 }}>
-                        {[1, 2, 3, 4, 5].map(i => <Icon key={i} n="star" size={14} color="#FCD34D" />)}
-                    </div>
-                    <p style={{ fontSize: 13.5, color: "rgba(255,255,255,0.88)", margin: "0 0 14px", lineHeight: 1.5, fontStyle: "italic" }}>
-                        &ldquo;Selfvora cut our HR admin time by half. The onboarding wizard is a game-changer.&rdquo;
-                    </p>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{
-                            width: 34, height: 34, borderRadius: 10,
-                            background: "linear-gradient(135deg, #818CF8, #6366F1)",
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 13, fontWeight: 700, color: "#fff",
-                        }}>SM</div>
-                        <div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>Sarah Mitchell</div>
-                            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.6)" }}>Head of People, Axiom Labs</div>
-                        </div>
-                    </div>
-                </motion.div>
-            </motion.div>
+                <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2, letterSpacing: "-0.5px" }}>
+                    Your workplace,<br />simplified.
+                </h1>
+                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
+                    Attendance, leave, performance, and payroll — all in one place.
+                </p>
+            </div>
 
             {/* Right login form */}
-            <div style={{
-                flex: 1, display: "flex", alignItems: "center", justifyContent: "center",
-                padding: "48px 40px",
-            }}>
-                <motion.div
-                    initial={{ x: 40, opacity: 0 }} animate={{ x: 0, opacity: 1 }} transition={{ duration: 0.6, ease: "easeOut" }}
-                    style={{ width: "100%", maxWidth: 420 }}
-                >
-                    <div style={{ marginBottom: 36 }}>
-                        <h2 style={{ fontSize: 28, fontWeight: 900, color: C.text, margin: "0 0 8px", letterSpacing: "-0.6px" }}>Welcome back</h2>
-                        <p style={{ fontSize: 14, color: C.textMuted, margin: 0 }}>Sign in to your Selfvora account</p>
-                    </div>
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px" }}>
+                <div style={{ width: "100%", maxWidth: 380 }}>
+                    <h2 style={{ fontSize: 24, fontWeight: 700, color: C.text, margin: "0 0 32px" }}>Sign in</h2>
 
-                    {/* Demo quick-fill pills */}
-                    <div style={{ marginBottom: 28 }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 10 }}>Quick Demo Login</div>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            {[
-                                { label: "HR Admin", type: "admin", icon: "shield", color: C.primary },
-                                { label: "Employee", type: "employee", icon: "user", color: C.success },
-                            ].map(d => (
-                                <motion.button
-                                    key={d.type}
-                                    whileHover={{ scale: 1.03, y: -1 }}
-                                    whileTap={{ scale: 0.97 }}
-                                    onClick={() => fillDemo(d.type)}
-                                    style={{
-                                        flex: 1, display: "flex", alignItems: "center", gap: 8,
-                                        padding: "10px 14px", borderRadius: 10,
-                                        border: `1.5px solid ${C.border}`,
-                                        background: C.white, cursor: "pointer",
-                                        fontFamily: "inherit", transition: "all 0.2s",
-                                    }}
-                                >
-                                    <div style={{
-                                        width: 28, height: 28, borderRadius: 8,
-                                        background: d.type === "admin" ? C.primaryLight : C.successBg,
-                                        display: "flex", alignItems: "center", justifyContent: "center",
-                                    }}>
-                                        <Icon n={d.icon} size={14} color={d.color} />
-                                    </div>
-                                    <div style={{ textAlign: "left" }}>
-                                        <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{d.label}</div>
-                                        <div style={{ fontSize: 10, color: C.textMuted }}>Click to fill</div>
-                                    </div>
-                                </motion.button>
-                            ))}
-                        </div>
-                    </div>
-
-                    {/* Divider */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 24 }}>
-                        <div style={{ flex: 1, height: 1, background: C.border }} />
-                        <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 500 }}>or enter credentials</span>
-                        <div style={{ flex: 1, height: 1, background: C.border }} />
-                    </div>
-
-                    {/* Form fields */}
+                    {/* Form */}
                     <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 8 }}>
                         <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: C.text, display: "block", marginBottom: 6 }}>Email Address <span style={{ color: C.danger }}>*</span></label>
-                            <div style={{ position: "relative" }}>
-                                <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.textMuted, pointerEvents: "none" }}>
-                                    <Icon n="user" size={15} />
-                                </div>
-                                <motion.input
-                                    animate={{ boxShadow: focused === "email" ? `0 0 0 3px ${C.primaryLight}` : "none", borderColor: error && !email ? C.danger : focused === "email" ? C.primary : C.border }}
-                                    type="email"
-                                    value={email}
-                                    onChange={e => { setEmail(e.target.value); setError(""); }}
-                                    onFocus={() => setFocused("email")}
-                                    onBlur={() => setFocused("")}
-                                    onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                                    placeholder="you@company.com"
-                                    aria-label="Email address"
-                                    aria-required="true"
-                                    style={{
-                                        width: "100%", padding: "11px 12px 11px 38px",
-                                        border: `1.5px solid ${error && !email ? C.danger : C.border}`, borderRadius: 10,
-                                        fontSize: 14, color: C.text, outline: "none",
-                                        background: C.white, fontFamily: "inherit",
-                                        boxSizing: "border-box", transition: "border-color 0.2s",
-                                    }}
-                                />
-                            </div>
-                            {error && !email && <div style={{ fontSize: 11, color: C.danger, marginTop: 4, fontWeight: 500 }}>Email is required</div>}
+                            <label style={{ fontSize: 12, fontWeight: 600, color: C.text, display: "block", marginBottom: 6 }}>Email</label>
+                            <input
+                                type="email" value={email}
+                                onChange={e => { setEmail(e.target.value); setError(""); }}
+                                onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
+                                onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                                placeholder="you@company.com"
+                                style={{
+                                    width: "100%", padding: "11px 14px",
+                                    border: `1.5px solid ${error && !email ? C.danger : focused === "email" ? C.primary : C.border}`,
+                                    borderRadius: 8, fontSize: 14, color: C.text, outline: "none",
+                                    background: C.white, fontFamily: "inherit", boxSizing: "border-box",
+                                    transition: "border-color 0.15s",
+                                }}
+                            />
                         </div>
                         <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: C.text, display: "block", marginBottom: 6 }}>Password <span style={{ color: C.danger }}>*</span></label>
+                            <label style={{ fontSize: 12, fontWeight: 600, color: C.text, display: "block", marginBottom: 6 }}>Password</label>
                             <div style={{ position: "relative" }}>
-                                <div style={{ position: "absolute", left: 12, top: "50%", transform: "translateY(-50%)", color: C.textMuted, pointerEvents: "none" }}>
-                                    <Icon n="shield" size={15} />
-                                </div>
-                                <motion.input
-                                    animate={{ boxShadow: focused === "pass" ? `0 0 0 3px ${C.primaryLight}` : "none", borderColor: error && !password ? C.danger : focused === "pass" ? C.primary : C.border }}
-                                    type={showPass ? "text" : "password"}
-                                    value={password}
+                                <input
+                                    type={showPass ? "text" : "password"} value={password}
                                     onChange={e => { setPassword(e.target.value); setError(""); }}
-                                    onFocus={() => setFocused("pass")}
-                                    onBlur={() => setFocused("")}
+                                    onFocus={() => setFocused("pass")} onBlur={() => setFocused("")}
                                     onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                                    placeholder="••••••••"
-                                    aria-label="Password"
-                                    aria-required="true"
+                                    placeholder="Enter your password"
                                     style={{
-                                        width: "100%", padding: "11px 42px 11px 38px",
-                                        border: `1.5px solid ${error && !password ? C.danger : C.border}`, borderRadius: 10,
-                                        fontSize: 14, color: C.text, outline: "none",
-                                        background: C.white, fontFamily: "inherit",
-                                        boxSizing: "border-box", transition: "border-color 0.2s",
+                                        width: "100%", padding: "11px 42px 11px 14px",
+                                        border: `1.5px solid ${error && !password ? C.danger : focused === "pass" ? C.primary : C.border}`,
+                                        borderRadius: 8, fontSize: 14, color: C.text, outline: "none",
+                                        background: C.white, fontFamily: "inherit", boxSizing: "border-box",
+                                        transition: "border-color 0.15s",
                                     }}
                                 />
-                                <button
-                                    type="button"
-                                    onClick={() => setShowPass(v => !v)}
-                                    aria-label={showPass ? "Hide password" : "Show password"}
-                                    style={{
-                                        position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)",
-                                        background: "none", border: "none", cursor: "pointer", color: C.textMuted, padding: 0,
-                                    }}
-                                >
+                                <button type="button" onClick={() => setShowPass(v => !v)}
+                                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: C.textMuted, padding: 0 }}>
                                     <Icon n={showPass ? "eyeOff" : "eye"} size={15} />
                                 </button>
                             </div>
-                            {error && !password && <div style={{ fontSize: 11, color: C.danger, marginTop: 4, fontWeight: 500 }}>Password is required</div>}
                         </div>
                     </div>
 
-                    {/* Error message */}
-                    <AnimatePresence>
-                        {error && (
-                            <motion.div
-                                initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                                style={{
-                                    display: "flex", alignItems: "center", gap: 8,
-                                    padding: "10px 14px", borderRadius: 9,
-                                    background: C.dangerBg, border: `1px solid ${C.dangerBorder}`,
-                                    marginTop: 12, marginBottom: 4,
-                                }}
-                            >
-                                <Icon n="close" size={14} color={C.danger} />
-                                <span style={{ fontSize: 12.5, color: C.danger, fontWeight: 500 }}>{error}</span>
-                            </motion.div>
-                        )}
-                    </AnimatePresence>
+                    {/* Error */}
+                    {error && (
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, marginTop: 12 }}>
+                            <span style={{ fontSize: 13, color: C.danger, fontWeight: 500 }}>{error}</span>
+                        </div>
+                    )}
 
                     {/* Sign In button */}
-                    <motion.button
-                        whileHover={{ scale: 1.02, boxShadow: "0 8px 24px rgba(99,102,241,0.35)" }}
-                        whileTap={{ scale: 0.98 }}
-                        onClick={handleSubmit}
-                        disabled={loading}
+                    <button onClick={handleSubmit} disabled={loading}
                         style={{
-                            width: "100%", marginTop: 20, padding: "13px",
-                            borderRadius: 11, border: "none",
-                            background: loading ? C.primaryMid : `linear-gradient(135deg, ${C.primary}, #8A7CF0)`,
-                            color: "#fff", fontSize: 15, fontWeight: 700,
+                            width: "100%", marginTop: 20, padding: "12px",
+                            borderRadius: 8, border: "none",
+                            background: loading ? C.primaryMid : C.primary,
+                            color: "#fff", fontSize: 14, fontWeight: 600,
                             cursor: loading ? "not-allowed" : "pointer",
-                            fontFamily: "inherit", display: "flex", alignItems: "center",
-                            justifyContent: "center", gap: 10,
-                            transition: "background 0.3s",
-                        }}
-                    >
-                        {loading ? (
-                            <>
-                                <motion.div
-                                    animate={{ rotate: 360 }} transition={{ repeat: Infinity, duration: 0.8, ease: "linear" }}
-                                    style={{ width: 18, height: 18, borderRadius: "50%", border: "2.5px solid rgba(255,255,255,0.35)", borderTopColor: "#fff" }}
-                                />
-                                Signing in…
-                            </>
-                        ) : (
-                            <>→ Sign In</>
-                        )}
-                    </motion.button>
+                            fontFamily: "inherit", transition: "background 0.15s",
+                        }}>
+                        {loading ? "Signing in..." : "Sign in"}
+                    </button>
 
-                    {/* Credentials hint */}
-                    <div style={{
-                        marginTop: 24, padding: "14px 16px",
-                        background: C.bg, borderRadius: 10, border: `1px solid ${C.borderLight}`,
-                    }}>
-                        <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 8 }}>Demo Credentials</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
+                    {/* Demo shortcuts — below the form */}
+                    <div style={{ marginTop: 28 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
+                            <div style={{ flex: 1, height: 1, background: C.border }} />
+                            <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 500 }}>Try the demo</span>
+                            <div style={{ flex: 1, height: 1, background: C.border }} />
+                        </div>
+                        <div style={{ display: "flex", gap: 10 }}>
                             {[
-                                { role: "HR Admin", email: "admin@company.com", pass: "admin123", color: C.primary },
-                                { role: "Employee", email: "john@company.com", pass: "employee123", color: C.success },
-                            ].map(u => (
-                                <div key={u.role} style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                    <span style={{
-                                        fontSize: 10, fontWeight: 700, color: u.color,
-                                        background: u.role === "HR Admin" ? C.primaryLight : C.successBg,
-                                        padding: "2px 7px", borderRadius: 5,
-                                    }}>{u.role}</span>
-                                    <span style={{ fontSize: 11.5, color: C.textMid, fontFamily: "monospace" }}>{u.email} / {u.pass}</span>
-                                </div>
+                                { label: "HR Admin Demo", type: "admin" },
+                                { label: "Employee Demo", type: "employee" },
+                            ].map(d => (
+                                <button key={d.type} onClick={() => fillDemo(d.type)}
+                                    style={{
+                                        flex: 1, padding: "10px 14px", borderRadius: 8,
+                                        border: `1px solid ${C.border}`, background: C.white,
+                                        cursor: "pointer", fontFamily: "inherit",
+                                        fontSize: 13, fontWeight: 600, color: C.text,
+                                        transition: "border-color 0.15s",
+                                    }}
+                                    onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
+                                    onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
+                                    {d.label}
+                                </button>
                             ))}
                         </div>
                     </div>
-                </motion.div>
+                </div>
             </div>
         </div>
     );
@@ -1830,7 +1666,7 @@ const LandingNavbar = ({ onEnterApp, onScrollTo, onStartSetup }) => {
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={onStartSetup}
-                            style={{ padding: "8px 22px", borderRadius: 9, border: "none", background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
+                            style={{ padding: "8px 22px", borderRadius: 9, border: "none", background: `${C.primary}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
                         >
                             Start Free Trial →
                         </motion.button>
@@ -2670,7 +2506,7 @@ const PricingSection = ({ onEnterApp, onStartSetup }) => (
                         </div>
                         <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
                             onClick={p.cta === "Start Free Trial" ? onStartSetup : onEnterApp}
-                            style={{ padding: "13px 20px", borderRadius: 12, border: p.popular ? "none" : `1.5px solid ${C.border}`, background: p.popular ? `linear-gradient(135deg, ${C.primary}, #8A7CF0)` : C.white, color: p.popular ? "#fff" : C.text, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: p.popular ? "0 4px 16px rgba(99,102,241,0.35)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                            style={{ padding: "13px 20px", borderRadius: 12, border: p.popular ? "none" : `1.5px solid ${C.border}`, background: p.popular ? `${C.primary}` : C.white, color: p.popular ? "#fff" : C.text, fontSize: 14, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: p.popular ? "0 4px 16px rgba(99,102,241,0.35)" : "none", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
                             {p.cta} <Icon n="arrowUp" size={14} color={p.popular ? "#fff" : C.text} />
                         </motion.button>
                     </motion.div>
@@ -2695,7 +2531,7 @@ const AISection = () => (
                 </p>
                 <motion.div initial={{ opacity: 0, y: 20 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }} transition={{ delay: 0.3 }} style={{ background: "#1A1D23", borderRadius: 20, border: "1px solid #2A2D35", overflow: "hidden", textAlign: "left", maxWidth: 520, margin: "0 auto" }}>
                     <div style={{ padding: "16px 20px", borderBottom: "1px solid #2A2D35", display: "flex", alignItems: "center", gap: 10 }}>
-                        <div style={{ width: 32, height: 32, borderRadius: 10, background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <div style={{ width: 32, height: 32, borderRadius: 10, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                             <Icon n="star" size={15} color="#fff" />
                         </div>
                         <div>
@@ -2890,13 +2726,13 @@ const CompanySetupWizard = ({ onComplete, onSkip }) => {
                             </motion.div>
                         )}
 
-                        <motion.button whileHover={{ scale: 1.015 }} whileTap={{ scale: 0.985 }} onClick={handleCreate} disabled={loading}
-                            style={{ width: '100%', padding: '13px', borderRadius: 10, border: 'none', background: loading ? '#A5B4FC' : 'linear-gradient(135deg, #6366F1, #7C3AED)', color: '#fff', fontSize: 14, fontWeight: 800, cursor: loading ? 'default' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
+                        <button onClick={handleCreate} disabled={loading}
+                            style={{ width: '100%', padding: '13px', borderRadius: 10, border: 'none', background: loading ? '#A5B4FC' : '#6366F1', color: '#fff', fontSize: 14, fontWeight: 800, cursor: loading ? 'default' : 'pointer', fontFamily: 'inherit', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}>
                             {loading
                                 ? <><Lucide.Loader2 size={16} style={{ animation: 'spin 1s linear infinite' }} /> Setting up…</>
                                 : <><Lucide.Rocket size={15} /> Create Account</>
                             }
-                        </motion.button>
+                        </button>
                     </div>
 
                     <div style={{ marginTop: 20, textAlign: 'center' }}>
@@ -2952,6 +2788,68 @@ const resolveCardValue = (card, employees, leaveRequests, company) => {
     if (card.valueKey === "mocked" && card.mockValue)
         return card.mockValue(employees, company);
     return "—";
+};
+
+// ── Unified Time & Leave page (tabs: Attendance, Leave Requests, Calendar, Balance) ──
+const TimeAndLeavePage = ({ pageKey, leaveApplyTrigger }) => {
+    const tabFromKey = (k) => {
+        if (k === "timesheet" || k === "timesheet_All_Records" || k === "timesheet_Corrections" || k === "timesheet_Overtime") return "attendance";
+        if (k === "leave_Leave_Entitlements") return "balance";
+        if (k === "leave_Team_Calendar" || k === "timesheet_Calendar") return "calendar";
+        if (k === "leave" || k === "leave_All_Leave_Requests" || k === "leave_My_Requests" || k === "leave_Leave_Types") return "requests";
+        if (k === "timesheet_Schedule") return "schedules";
+        return "attendance";
+    };
+    const [tab, setTab] = useState(tabFromKey(pageKey));
+    React.useEffect(() => { if (pageKey === "time_leave") return; setTab(tabFromKey(pageKey)); }, [pageKey]);
+    const _lastLeaveTrigger = React.useRef(leaveApplyTrigger);
+    React.useEffect(() => {
+        if (leaveApplyTrigger > _lastLeaveTrigger.current) {
+            _lastLeaveTrigger.current = leaveApplyTrigger;
+            setTab("requests");
+        }
+    }, [leaveApplyTrigger]);
+    const { leaveRequests } = React.useContext(DataCtx);
+    const pendingCount = (leaveRequests || []).filter(l => l.status === "Pending").length;
+
+    const tabs = [
+        { key: "attendance", label: "Attendance" },
+        { key: "requests", label: `Leave Requests${pendingCount > 0 ? ` (${pendingCount})` : ""}` },
+        { key: "calendar", label: "Calendar" },
+        { key: "balance", label: "Balance" },
+        { key: "schedules", label: "Schedules" },
+    ];
+
+    return (
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, display: "flex", flexDirection: "column" }}>
+            <div style={{ flexShrink: 0 }}>
+                <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Time & Leave</h1>
+                <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>Attendance tracking and leave management</p>
+            </div>
+
+            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
+                {tabs.map(t => (
+                    <div key={t.key} onClick={() => setTab(t.key)}
+                        style={{
+                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
+                            color: tab === t.key ? C.primary : C.textMid,
+                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
+                            cursor: "pointer", transition: "color 0.15s",
+                        }}>
+                        {t.label}
+                    </div>
+                ))}
+            </div>
+
+            <div style={{ flex: 1, display: "flex", flexDirection: "column", minHeight: 0 }}>
+                {tab === "attendance" && <TimesheetPage pageKey="timesheet_All_Records" />}
+                {tab === "requests" && <LeavePage pageKey="leave_All_Leave_Requests" leaveApplyTrigger={leaveApplyTrigger} />}
+                {tab === "calendar" && <LeaveCalendarPage />}
+                {tab === "balance" && <LeaveEntitlementsPage />}
+                {tab === "schedules" && <WorkSchedulePage />}
+            </div>
+        </div>
+    );
 };
 
 // ── CHANGE: full DashboardPage rewrite — industry-aware ──
@@ -3231,360 +3129,539 @@ const DashboardPage = () => {
         return Math.round((onTrack / goals.length) * 100);
     }, [goals]);
 
-    // ── Clock In state for hero ──────────────────────────────────
-    const [heroClockedIn, setHeroClockedIn] = useState(false);
-    const [heroClockTime, setHeroClockTime] = useState(null);
-    const handleHeroClockToggle = () => {
-        if (!heroClockedIn) {
-            setHeroClockTime(new Date().toLocaleTimeString("en-GB", { hour: "2-digit", minute: "2-digit" }));
-            setHeroClockedIn(true);
-        } else {
-            setHeroClockedIn(false);
-            setHeroClockTime(null);
-        }
+    const pendingLeaveList = leaveRequests.filter(l => l.status === "Pending");
+
+    // ── KPI pool (all available metrics) ────────────────────────
+    const attPct = React.useMemo(() => Math.round(((present + late) / Math.max(employees.filter(e => e.status !== "Inactive").length, 1)) * 100), [present, late, employees]);
+    const avgChemistry = React.useMemo(() => teamChemistry.length ? Math.round(teamChemistry.reduce((s, t) => s + t.totalScore, 0) / teamChemistry.length) : 0, [teamChemistry]);
+    const avgRating = React.useMemo(() => { const rated = employees.filter(e => e.rating > 0); return rated.length ? (rated.reduce((s, e) => s + e.rating, 0) / rated.length).toFixed(1) : "–"; }, [employees]);
+    const newHires = employees.filter(e => { try { const d = new Date(e.startDate); return d >= new Date("2026-01-01"); } catch { return false; } }).length;
+    const KPI_POOL = React.useMemo(() => [
+        { id: "headcount",    label: "Total Employees",     value: String(employees.length),      sub: `+${newHires} since Jan`,              up: true,  icon: "Users" },
+        { id: "here_today",   label: "Here Today",          value: String(present + late),         sub: `${absent} absent · ${late} late`,     up: absent === 0, icon: "UserCheck" },
+        { id: "on_leave",     label: "On Leave",            value: String(onLeave),                sub: `${pendingLeaves} pending approval`,    up: false, icon: "Plane" },
+        { id: "attendance",   label: "Attendance Rate",     value: `${attPct}%`,                   sub: "Today vs expected",                   up: attPct >= 80, icon: "CalendarCheck" },
+        { id: "goals",        label: "Goals on Track",      value: `${okrPct}%`,                   sub: "+3% from last quarter",               up: true,  icon: "Target" },
+        { id: "pending_leave",label: "Pending Leave",       value: String(pendingLeaves),          sub: pendingLeaves > 0 ? "Needs review" : "All cleared", up: pendingLeaves === 0, icon: "Clock" },
+        { id: "skill_reviews",label: "Skill Reviews",       value: String(skillGapCount),          sub: skillGapCount > 0 ? "Awaiting validation" : "Up to date", up: skillGapCount === 0, icon: "BookOpen" },
+        { id: "at_risk",      label: "Flight Risk",         value: String(highRiskCount),          sub: "Employees at risk",                   up: highRiskCount === 0, icon: "AlertTriangle" },
+        { id: "chemistry",    label: "Team Chemistry",      value: `${avgChemistry}%`,             sub: `Across ${teamChemistry.length} teams`, up: avgChemistry >= 65, icon: "Heart" },
+        { id: "payroll_pend", label: "Payroll Pending",     value: String(pendingPayroll),         sub: "Awaiting processing",                 up: pendingPayroll === 0, icon: "DollarSign" },
+        { id: "avg_rating",   label: "Avg Performance",     value: String(avgRating),              sub: "Out of 5.0",                          up: parseFloat(avgRating) >= 3.5, icon: "Star" },
+        { id: "absent_cost",  label: "Absence Cost Today",  value: attEcon.fmt(attEcon.absentCost),sub: "Lost productivity",                   up: attEcon.absentCost === 0, icon: "TrendingDown" },
+    ], [employees, present, late, absent, late, onLeave, pendingLeaves, attPct, okrPct, skillGapCount, highRiskCount, avgChemistry, teamChemistry, pendingPayroll, avgRating, attEcon, newHires]);
+
+    // ── Dashboard widget prefs ──────────────────────────────────
+    const DEFAULT_PREFS = {
+        selectedKpis: ["headcount","here_today","on_leave","goals","pending_leave","skill_reviews"],
+        charts: true,
+        pending: true,
+    };
+    const [showCustomize, setShowCustomize] = useState(false);
+    const [dashPrefs, setDashPrefs] = useState(() => {
+        try { return { ...DEFAULT_PREFS, ...JSON.parse(localStorage.getItem("peoplecore_dash_prefs") || "{}") }; }
+        catch { return DEFAULT_PREFS; }
+    });
+    const savePrefs = (next) => {
+        setDashPrefs(next);
+        try { localStorage.setItem("peoplecore_dash_prefs", JSON.stringify(next)); } catch {}
+    };
+    const toggleKpi = (id) => {
+        const sel = dashPrefs.selectedKpis;
+        const next = sel.includes(id) ? sel.filter(k => k !== id) : [...sel, id];
+        savePrefs({ ...dashPrefs, selectedKpis: next });
     };
 
-    // ── Greeting ─────────────────────────────────────────────────
-    const hour = new Date().getHours();
-    const greeting = hour < 12 ? "Good morning" : hour < 17 ? "Good afternoon" : "Good evening";
-    const dayNames = ["Sunday","Monday","Tuesday","Wednesday","Thursday","Friday","Saturday"];
-    const monthNames = ["Jan","Feb","Mar","Apr","May","Jun","Jul","Aug","Sep","Oct","Nov","Dec"];
-    const nowDate = new Date();
-    const dateLabel = `${dayNames[nowDate.getDay()]} · ${nowDate.getDate()} ${monthNames[nowDate.getMonth()]} ${nowDate.getFullYear()}`;
-
-    // ── Action items for hero ────────────────────────────────────
-    const pendingLeaveList = leaveRequests.filter(l => l.status === "Pending");
-    const heroActions = [
-        ...(highRiskCount > 0 ? [{ type: "critical", icon: "AlertTriangle", msg: `${highRiskCount} employee${highRiskCount > 1 ? "s" : ""} flagged as high attrition risk`, cta: "Review", page: "people" }] : []),
-        ...(pendingLeaveList.length > 0 ? [{ type: "warning", icon: "Calendar", msg: `${pendingLeaveList.length} leave request${pendingLeaveList.length > 1 ? "s" : ""} pending your approval`, cta: "Approve", page: "leave_All_Leave_Requests" }] : []),
-        ...(skillGapCount > 0 ? [{ type: "info", icon: "Sparkles", msg: `${skillGapCount} skill validation${skillGapCount > 1 ? "s" : ""} waiting for review`, cta: "Review", page: "skills_Skill_Development" }] : []),
-    ].slice(0, 3);
-
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
 
-            {/* ── TIER 1: TODAY'S BRIEFING HERO ──────────────────────── */}
-            <motion.div
-                initial={{ opacity: 0, y: 12 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.3 }}
-                style={{
-                    background: _darkMode
-                        ? "linear-gradient(135deg, rgba(13,148,136,0.12) 0%, rgba(15,23,42,0.8) 100%)"
-                        : "linear-gradient(135deg, rgba(240,253,250,1) 0%, rgba(236,254,255,0.7) 60%, rgba(238,242,255,0.5) 100%)",
-                    border: `1px solid ${_darkMode ? "rgba(45,212,191,0.2)" : "rgba(13,148,136,0.15)"}`,
-                    borderRadius: 12,
-                    padding: "24px 28px",
-                    marginBottom: 16,
-                    position: "relative",
-                    overflow: "hidden",
-                }}
-            >
-                {/* Subtle background decoration */}
-                <div style={{ position: "absolute", top: -40, right: -40, width: 200, height: 200, borderRadius: "50%", background: "rgba(13,148,136,0.06)", pointerEvents: "none" }} />
-                <div style={{ position: "absolute", bottom: -20, right: 80, width: 120, height: 120, borderRadius: "50%", background: "rgba(99,102,241,0.04)", pointerEvents: "none" }} />
+            {/* ── Dashboard customize slide-over ──────────────────── */}
+            <AnimatePresence>
+                {showCustomize && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                        onClick={() => setShowCustomize(false)}
+                        style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 500, display: "flex", justifyContent: "flex-end" }}>
+                        <motion.div initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ duration: 0.22, ease: "easeOut" }}
+                            onClick={e => e.stopPropagation()}
+                            style={{ width: 340, background: C.white, borderLeft: `1px solid ${C.border}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Customize Dashboard</div>
+                                <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={C.textMuted} /></div>
+                            </div>
+                            <p style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 20 }}>Select which KPI cards appear on your dashboard.</p>
 
-                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", gap: 24, position: "relative" }}>
-                    {/* Left: greeting + actions */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                        <div style={{ fontSize: 22, fontWeight: 600, color: C.text, marginBottom: 4 }}>
-                            {greeting}, {(currentUser?.name || "Admin").split(" ")[0]} 👋
-                        </div>
-                        <div style={{ fontSize: 13, color: C.textMid, marginBottom: heroActions.length > 0 ? 20 : 0 }}>{dateLabel}</div>
-
-                        {/* Action items */}
-                        {heroActions.length > 0 && (
-                            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-                                {heroActions.map((action, i) => {
-                                    const AIcon = Lucide[action.icon] || Lucide.AlertTriangle;
-                                    const colors = { critical: { icon: C.danger, bg: C.dangerBg, border: C.dangerBorder }, warning: { icon: C.warning, bg: C.warningBg, border: C.warningBorder }, info: { icon: C.info, bg: C.infoBg, border: C.infoBorder } };
-                                    const col = colors[action.type] || colors.info;
+                            {/* KPI picker */}
+                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>KPI Cards</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 24 }}>
+                                {KPI_POOL.map(kpi => {
+                                    const KpiIcon = Lucide[kpi.icon] || Lucide.Circle;
+                                    const on = dashPrefs.selectedKpis.includes(kpi.id);
                                     return (
-                                        <motion.div
-                                            key={i}
-                                            initial={{ opacity: 0, x: -8 }}
-                                            animate={{ opacity: 1, x: 0 }}
-                                            transition={{ delay: 0.1 + i * 0.07 }}
-                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 9, background: col.bg, border: `1px solid ${col.border}` }}
-                                        >
-                                            <AIcon size={15} color={col.icon} style={{ flexShrink: 0 }} />
-                                            <span style={{ flex: 1, fontSize: 13, fontWeight: 500, color: C.text }}>{action.msg}</span>
-                                            <button
-                                                onClick={() => navigate && navigate(action.page)}
-                                                style={{ fontSize: 12, fontWeight: 700, color: col.icon, background: "none", border: `1px solid ${col.border}`, borderRadius: 6, padding: "4px 12px", cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}
-                                            >
-                                                {action.cta} →
-                                            </button>
-                                        </motion.div>
+                                        <div key={kpi.id} onClick={() => toggleKpi(kpi.id)}
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? C.primaryLight : "transparent", border: `1px solid ${on ? C.primaryMid : C.borderLight}`, transition: "all 0.15s" }}>
+                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: on ? C.primary : C.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}>
+                                                <KpiIcon size={14} color={on ? "#fff" : C.textMuted} strokeWidth={2} />
+                                            </div>
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{kpi.label}</div>
+                                                <div style={{ fontSize: 11, color: C.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{kpi.sub}</div>
+                                            </div>
+                                            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? C.primary : C.border}`, background: on ? C.primary : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                                                {on && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
+                                            </div>
+                                        </div>
                                     );
                                 })}
                             </div>
-                        )}
-                        {heroActions.length === 0 && (
-                            <div style={{ fontSize: 13, color: C.success, fontWeight: 500 }}>✓ All clear — no pending actions today</div>
-                        )}
-                    </div>
 
-                    {/* Right: Clock In/Out */}
-                    <div style={{ flexShrink: 0, display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 8 }}>
-                        <motion.button
-                            whileHover={{ scale: 1.04, boxShadow: heroClockedIn ? "0 8px 28px rgba(16,185,129,0.40)" : "0 8px 28px rgba(13,148,136,0.45)" }}
-                            whileTap={{ scale: 0.96 }}
-                            onClick={handleHeroClockToggle}
-                            style={{
-                                display: "flex",
-                                alignItems: "center",
-                                gap: 8,
-                                padding: "12px 22px",
-                                borderRadius: 10,
-                                background: heroClockedIn
-                                    ? "linear-gradient(135deg, #059669 0%, #10B981 100%)"
-                                    : "linear-gradient(135deg, #0d9488 0%, #0f766e 100%)",
-                                color: "#fff",
-                                border: "none",
-                                fontSize: 14,
-                                fontWeight: 700,
-                                cursor: "pointer",
-                                fontFamily: "inherit",
-                                boxShadow: heroClockedIn ? "0 4px 16px rgba(16,185,129,0.35)" : "0 4px 16px rgba(13,148,136,0.35)",
-                                letterSpacing: "0.1px",
-                                transition: "background 0.3s, box-shadow 0.3s",
-                            }}
-                        >
-                            <span style={{ width: 8, height: 8, borderRadius: "50%", background: heroClockedIn ? "#6EE7B7" : "#99F6E4", boxShadow: heroClockedIn ? "0 0 8px #6EE7B7" : "0 0 8px #99F6E4", flexShrink: 0 }} />
-                            <Lucide.Clock size={15} color="#fff" />
-                            {heroClockedIn ? `Clock Out · ${heroClockTime}` : "Clock In"}
-                        </motion.button>
-                        <div style={{ fontSize: 11, color: C.textMuted, textAlign: "right" }}>
-                            {heroClockedIn ? `Clocked in at ${heroClockTime}` : "Start your workday"}
-                        </div>
-                    </div>
+                            {/* Section toggles */}
+                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
+                            {[
+                                { key: "charts",  label: "Charts & Analytics", desc: "Weekly attendance chart + donuts" },
+                                { key: "pending", label: "Pending Actions",    desc: "Leave approvals, recent activity" },
+                            ].map(w => (
+                                <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                                    <div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{w.label}</div>
+                                        <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{w.desc}</div>
+                                    </div>
+                                    <div onClick={() => savePrefs({ ...dashPrefs, [w.key]: !dashPrefs[w.key] })}
+                                        style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? C.primary : C.border, position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                                        <motion.div animate={{ x: dashPrefs[w.key] ? 18 : 2 }} transition={{ duration: 0.2 }}
+                                            style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                                    </div>
+                                </div>
+                            ))}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ── Page header row ──────────────────────────────────── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                <div>
+                    <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.3px" }}>Dashboard</h1>
+                    <p style={{ fontSize: 12.5, color: C.textMuted, margin: "3px 0 0" }}>Your workforce at a glance</p>
                 </div>
-            </motion.div>
-
-            {/* ── TIER 2: KPI STRIP ───────────────────────────────────── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 12, marginBottom: 20 }}>
-                <StatCard
-                    label="Attrition Risk"
-                    value={String(highRiskCount)}
-                    severity="critical"
-                    trend={-2}
-                    trendValue="vs last month"
-                    sparklineData={[2, 3, 2, 4, 3, highRiskCount + 1, highRiskCount]}
-                    sub="High risk employees"
-                />
-                <StatCard
-                    label="Skill Gaps"
-                    value={String(skillGapCount || 12)}
-                    severity="warning"
-                    trend={5}
-                    trendValue="vs last month"
-                    sparklineData={[8, 10, 9, 11, 10, 13, skillGapCount || 12]}
-                    sub="Pending validations"
-                />
-                <StatCard
-                    label="OKR On Track"
-                    value={`${okrPct}`}
-                    unit="%"
-                    severity="positive"
-                    trend={3}
-                    trendValue="vs last quarter"
-                    sparklineData={[60, 62, 65, 63, 68, 70, okrPct]}
-                    sub="Goals on track"
-                />
-                <StatCard
-                    label="Headcount"
-                    value={String(employees.length)}
-                    severity="neutral"
-                    trend={0}
-                    trendValue="no change"
-                    sparklineData={[14, 14, 15, 15, 15, 15, employees.length]}
-                    sub={`${active} active`}
-                />
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                    <Btn variant="outline" size="sm" onClick={() => {
+                        const rows = [["Metric","Value","Sub"], ...KPI_POOL.map(k => [k.label, k.value, k.sub])];
+                        const csv = rows.map(r => r.join(",")).join("\n");
+                        const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); a.download = "dashboard_kpis.csv"; a.click();
+                    }}>
+                        <Lucide.Download size={13} color={C.textMid} style={{ marginRight: 4 }} />Export
+                    </Btn>
+                    <Btn variant="outline" size="sm" onClick={() => setShowCustomize(true)}>
+                        <Lucide.SlidersHorizontal size={13} color={C.textMid} style={{ marginRight: 4 }} />Customize
+                    </Btn>
+                </div>
             </div>
 
-            {/* ── TIER 3: SECONDARY WIDGETS ───────────────────────────── */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
-
-                {/* Left: Attendance Today */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Today's Attendance</div>
-                        <div style={{ fontSize: 12, color: C.textMuted }}>{todayStr}</div>
+            {/* ── KPI strip (user-selected) ────────────────────────── */}
+            {dashPrefs.selectedKpis.length > 0 && (() => {
+                const selected = KPI_POOL.filter(k => dashPrefs.selectedKpis.includes(k.id));
+                const cols = Math.min(selected.length, 6);
+                return (
+                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 18, overflow: "hidden" }}>
+                        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
+                            {selected.map((s, i) => {
+                                const KIcon = Lucide[s.icon] || Lucide.Circle;
+                                return (
+                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${C.borderLight}` : "none" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
+                                            <KIcon size={13} color={C.textMuted} strokeWidth={2} />
+                                            <span style={{ fontSize: 11.5, color: C.textMuted, fontWeight: 500 }}>{s.label}</span>
+                                        </div>
+                                        <div style={{ fontSize: 26, fontWeight: 800, color: C.text, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.value}</div>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 5 }}>
+                                            {s.up ? <Lucide.TrendingUp size={11} color={C.success} /> : <Lucide.TrendingDown size={11} color={C.warning} />}
+                                            <span style={{ fontSize: 11, color: s.up ? C.success : C.textMuted, fontWeight: 500 }}>{s.sub}</span>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
                     </div>
-                    <div style={{ padding: "16px 20px", display: "flex", gap: 12 }}>
-                        {[{ label: "Present", val: present, color: C.success, bg: C.successBg }, { label: "Late", val: late, color: C.warning, bg: C.warningBg }, { label: "Absent", val: absent, color: C.danger, bg: C.dangerBg }].map(item => (
-                            <div key={item.label} style={{ flex: 1, textAlign: "center", padding: "14px 8px", background: item.bg, borderRadius: 10 }}>
-                                <div style={{ fontSize: 28, fontWeight: 700, color: item.color }}>{item.val}</div>
-                                <div style={{ fontSize: 11, color: C.textMuted, marginTop: 4 }}>{item.label}</div>
-                                <div style={{ marginTop: 8, height: 3, background: "rgba(0,0,0,0.08)", borderRadius: 2, overflow: "hidden" }}>
-                                    <div style={{ height: "100%", width: `${todayAtt.length ? (item.val / todayAtt.length * 100) : 0}%`, background: item.color, borderRadius: 2, transition: "width 0.6s ease" }} />
+                );
+            })()}
+
+            {/* ── Main row: Chart + Status ─────────────────────────── */}
+            {dashPrefs.charts && (() => {
+                // Weekly attendance data (deterministic from emp count)
+                const empBase = employees.filter(e => e.status !== "Inactive").length;
+                const thisWeek = [0.72, 0.85, 0.92, 0.68, 0.88, 0.80, 0.76].map(r => Math.round(r * empBase));
+                const lastWeek = [0.65, 0.78, 0.84, 0.72, 0.80, 0.73, 0.69].map(r => Math.round(r * empBase));
+                const dayLbls = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+                const cW = 480, cH = 190, pL = 32, pR = 8, pT = 12, pB = 28;
+                const iW = cW - pL - pR, iH = cH - pT - pB;
+                const maxV = Math.max(...thisWeek, ...lastWeek) + 2;
+                const X = (i) => pL + (i / 6) * iW;
+                const Y = (v) => pT + iH - (v / maxV) * iH;
+                const bezier = (data) => data.map((v, i) => {
+                    if (i === 0) return `M ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;
+                    const cx = ((X(i-1) + X(i)) / 2).toFixed(1);
+                    return `C ${cx} ${Y(data[i-1]).toFixed(1)} ${cx} ${Y(v).toFixed(1)} ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;
+                }).join(" ");
+                const area = (data, grad) => `${bezier(data)} L ${X(6).toFixed(1)} ${(pT+iH).toFixed(1)} L ${pL} ${(pT+iH).toFixed(1)} Z`;
+
+                // Sparkline for status card
+                const spData = [8, 12, 9, 14, 11, 13, active];
+                const spW = 120, spH = 40;
+                const spMaxV = Math.max(...spData) + 1;
+                const spX = (i) => (i / (spData.length - 1)) * spW;
+                const spY = (v) => spH - (v / spMaxV) * spH;
+                const spBez = spData.map((v, i) => {
+                    if (i === 0) return `M 0 ${spY(v).toFixed(1)}`;
+                    const cx = ((spX(i-1) + spX(i)) / 2).toFixed(1);
+                    return `C ${cx} ${spY(spData[i-1]).toFixed(1)} ${cx} ${spY(v).toFixed(1)} ${spX(i).toFixed(1)} ${spY(v).toFixed(1)}`;
+                }).join(" ");
+
+                const attPct = Math.round(((present + late) / Math.max(empBase, 1)) * 100);
+                const donutStroke = (pct, r) => { const c = 2 * Math.PI * r; return `${(pct/100*c).toFixed(1)} ${c.toFixed(1)}`; };
+
+                return (
+                    <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16, marginBottom: 18 }}>
+                        {/* Left: Line chart */}
+                        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 24px" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+                                <div>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Weekly Attendance</div>
+                                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>Employee attendance by day of week</div>
+                                </div>
+                                <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
+                                    {[{ label: "This week", color: C.primary }, { label: "Last week", color: "#06b6d4" }].map(l => (
+                                        <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                            <div style={{ width: 10, height: 10, borderRadius: "50%", background: l.color }} />
+                                            <span style={{ fontSize: 12, color: C.textMid }}>{l.label}</span>
+                                        </div>
+                                    ))}
                                 </div>
                             </div>
-                        ))}
-                    </div>
-                </div>
-
-                {/* Right: Pending Leave Approvals */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Pending Leave Approvals</div>
-                        {pendingLeaves > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: C.warningBg, color: C.warning, borderRadius: 999, padding: "2px 8px" }}>{pendingLeaves}</span>}
-                    </div>
-                    <div style={{ maxHeight: 220, overflowY: "auto" }}>
-                        {pendingLeaveList.length === 0
-                            ? <div style={{ padding: "32px 20px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending leave requests</div>
-                            : pendingLeaveList.slice(0, 4).map(lr => <LeaveRow key={lr.id} lr={lr} compact />)
-                        }
-                    </div>
-                    {pendingLeaveList.length > 4 && (
-                        <div style={{ padding: "10px 20px", borderTop: `1px solid ${C.border}`, textAlign: "center" }}>
-                            <button onClick={() => navigate && navigate("leave_All_Leave_Requests")} style={{ fontSize: 12, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
-                                View all {pendingLeaveList.length} requests →
-                            </button>
+                            <svg width="100%" viewBox={`0 0 ${cW} ${cH}`} style={{ overflow: "visible" }}>
+                                <defs>
+                                    <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor={C.primary} stopOpacity="0.18" />
+                                        <stop offset="100%" stopColor={C.primary} stopOpacity="0" />
+                                    </linearGradient>
+                                    <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
+                                        <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.15" />
+                                        <stop offset="100%" stopColor="#06b6d4" stopOpacity="0" />
+                                    </linearGradient>
+                                </defs>
+                                {/* Y gridlines */}
+                                {[0.25, 0.5, 0.75, 1].map(f => (
+                                    <line key={f} x1={pL} y1={Y(maxV * f)} x2={pL + iW} y2={Y(maxV * f)}
+                                        stroke={_darkMode ? "rgba(255,255,255,0.06)" : "rgba(0,0,0,0.05)"} strokeWidth="1" />
+                                ))}
+                                {/* Y axis labels */}
+                                {[0.25, 0.5, 0.75, 1].map(f => (
+                                    <text key={f} x={pL - 6} y={Y(maxV * f) + 4} textAnchor="end" fontSize="9" fill={_darkMode ? "#64748b" : "#94a3b8"}>{Math.round(maxV * f)}</text>
+                                ))}
+                                {/* Area fills */}
+                                <path d={area(lastWeek)} fill="url(#grad2)" />
+                                <path d={area(thisWeek)} fill="url(#grad1)" />
+                                {/* Lines */}
+                                <path d={bezier(lastWeek)} fill="none" stroke="#06b6d4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d={bezier(thisWeek)} fill="none" stroke={C.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                {/* Dots */}
+                                {lastWeek.map((v, i) => <circle key={i} cx={X(i)} cy={Y(v)} r="4" fill="#06b6d4" stroke={C.white} strokeWidth="2" />)}
+                                {thisWeek.map((v, i) => <circle key={i} cx={X(i)} cy={Y(v)} r="4.5" fill={C.primary} stroke={C.white} strokeWidth="2" />)}
+                                {/* X axis labels */}
+                                {dayLbls.map((d, i) => (
+                                    <text key={d} x={X(i)} y={cH - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill={_darkMode ? "#64748b" : "#94a3b8"}>{d}</text>
+                                ))}
+                            </svg>
                         </div>
-                    )}
-                </div>
 
-                {/* Left bottom: Department Headcount */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}` }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Department Overview</div>
-                    </div>
-                    <div style={{ padding: "12px 20px" }}>
-                        {Object.entries(depts).sort((a, b) => b[1] - a[1]).map(([dept, count]) => {
-                            const maxCount = Math.max(...Object.values(depts));
-                            return (
-                                <div key={dept} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 8 }}>
-                                    <div style={{ width: 96, fontSize: 12, color: C.textMid, fontWeight: 500, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{dept}</div>
-                                    <div style={{ flex: 1, height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                                        <motion.div
-                                            initial={{ width: 0 }}
-                                            animate={{ width: `${(count / maxCount) * 100}%` }}
-                                            transition={{ duration: 0.6, ease: "easeOut" }}
-                                            style={{ height: "100%", background: C.primary, borderRadius: 3 }}
-                                        />
-                                    </div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: C.text, width: 20, textAlign: "right" }}>{count}</div>
+                        {/* Right column */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            {/* Status Summary — blue gradient card */}
+                            <div style={{ background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", borderRadius: 14, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
+                                <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
+                                <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Status Summary</div>
+                                <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.75, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Active Employees</div>
+                                <div style={{ fontSize: 44, fontWeight: 900, letterSpacing: "-1px", lineHeight: 1 }}>{active}</div>
+                                <div style={{ marginTop: 12 }}>
+                                    <svg width="100%" height="48" viewBox={`0 0 ${spW} ${spH}`} style={{ overflow: "visible" }}>
+                                        <defs>
+                                            <linearGradient id="spGrad" x1="0" y1="0" x2="0" y2="1">
+                                                <stop offset="0%" stopColor="#4ade80" stopOpacity="0.25" />
+                                                <stop offset="100%" stopColor="#4ade80" stopOpacity="0" />
+                                            </linearGradient>
+                                        </defs>
+                                        <path d={`${spBez} L ${spW} ${spH} L 0 ${spH} Z`} fill="url(#spGrad)" />
+                                        <path d={spBez} fill="none" stroke="#4ade80" strokeWidth="2" strokeLinecap="round" />
+                                    </svg>
                                 </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                            </div>
 
-                {/* Right bottom: Notifications feed */}
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 1px 3px rgba(0,0,0,0.08)", overflow: "hidden" }}>
-                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${C.border}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                        <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>Recent Activity</div>
-                        {unread > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: C.primaryLight, color: C.primary, borderRadius: 999, padding: "2px 8px" }}>{unread} new</span>}
-                    </div>
-                    <div style={{ maxHeight: 200, overflowY: "auto" }}>
-                        {(notifications || []).slice(0, 5).map(n => {
-                            const typeIcon = { leave: "CalendarDays", attendance: "Clock", payroll: "DollarSign", training: "BookOpen", performance: "TrendingUp", skill: "Sparkles" };
-                            const NIcon = Lucide[typeIcon[n.type] || "Bell"] || Lucide.Bell;
-                            return (
-                                <div key={n.id} style={{ padding: "10px 20px", display: "flex", gap: 10, alignItems: "flex-start", borderBottom: `1px solid ${C.border}`, background: n.read ? "transparent" : C.primaryLight, transition: "background 0.15s" }}>
-                                    <NIcon size={14} color={C.textMuted} style={{ flexShrink: 0, marginTop: 2 }} />
-                                    <div style={{ flex: 1, minWidth: 0 }}>
-                                        <div style={{ fontSize: 12.5, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.4, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{n.msg}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>{n.time}</div>
-                                    </div>
+                            {/* Two donut stats */}
+                            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
+                                <div style={{ display: "flex", gap: 16 }}>
+                                    {[
+                                        { label: "Attendance Rate", sub: "Today", pct: attPct, color: C.primary },
+                                        { label: "Goals on Track", sub: "This quarter", pct: okrPct, color: "#10b981" },
+                                    ].map(d => {
+                                        const r = 24, circ = 2 * Math.PI * r;
+                                        const dash = `${(d.pct / 100 * circ).toFixed(1)} ${circ.toFixed(1)}`;
+                                        return (
+                                            <div key={d.label} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12 }}>
+                                                <svg width="56" height="56" viewBox="0 0 56 56" style={{ flexShrink: 0 }}>
+                                                    <circle cx="28" cy="28" r={r} fill="none" stroke={_darkMode ? "rgba(255,255,255,0.08)" : "#f1f5f9"} strokeWidth="5" />
+                                                    <circle cx="28" cy="28" r={r} fill="none" stroke={d.color} strokeWidth="5"
+                                                        strokeDasharray={dash} strokeDashoffset={circ * 0.25} strokeLinecap="round"
+                                                        style={{ transform: "rotate(-90deg)", transformOrigin: "28px 28px", transition: "stroke-dasharray 0.6s ease" }} />
+                                                    <text x="28" y="32" textAnchor="middle" fontSize="10" fontWeight="800" fill={d.color}>{d.pct}%</text>
+                                                </svg>
+                                                <div>
+                                                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{d.label}</div>
+                                                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1 }}>{d.sub}</div>
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
                                 </div>
-                            );
-                        })}
-                        {(!notifications || notifications.length === 0) && (
-                            <div style={{ padding: "24px 20px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No recent activity</div>
-                        )}
+                            </div>
+                        </div>
                     </div>
-                </div>
-            </div>
+                );
+            })()}
+
+            {/* ── Second row: Dept overview + Pending ──────────────── */}
+            {dashPrefs.pending && (() => {
+                const deptEntries = Object.entries(depts).sort((a, b) => b[1] - a[1]);
+                const maxDept = deptEntries[0]?.[1] || 1;
+                return (
+                    <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16 }}>
+                        {/* Left: Market / Department overview */}
+                        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Department Overview</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
+                                    <span style={{ fontSize: 12, color: C.textMid, fontWeight: 500 }}>This month</span>
+                                    <Lucide.ChevronDown size={12} color={C.textMuted} />
+                                </div>
+                            </div>
+                            <div style={{ padding: "14px 20px" }}>
+                                {deptEntries.slice(0, 6).map(([dept, count]) => (
+                                    <div key={dept} style={{ marginBottom: 12 }}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                                            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{dept}</span>
+                                            <span style={{ fontSize: 12, fontWeight: 700, color: C.primary }}>{count}</span>
+                                        </div>
+                                        <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
+                                            <motion.div initial={{ width: 0 }} animate={{ width: `${(count / maxDept) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
+                                                style={{ height: "100%", background: `linear-gradient(90deg, ${C.primary}, ${C.primary}cc)`, borderRadius: 4 }} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Right: Todo / Pending list */}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", flex: 1 }}>
+                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Pending Leave</div>
+                                    {pendingLeaves > 0 && <span style={{ fontSize: 11, fontWeight: 600, background: C.warningBg, color: C.warning, border: `1px solid ${C.warningBorder}`, borderRadius: 20, padding: "2px 8px" }}>{pendingLeaves}</span>}
+                                </div>
+                                <div>
+                                    {pendingLeaveList.length === 0
+                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>
+                                        : pendingLeaveList.slice(0, 4).map(lr => {
+                                            const emp = employees.find(e => e.id === lr.empId);
+                                            return (
+                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.borderLight}` }}>
+                                                    <Avatar name={emp?.name || "?"} size={28} />
+                                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name || "Employee"}</div>
+                                                        <div style={{ fontSize: 11, color: C.textMuted }}>{lr.type} · {lr.days}d</div>
+                                                    </div>
+                                                    <div style={{ display: "flex", gap: 4 }}>
+                                                        <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
+                                                        <Btn variant="danger" size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={11} /></Btn>
+                                                    </div>
+                                                </div>
+                                            );
+                                        })
+                                    }
+                                </div>
+                                {pendingLeaveList.length > 4 && (
+                                    <div style={{ padding: "10px 18px", textAlign: "center", borderTop: `1px solid ${C.borderLight}` }}>
+                                        <button onClick={() => navigate && navigate("time_leave")} style={{ fontSize: 12, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                            View all {pendingLeaveList.length} requests
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                            {/* Recent activity */}
+                            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
+                                <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.borderLight}` }}>
+                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>Recent Activity</div>
+                                </div>
+                                <div>
+                                    {(notifications || []).slice(0, 3).map(n => (
+                                        <div key={n.id} style={{ padding: "9px 18px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: n.read ? C.border : C.primary, marginTop: 5, flexShrink: 0 }} />
+                                            <div>
+                                                <div style={{ fontSize: 12, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.4 }}>{n.msg}</div>
+                                                <div style={{ fontSize: 10.5, color: C.textMuted, marginTop: 2 }}>{n.time}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                );
+            })()}
         </div>
     );
 };
 
 
-const PeoplePage = () => {
-    const { employees, jobFamilies, navigate } = React.useContext(DataCtx);
+const PeoplePage = ({ pageKey }) => {
+    const { employees, jobFamilies, navigate, teams } = React.useContext(DataCtx);
     const [search, setSearch] = useState("");
     const [isAdding, setIsAdding] = useState(false);
-    const [sortBy, setSortBy] = useState("Sort by: A to Z");
-    const [filterDept, setFilterDept] = useState("All Departments");
+    const [selectedEmp, setSelectedEmp] = useState(null);
+
+    // Determine active tab from pageKey
+    const tabFromKey = (k) => {
+        if (k === "people_Onboarding") return "onboarding";
+        if (k === "people_Teams") return "teams";
+        if (k === "people_Job_Families") return "families";
+        if (k === "people_Offboarding") return "offboarding";
+        return "directory";
+    };
+    const [tab, setTab] = useState(tabFromKey(pageKey));
+    React.useEffect(() => { setTab(tabFromKey(pageKey)); }, [pageKey]);
 
     const filtered = (employees || []).filter(e => {
-        const s = (search || "").toLowerCase();
-        const matchesSearch = !search || (e.name || "").toLowerCase().includes(s) || (e.email || "").toLowerCase().includes(s) || (e.id || "").toLowerCase().includes(s);
-        const matchesDept = filterDept === "All Departments" || e.dept === filterDept;
-        return matchesSearch && matchesDept;
-    }).sort((a, b) => {
-        if (sortBy === "Sort by: A to Z") return (a.name || "").localeCompare(b.name || "");
-        if (sortBy === "Sort by: Z to A") return (b.name || "").localeCompare(a.name || "");
-        if (sortBy === "Sort by: Date Joined") return new Date(b.startDate || 0) - new Date(a.startDate || 0);
-        if (sortBy === "Sort by: Department") return (a.dept || "").localeCompare(b.dept || "");
-        return 0;
-    });
+        if (!search) return true;
+        const s = search.toLowerCase();
+        return (e.name || "").toLowerCase().includes(s) || (e.email || "").toLowerCase().includes(s) || (e.id || "").toLowerCase().includes(s);
+    }).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
     const activeCount = (employees || []).filter(e => e.status === "Active").length;
-    const allDepts = [...new Set((jobFamilies || []).map(f => f.dept))];
+    const tabs = [
+        { key: "directory", label: "Directory" },
+        { key: "onboarding", label: "Onboarding" },
+        { key: "teams", label: "Teams" },
+        { key: "families", label: "Job Families" },
+        { key: "offboarding", label: "Offboarding" },
+    ];
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Directory</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>{employees?.length || 0} employees · {activeCount} active</p>
+                    <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0 }}>People</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>{employees?.length || 0} people · {activeCount} active</p>
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
-                    <Btn variant="outline"><Icon n="upload" size={14} />Bulk Upload</Btn>
-                    <Btn variant="primary" onClick={() => setIsAdding(true)}><Icon n="plus" size={14} color="#fff" />Add People</Btn>
-                </div>
+                {tab === "directory" && (
+                    <Btn variant="primary" onClick={() => setIsAdding(true)}><Icon n="plus" size={14} color="#fff" />Add</Btn>
+                )}
+            </div>
+
+            {/* Tab bar */}
+            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
+                {tabs.map(t => (
+                    <div key={t.key} onClick={() => setTab(t.key)}
+                        style={{
+                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
+                            color: tab === t.key ? C.primary : C.textMid,
+                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
+                            cursor: "pointer", transition: "color 0.15s",
+                        }}>
+                        {t.label}
+                    </div>
+                ))}
             </div>
 
             <Modal isOpen={isAdding} onClose={() => setIsAdding(false)} title="Add New Employee">
                 <OnboardingWizard onComplete={() => { setIsAdding(false); }} onCancel={() => setIsAdding(false)} />
             </Modal>
 
-            <Card>
-                <div style={{ padding: "14px 16px", display: "flex", gap: 12, alignItems: "center", borderBottom: `1px solid ${C.borderLight}` }}>
-                    <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px" }}>
-                        <Icon n="search" size={14} color={C.textMuted} />
-                        <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, email, or ID…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: C.text, width: "100%", fontFamily: "inherit" }} />
-                    </div>
-                    <Select options={["Sort by: A to Z", "Sort by: Z to A", "Sort by: Date Joined", "Sort by: Department"]} value={sortBy} onChange={e => setSortBy(e.target.value)} />
-                    <Select options={["All Departments", ...allDepts]} value={filterDept} onChange={e => setFilterDept(e.target.value)} />
-                </div>
+            {/* Employee profile slide-over */}
+            <AnimatePresence>
+                {selectedEmp && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                        onClick={() => setSelectedEmp(null)}
+                        style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 500, display: "flex", justifyContent: "flex-end" }}>
+                        <motion.div initial={{ x: 340 }} animate={{ x: 0 }} exit={{ x: 340 }} transition={{ duration: 0.2, ease: "easeOut" }}
+                            onClick={e => e.stopPropagation()}
+                            style={{ width: 380, background: C.white, borderLeft: `1px solid ${C.border}`, padding: "24px", overflowY: "auto" }}>
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+                                <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Profile</div>
+                                <div onClick={() => setSelectedEmp(null)} style={{ cursor: "pointer", padding: 4 }}><Icon n="close" size={16} color={C.textMuted} /></div>
+                            </div>
+                            <div style={{ textAlign: "center", marginBottom: 20 }}>
+                                <Avatar name={selectedEmp.name} size={56} />
+                                <div style={{ fontSize: 16, fontWeight: 700, color: C.text, marginTop: 10 }}>{selectedEmp.name}</div>
+                                <div style={{ fontSize: 13, color: C.textMid }}>{selectedEmp.level || selectedEmp.role}</div>
+                                <Badge label={selectedEmp.status} variant={selectedEmp.status === "Active" ? "success" : selectedEmp.status === "On Leave" ? "info" : "default"} />
+                            </div>
+                            {[
+                                ["Email", selectedEmp.email],
+                                ["Department", selectedEmp.dept],
+                                ["Manager", employees.find(m => m.id === selectedEmp.managerId)?.name || "—"],
+                                ["Joined", selectedEmp.startDate],
+                                ["Type", selectedEmp.type || "Full-time"],
+                            ].map(([label, val]) => (
+                                <div key={label} style={{ display: "flex", justifyContent: "space-between", padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                                    <span style={{ fontSize: 13, color: C.textMid }}>{label}</span>
+                                    <span style={{ fontSize: 13, fontWeight: 500, color: C.text }}>{val}</span>
+                                </div>
+                            ))}
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
 
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <TableHead cols={["Name", "Job Title", "Email", "Department", "Manager", "Join Date", "Status", "Actions"]} />
-                    <tbody>
-                        {filtered.map((e, i) => (
-                            <tr key={e.id} style={{ background: i % 2 === 0 ? C.white : C.tableRow }}>
-                                <Td>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                        <Avatar name={e.name} size={34} />
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 13 }}>{e.name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace" }}>{e.id}</div>
+            {/* Directory tab */}
+            {tab === "directory" && (
+                <Card>
+                    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px" }}>
+                            <Icon n="search" size={14} color={C.textMuted} />
+                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search people..." style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: C.text, width: "100%", fontFamily: "inherit" }} />
+                        </div>
+                    </div>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <TableHead cols={["Name", "Department", "Role", "Status"]} />
+                        <tbody>
+                            {filtered.map((e, i) => (
+                                <tr key={e.id} onClick={() => navigate("people_Profile", { id: e.id })} style={{ background: i % 2 === 0 ? C.white : C.tableRow, cursor: "pointer" }}
+                                    onMouseEnter={ev => ev.currentTarget.style.background = C.navHover}
+                                    onMouseLeave={ev => ev.currentTarget.style.background = i % 2 === 0 ? C.white : C.tableRow}>
+                                    <Td>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <Avatar name={e.name} size={32} />
+                                            <span style={{ fontWeight: 600, fontSize: 13 }}>{e.name}</span>
                                         </div>
-                                    </div>
-                                </Td>
-                                <Td>{e.level || e.role}</Td>
-                                <Td muted>{e.email}</Td>
-                                <Td muted>{e.dept}</Td>
-                                <Td muted>{employees.find(m => m.id === e.managerId)?.name || "—"}</Td>
-                                <Td muted>{e.startDate}</Td>
-                                <Td><Badge label={e.status} variant={e.status === "Active" ? "success" : e.status === "On Leave" ? "info" : "default"} /></Td>
-                                <Td>
-                                    <div style={{ display: "flex", gap: 5 }}>
-                                        <Btn variant="ghost" size="sm" onClick={() => navigate("people_Lifecycle")}><Icon n="eye" size={13} /></Btn>
-                                        <Btn variant="ghost" size="sm" onClick={() => navigate("people_Lifecycle")}><Icon n="edit" size={13} /></Btn>
-                                        <Btn variant="ghost" size="sm"><Icon n="more" size={13} /></Btn>
-                                    </div>
-                                </Td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </Card>
+                                    </Td>
+                                    <Td muted>{e.dept}</Td>
+                                    <Td muted>{e.level || e.role}</Td>
+                                    <Td><Badge label={e.status} variant={e.status === "Active" ? "success" : e.status === "On Leave" ? "info" : "default"} /></Td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </Card>
+            )}
+
+            {/* Onboarding tab — delegate to existing component */}
+            {tab === "onboarding" && <AddEmployeePage />}
+
+            {/* Teams tab — delegate to existing component */}
+            {tab === "teams" && <TeamsPage />}
+
+            {/* Job Families tab — delegate to existing component */}
+            {tab === "families" && <JobFamiliesPage />}
+
+            {/* Offboarding tab — delegate to existing component */}
+            {tab === "offboarding" && <OffboardingPage />}
         </div>
     );
 };
@@ -3841,7 +3918,7 @@ const AddEmployeePage = () => {
     );
 
     return (
-        <div style={{ padding: "24px 28px", flex: 1, overflowY: "auto" }}>
+        <div style={{ padding: "32px", flex: 1, overflowY: "auto" }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Employee Onboarding</h1>
@@ -4223,7 +4300,7 @@ const EmployeeSchedulePage = ({ empRecord }) => {
     upcoming.sort((a, b) => a.day - b.day);
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ marginBottom: 20 }}>
                 <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 4px" }}>My Calendar</h1>
                 <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Your schedule, leave, and team availability at a glance.</p>
@@ -4470,15 +4547,15 @@ const OffboardingPage = () => {
     const completedCases = cases.filter(c => c.tasks.finalSettlement);
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
 
             {/* ── Header ── */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Offboarding</h1>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Departures</h1>
                     <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>{activeCases.length} active · {completedCases.length} completed this cycle</p>
                 </div>
-                <Btn variant="primary" onClick={() => setShowInit(true)}><Icon n="plus" size={13} color="#fff" />Initiate Offboarding</Btn>
+                <Btn variant="primary" onClick={() => setShowInit(true)}><Icon n="plus" size={13} color="#fff" />Record Departure</Btn>
             </div>
 
             {/* ── Toast ── */}
@@ -4486,7 +4563,7 @@ const OffboardingPage = () => {
                 {saved && (
                     <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
                         style={{ marginBottom: 14, padding: "10px 16px", background: C.successBg, border: `1px solid ${C.successBorder}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: C.success, display: "flex", alignItems: "center", gap: 8 }}>
-                        <Lucide.Check size={14} color={C.success} strokeWidth={2.5} /> Offboarding case created and checklist assigned.
+                        <Lucide.Check size={14} color={C.success} strokeWidth={2.5} /> Departure recorded and checklist assigned.
                     </motion.div>
                 )}
             </AnimatePresence>
@@ -4724,7 +4801,7 @@ const OffboardingPage = () => {
                             style={{ position: "relative", width: "100%", maxWidth: 480, background: C.white, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.20)", overflow: "hidden" }}>
 
                             {/* Amber top bar */}
-                            <div style={{ height: 4, background: `linear-gradient(90deg, ${C.warning}, #fb923c)` }} />
+                            <div style={{ height: 4, background: `${C.warning}` }} />
 
                             {/* Header */}
                             <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
@@ -4841,8 +4918,8 @@ const OffboardingPage = () => {
                             style={{ position: "relative", width: "100%", maxWidth: 480, background: C.white, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.18)", overflow: "hidden" }}>
                             <div style={{ padding: "18px 22px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <div>
-                                    <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>Initiate Offboarding</div>
-                                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>A checklist will be auto-assigned to IT, Finance, and the employee's manager.</div>
+                                    <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>Record Departure</div>
+                                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>A checklist will be assigned to IT, Finance, and the employee's manager.</div>
                                 </div>
                                 <button onClick={() => setShowInit(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: `1px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
                                     <Lucide.X size={13} color={C.textMid} />
@@ -4886,7 +4963,7 @@ const OffboardingPage = () => {
                                 </button>
                                 <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleInitiate} disabled={!selectedEmp || !lastDay}
                                     style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: selectedEmp && lastDay ? C.primary : C.border, color: "#fff", fontSize: 13, fontWeight: 700, cursor: selectedEmp && lastDay ? "pointer" : "not-allowed", fontFamily: "inherit" }}>
-                                    Create Offboarding Case
+                                    Record Departure
                                 </motion.button>
                             </div>
                         </motion.div>
@@ -4927,16 +5004,16 @@ const LifecyclePage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Employee Lifecycle</h1>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Role Changes</h1>
                     <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Track promotions, transfers, and role changes</p>
                 </div>
                 <Btn variant="primary" onClick={() => setShowForm(true)}><Icon n="plus" size={13} color="#fff" />Record Change</Btn>
             </div>
 
-            {saved && <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 14, padding: "10px 16px", background: C.successBg, border: `1px solid ${C.successBorder}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: C.success, display: "flex", alignItems: "center", gap: 8 }}><Icon n="check" size={13} color={C.success} />Lifecycle event recorded.</motion.div>}
+            {saved && <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 14, padding: "10px 16px", background: C.successBg, border: `1px solid ${C.successBorder}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: C.success, display: "flex", alignItems: "center", gap: 8 }}><Icon n="check" size={13} color={C.success} />Role change recorded.</motion.div>}
 
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
                 {[["Promotions", events.filter(e => e.type === "Promotion").length, "success"], ["Transfers", events.filter(e => e.type === "Transfer").length, "info"], ["Role Changes", events.filter(e => e.type === "Role Change").length, "warning"]].map(([l, v]) => (
@@ -4976,7 +5053,7 @@ const LifecyclePage = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.97, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", damping: 28, stiffness: 300 }}
                             style={{ position: "relative", width: "100%", maxWidth: 500, background: C.white, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.18)", padding: "20px" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                                <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>Record Lifecycle Change</div>
+                                <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>Record Role Change</div>
                                 <button onClick={() => setShowForm(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: `1px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Lucide.X size={13} color={C.textMid} /></button>
                             </div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 16 }}>
@@ -5104,6 +5181,51 @@ const getRatingLabel = (score) => {
     return               { label: "Below Expectations",         color: C.danger };
 };
 
+// ── Unified Performance page (tabs: Overview, Goals, Feedback, Reviews) ──
+const PerformanceTabbedPage = ({ pageKey }) => {
+    const tabFromKey = (k) => {
+        if (k === "performance_Goals_&_OKR") return "goals";
+        if (k === "performance_Feedback" || k === "performance_Recognition") return "feedback";
+        if (k === "performance_Reviews") return "reviews";
+        return "overview";
+    };
+    const [tab, setTab] = useState(tabFromKey(pageKey));
+    React.useEffect(() => { if (pageKey === "performance") return; setTab(tabFromKey(pageKey)); }, [pageKey]);
+
+    const tabs = [
+        { key: "overview", label: "Overview" },
+        { key: "goals", label: "Goals" },
+        { key: "feedback", label: "Feedback" },
+        { key: "reviews", label: "Reviews" },
+    ];
+
+    return (
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Performance</h1>
+            <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>Goals, reviews, and team feedback</p>
+
+            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
+                {tabs.map(t => (
+                    <div key={t.key} onClick={() => setTab(t.key)}
+                        style={{
+                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
+                            color: tab === t.key ? C.primary : C.textMid,
+                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
+                            cursor: "pointer", transition: "color 0.15s",
+                        }}>
+                        {t.label}
+                    </div>
+                ))}
+            </div>
+
+            {tab === "overview" && <PerformanceOverviewPage />}
+            {tab === "goals" && <GoalsOKRPage />}
+            {tab === "feedback" && <FeedbackPage />}
+            {tab === "reviews" && <ReviewsPage />}
+        </div>
+    );
+};
+
 const PerformanceOverviewPage = () => {
     const { employees, goals, feedbacks, recognitions, reviews, navigate } = React.useContext(DataCtx);
 
@@ -5127,7 +5249,7 @@ const PerformanceOverviewPage = () => {
     });
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Performance" }]} />
             <div style={{ marginBottom: 22 }}>
                 <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 4px" }}>Performance Overview</h1>
@@ -5334,9 +5456,9 @@ const GoalsOKRPage = () => {
 
     const STATUS_COLORS = { "On Track": C.success, "At Risk": C.warning, "Behind": C.danger, "Completed": C.primary };
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Goals & OKR</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Q1 2026 goal tracking</p></div>
+                <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Goals</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Q1 2026 goal tracking</p></div>
                 <Btn variant="primary" onClick={() => setShowAdd(true)}><Icon n="plus" size={13} color="#fff" />Add Goal</Btn>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -5483,7 +5605,7 @@ const GoalsOKRPage = () => {
                         <motion.div initial={{ opacity: 0, scale: 0.97, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }} transition={{ type: "spring", damping: 28, stiffness: 300 }}
                             style={{ position: "relative", width: "100%", maxWidth: 480, background: C.white, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.18)", padding: "22px", overflow: "hidden" }}>
                             {/* Teal accent top bar */}
-                            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "linear-gradient(90deg, #0f766e, #0d9488)" }} />
+                            <div style={{ position: "absolute", top: 0, left: 0, right: 0, height: 4, background: "#0f766e" }} />
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
                                 <div>
                                     <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 2 }}>Award Recognition</div>
@@ -5520,7 +5642,7 @@ const GoalsOKRPage = () => {
                             <div style={{ display: "flex", gap: 10 }}>
                                 <button onClick={() => setRecognizeGoal(null)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
                                 <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleSendRecognition}
-                                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: "linear-gradient(135deg, #0f766e, #0d9488)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: "#0f766e", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                                     Send Recognition 🏆
                                 </motion.button>
                             </div>
@@ -5552,7 +5674,7 @@ const FeedbackPage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Continuous Feedback</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Ongoing manager-to-employee feedback</p></div>
                 <Btn variant="primary" onClick={() => setShowAdd(true)}><Icon n="plus" size={13} color="#fff" />Give Feedback</Btn>
@@ -5626,7 +5748,7 @@ const RecognitionPage = () => {
     const BADGE_OPTIONS = ["🏆", "🌟", "💎", "🚀", "❤️", "👑", "🎯", "⚡"];
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Recognition & Rewards</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Celebrate outstanding contributions</p></div>
                 <Btn variant="primary" onClick={() => setShowAward(true)}><Icon n="star" size={13} color="#fff" />Award Recognition</Btn>
@@ -5782,7 +5904,7 @@ const ReviewsPage = () => {
     const WEIGHT_COLORS = { High: C.danger, Medium: C.warning, Low: C.success };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Performance Reviews</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Q1 2026 review cycle — due 31 Mar 2026</p></div>
                 <Btn variant="primary"><Icon n="plus" size={13} color="#fff" />Start Review Cycle</Btn>
@@ -5970,7 +6092,7 @@ const ReviewsPage = () => {
                                                 {/* Engine header */}
                                                 <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.primary}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                                     <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                        <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg, ${C.primary}, #8B5CF6)`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                        <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
                                                             <Icon n="shield" size={14} color="#fff" />
                                                         </div>
                                                         <div>
@@ -6017,7 +6139,7 @@ const ReviewsPage = () => {
                                                     <div style={{ padding: "0 16px 12px", display: "flex", alignItems: "center", gap: 10 }}>
                                                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                                                             onClick={() => setManagerInput(String(evaluation.suggested))}
-                                                            style={{ padding: "7px 14px", borderRadius: 8, border: "none", background: `linear-gradient(135deg, ${C.primary}, #8B5CF6)`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+                                                            style={{ padding: "7px 14px", borderRadius: 8, border: "none", background: `${C.primary}`, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
                                                             <Icon n="check" size={12} color="#fff" />
                                                             Apply Suggested Score ({evaluation.suggested})
                                                         </motion.button>
@@ -6040,7 +6162,7 @@ const ReviewsPage = () => {
                                             </div>
                                             <div style={{ flex: 1, height: 8, background: C.borderLight, borderRadius: 4, overflow: "hidden", maxWidth: 240 }}>
                                                 <motion.div initial={{ width: 0 }} animate={{ width: `${(r.selfScore / 5) * 100}%` }} transition={{ duration: 0.6, ease: "easeOut" }}
-                                                    style={{ height: "100%", background: `linear-gradient(90deg, ${C.primary}, #8B5CF6)`, borderRadius: 4 }} />
+                                                    style={{ height: "100%", background: `${C.primary}`, borderRadius: 4 }} />
                                             </div>
                                             {r.managerScore !== null && (
                                                 <>
@@ -6185,9 +6307,9 @@ const SuccessionPage = () => {
     const INP = { padding: "8px 11px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, background: C.bg, color: C.text, fontFamily: "inherit", outline: "none", width: "100%", boxSizing: "border-box" };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Succession Planning</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Key role succession depth and readiness</p></div>
+                <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Backup Plans</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Who's ready to step in if someone in a key role leaves</p></div>
                 <Btn variant="primary" onClick={() => setShowAddPlan(true)}><Icon n="plus" size={13} color="#fff" />Add Plan</Btn>
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
@@ -6575,10 +6697,10 @@ const LeaveEntitlementsPage = () => {
         carryOver: (e.name.charCodeAt(0) + e.name.length) % 5,
     }));
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ marginBottom: 20 }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Leave Entitlements</h1>
-                <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Balances, accruals, and carry-over rules for 2026</p>
+                <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Leave Balance</h1>
+                <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>How much time off each person has left this year</p>
             </div>
             <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
                 {[["balances", "Balances"], ["carryover", "Carry-Over Rules"]].map(([k, l]) => (
@@ -6646,7 +6768,7 @@ const TotalRewardsPage = () => {
     const healthIns = 36000;
     const total = salary + bonus + benefits + healthIns;
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Total Rewards Statement</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Full compensation picture per employee</p></div>
                 <Btn variant="outline"><Icon n="export" size={13} />Export PDF</Btn>
@@ -6668,7 +6790,7 @@ const TotalRewardsPage = () => {
                             <div style={{ fontSize: 16, fontWeight: 900, color: C.text }}>LKR {v.toLocaleString()}</div>
                         </div>
                     ))}
-                    <div style={{ background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, borderRadius: 13, padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <div style={{ background: `${C.primary}`, borderRadius: 13, padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                         <div>
                             <div style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>Total Compensation Package</div>
                             <div style={{ fontSize: 12, color: "rgba(255,255,255,0.75)", marginTop: 2 }}>Full cost to company (CTC) · 2026</div>
@@ -6772,7 +6894,7 @@ const EmployeeRecognitionPage = ({ empRecord }) => {
             </div>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 280px", gap: 20 }}>
                 <div>
-                    <div style={{ background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, borderRadius: 16, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ background: `${C.primary}`, borderRadius: 16, padding: "20px 24px", marginBottom: 16, display: "flex", alignItems: "center", gap: 16 }}>
                         <div style={{ fontSize: 52 }}>🏆</div>
                         <div>
                             <div style={{ fontSize: 16, fontWeight: 800, color: "#fff" }}>Your Recognition Points</div>
@@ -6856,7 +6978,7 @@ const LeaveCalendarPage = () => {
     upcomingConflicts.sort((a, b) => a.date.localeCompare(b.date));
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ marginBottom: 22 }}>
                 <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 4px", letterSpacing: "-0.4px" }}>Team Leave Calendar</h1>
                 <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Full visibility of who's off — hover any day for details, conflicts highlighted in red.</p>
@@ -7118,10 +7240,17 @@ const LeaveCalendar = ({ leaveRequests, employees, publicHolidays, highlightEmpI
 };
 
 
-const LeavePage = ({ pageKey }) => {
+const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
     const { navigate } = React.useContext(DataCtx);
     const [filter, setFilter] = useState("All");
     const [showApply, setShowApply] = useState(false);
+    const _lastApplyTrigger = React.useRef(leaveApplyTrigger);
+    React.useEffect(() => {
+        if (leaveApplyTrigger > _lastApplyTrigger.current) {
+            _lastApplyTrigger.current = leaveApplyTrigger;
+            setShowApply(true);
+        }
+    }, [leaveApplyTrigger]);
     const [requests, setRequests] = useState([
         { name: "James Perera", dept: "Engineering", type: "Annual Leave", from: "Mar 14", to: "Mar 18", days: 5, balance: "12 remaining", applied: "Mar 10", status: "Pending" },
         { name: "Nimali Silva", dept: "HR & Admin", type: "Medical Leave", from: "Mar 12", to: "Mar 13", days: 2, balance: "8 remaining", applied: "Mar 11", status: "Pending" },
@@ -7164,11 +7293,11 @@ const LeavePage = ({ pageKey }) => {
 
     if (isEntitlements) {
         return (
-            <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-                <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Leave", onClick: () => navigate("leave") }, { label: "Entitlements" }]} />
+            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+                <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Time & Leave", onClick: () => navigate("time_leave") }, { label: "Balance" }]} />
                 <div style={{ marginBottom: 22 }}>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>My Leave Entitlements</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Review your leave balances for the year 2026</p>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>My Leave Balance</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>How much time off you have left this year</p>
                 </div>
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
                     {entitlements.map(e => (
@@ -7201,7 +7330,7 @@ const LeavePage = ({ pageKey }) => {
         ];
 
         return (
-            <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
                 <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Leave", onClick: () => navigate("leave") }, { label: "Leave Types" }]} />
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28 }}>
                     <div>
@@ -7258,41 +7387,125 @@ const LeavePage = ({ pageKey }) => {
         );
     }
 
+    // ── Status badges mapped to template token colours ──
+    const leaveBadge = {
+        "Pending":  { bg: T.tertiaryFixed, color: T.tertiary,         label: "Pending"  },
+        "Approved": { bg: T.primaryFixed,  color: T.primaryFixedText, label: "Approved" },
+        "Rejected": { bg: "#ffdad6",       color: "#ba1a1a",          label: "Rejected" },
+    };
+
+    // Leave type chip colours — warm palette anchored to template primaries
+    const leaveTypeChip = {
+        "Annual Leave":    { bg: T.primaryFixed,   color: T.primaryFixedText },
+        "Medical Leave":   { bg: "#ffdad6",         color: "#ba1a1a"          },
+        "Emergency Leave": { bg: T.tertiaryFixed,   color: T.tertiary         },
+        "Casual Leave":    { bg: "#d4f4e8",         color: "#166534"          },
+    };
+
+    const leaveDistribution = [
+        { label: "Annual Leave",    count: 12, pct: 50, color: T.primary  },
+        { label: "Medical Leave",   count: 6,  pct: 25, color: "#ba1a1a"  },
+        { label: "Emergency Leave", count: 4,  pct: 17, color: T.tertiary },
+        { label: "Casual Leave",    count: 2,  pct: 8,  color: "#166534"  },
+    ];
+
+    const pendingCount  = requests.filter(r => r.status === "Pending").length;
+    const approvedCount = requests.filter(r => r.status === "Approved").length;
+    const rejectedCount = requests.filter(r => r.status === "Rejected").length;
+    const onLeaveToday  = requests.filter(r => r.status === "Approved").slice(0, 3);
+
+    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
                         {isMyRequests ? "My Leave Requests" : "Leave Management"}
                     </h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
-                        {isMyRequests ? "Track and manage your own leave applications" : "All leave requests · 8 pending approval"}
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>
+                        {isMyRequests ? "Track and manage your own leave applications" : "Review, approve, and track team leave requests"}
                     </p>
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
-                    <Btn variant="primary" onClick={() => setShowApply(true)}><Icon n="plus" size={13} color="#fff" /> Apply Leave</Btn>
-                    {!isMyRequests && <Btn variant={showCalendar ? "primary" : "outline"} onClick={() => setShowCalendar(v => !v)}><Icon n="calendar" size={14} color={showCalendar ? "#fff" : undefined} />{showCalendar ? "Hide Calendar" : "Leave Calendar"}</Btn>}
-                </div>
+                {!isMyRequests && (
+                    <motion.button
+                        whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                        onClick={() => setShowCalendar(v => !v)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: showCalendar ? T.primaryFixed : T.surfaceCard, color: showCalendar ? T.primaryFixedText : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                    >
+                        <Lucide.Calendar size={16} color={showCalendar ? T.primaryFixedText : T.onSurfaceVar} />
+                        {showCalendar ? "Hide Calendar" : "Calendar"}
+                    </motion.button>
+                )}
             </div>
 
+            {/* ── Metric Cards ── */}
             {!isMyRequests && (
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                    <StatCard label="Pending Approval" value="8" variant="warning" sub="Requires action" />
-                    <StatCard label="Approved This Month" value="24" variant="success" sub="+4 vs last month" trend={20} />
-                    <StatCard label="Rejected This Month" value="3" variant="danger" />
-                    <StatCard label="On Leave Today" value="20" variant="info" sub="8.1% of workforce" />
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+                    {/* Pending Approval */}
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} style={cardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Pending Approval</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: T.tertiary, lineHeight: 1 }}>{String(pendingCount).padStart(2, "0")}</span>
+                                <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.tertiaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Lucide.AlertCircle size={16} color={T.tertiary} />
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Approved This Month */}
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }} style={cardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Approved This Month</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{approvedCount}</span>
+                                <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "#f0fdf4", padding: "4px 10px", borderRadius: 999 }}>+4 vs last</span>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* Rejected This Month */}
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} style={cardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Rejected This Month</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{rejectedCount}</span>
+                                <span style={{ fontSize: 11.5, fontWeight: 700, color: "#ba1a1a", background: "#ffdad6", padding: "4px 10px", borderRadius: 999 }}>Review</span>
+                            </div>
+                        </div>
+                    </motion.div>
+
+                    {/* On Leave Today */}
+                    <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.21 }} style={cardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>On Leave Today</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{onLeaveToday.length}</span>
+                                <div style={{ display: "flex", flexDirection: "row-reverse" }}>
+                                    {onLeaveToday.map((a, ai) => (
+                                        <div key={ai} style={{ marginLeft: ai > 0 ? -8 : 0, border: `2px solid ${T.surfaceCard}`, borderRadius: "50%", zIndex: 3 - ai }}>
+                                            <Avatar name={a.name} size={26} />
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        </div>
+                    </motion.div>
                 </div>
             )}
 
+            {/* ── Calendar ── */}
             {showCalendar && (
-                <div style={{ marginBottom: 22, position: "relative" }}>
+                <div style={{ marginBottom: 32 }}>
                     <LeaveCalendar
                         leaveRequests={requests.map(r => ({
-                            empId: r.name,
-                            name: r.name,
-                            type: r.type,
+                            empId: r.name, name: r.name, type: r.type,
                             from: `2026-${r.from.replace("Mar ", "03-").replace("Apr ", "04-").padStart(7, "0")}`,
-                            to: `2026-${r.to.replace("Mar ", "03-").replace("Apr ", "04-").padStart(7, "0")}`,
+                            to:   `2026-${r.to.replace("Mar ", "03-").replace("Apr ", "04-").padStart(7, "0")}`,
                             status: r.status
                         }))}
                         employees={allEmployees}
@@ -7300,58 +7513,234 @@ const LeavePage = ({ pageKey }) => {
                 </div>
             )}
 
-            <Card>
-                <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                    <div style={{ display: "flex", gap: 0, background: C.bg, borderRadius: 8, padding: 3, border: `1px solid ${C.border}` }}>
-                        {["All", "Pending", "Approved", "Rejected"].map(f => (
-                            <button key={f} onClick={() => setFilter(f)} style={{ padding: "5px 14px", borderRadius: 6, border: "none", background: filter === f ? C.white : "transparent", color: filter === f ? C.text : C.textMuted, fontWeight: filter === f ? 700 : 500, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", boxShadow: filter === f ? C.shadow : "none", transition: "all 0.15s" }}>{f}</button>
-                        ))}
+            {/* ── Main Grid: Table (2/3) + Side Panel (1/3) ── */}
+            <div style={{ display: "grid", gridTemplateColumns: isMyRequests ? "1fr" : "2fr 1fr", gap: 32, alignItems: "start" }}>
+
+                {/* ── Requests Table ── */}
+                <div style={{ ...cardStyle, overflow: "hidden" }}>
+                    {/* Table toolbar */}
+                    <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>
+                            {isMyRequests ? "My Requests" : "All Leave Requests"}
+                        </span>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            {/* Filter pills */}
+                            <div style={{ display: "flex", background: T.surfaceLow, borderRadius: 8, padding: 3 }}>
+                                {["All", "Pending", "Approved", "Rejected"].map(f => (
+                                    <button key={f} onClick={() => setFilter(f)} style={{ padding: "5px 13px", borderRadius: 6, border: "none", background: filter === f ? T.surfaceCard : "transparent", color: filter === f ? T.onSurface : T.outline, fontWeight: filter === f ? 700 : 500, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", boxShadow: filter === f ? "0 1px 3px rgba(0,0,0,0.08)" : "none", transition: "all 0.15s" }}>{f}</button>
+                                ))}
+                            </div>
+                            {/* Export */}
+                            <motion.button
+                                whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.95 }}
+                                title="Export CSV"
+                                onClick={() => {
+                                    const csv = ["Employee,Department,Leave Type,From,To,Days,Status", ...filtered.map(r => `${r.name},${r.dept},${r.type},${r.from},${r.to},${r.days},${r.status}`)].join("\n");
+                                    const blob = new Blob([csv], { type: "text/csv" });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement("a"); a.href = url; a.download = "leave_requests.csv"; a.click(); URL.revokeObjectURL(url);
+                                }}
+                                style={{ width: 36, height: 36, borderRadius: 8, border: `1px solid ${T.outlineVar}50`, background: T.surfaceCard, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                            >
+                                <Lucide.Download size={15} color={T.outline} />
+                            </motion.button>
+                        </div>
                     </div>
-                    <div style={{ display: "flex", gap: 8 }}>
-                        <Select options={["All Leave Types", "Annual Leave", "Medical Leave", "Emergency", "Casual"]} />
-                        <Btn variant="outline" onClick={() => {
-                            const csv = ["Employee,Department,Leave Type,From,To,Days,Status", ...filtered.map(r => `${r.name},${r.dept},${r.type},${r.from},${r.to},${r.days},${r.status}`)].join("\n");
-                            const blob = new Blob([csv], { type: "text/csv" });
-                            const url = URL.createObjectURL(blob);
-                            const a = document.createElement("a"); a.href = url; a.download = "leave_requests.csv"; a.click(); URL.revokeObjectURL(url);
-                        }}><Icon n="export" size={13} />Export</Btn>
+
+                    {/* Table */}
+                    <div style={{ overflowX: "auto" }}>
+                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <thead>
+                                <tr style={{ background: _darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow + "80" }}>
+                                    {["Employee", "Leave Type", "Date Range", "Days", "Status", "Actions"].map((h, hi) => (
+                                        <th key={h} style={{ padding: "14px 24px", textAlign: hi === 5 ? "right" : "left", fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>{h}</th>
+                                    ))}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {filtered.map((r, i) => {
+                                    const chip = leaveTypeChip[r.type] || { bg: T.primaryFixed, color: T.primaryFixedText };
+                                    const badge = leaveBadge[r.status] || leaveBadge["Pending"];
+                                    return (
+                                        <motion.tr
+                                            key={i}
+                                            initial={{ opacity: 0 }}
+                                            animate={{ opacity: 1 }}
+                                            transition={{ delay: i * 0.04 }}
+                                            whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                            style={{ borderBottom: `1px solid ${T.outlineVar}20`, cursor: "default" }}
+                                        >
+                                            {/* Employee */}
+                                            <td style={{ padding: "16px 24px" }}>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                    <Avatar name={r.name} size={36} />
+                                                    <div>
+                                                        <div style={{ fontWeight: 700, fontSize: 13.5, color: _darkMode ? C.text : T.onSurface }}>{r.name}</div>
+                                                        <div style={{ fontSize: 11, color: T.onSurfaceVar, marginTop: 2 }}>{r.dept}</div>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            {/* Leave Type chip */}
+                                            <td style={{ padding: "16px 24px" }}>
+                                                <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700, background: chip.bg, color: chip.color }}>{r.type}</span>
+                                            </td>
+                                            {/* Date range */}
+                                            <td style={{ padding: "16px 24px" }}>
+                                                <div style={{ fontSize: 13.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{r.from} → {r.to}</div>
+                                                <div style={{ fontSize: 11, color: T.onSurfaceVar, marginTop: 2 }}>Applied {r.applied}</div>
+                                            </td>
+                                            {/* Days */}
+                                            <td style={{ padding: "16px 24px" }}>
+                                                <span style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>{r.days}</span>
+                                                <span style={{ fontSize: 11, color: T.onSurfaceVar, marginLeft: 2 }}>d</span>
+                                            </td>
+                                            {/* Status badge */}
+                                            <td style={{ padding: "16px 24px" }}>
+                                                <span style={{ display: "inline-block", padding: "4px 14px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", background: badge.bg, color: badge.color }}>{badge.label}</span>
+                                            </td>
+                                            {/* Actions */}
+                                            <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                                {r.status === "Pending" && !isMyRequests ? (
+                                                    <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                                                            onClick={() => setRequests(prev => prev.map((rr, ri) => ri === i ? { ...rr, status: "Approved" } : rr))}
+                                                            style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#d4f4e8", color: "#166534", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+                                                        >Approve</motion.button>
+                                                        <motion.button
+                                                            whileHover={{ scale: 1.04 }} whileTap={{ scale: 0.96 }}
+                                                            onClick={() => setRequests(prev => prev.map((rr, ri) => ri === i ? { ...rr, status: "Rejected" } : rr))}
+                                                            style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: "#ffdad6", color: "#ba1a1a", fontWeight: 700, fontSize: 12, cursor: "pointer", fontFamily: "inherit" }}
+                                                        >Reject</motion.button>
+                                                    </div>
+                                                ) : (
+                                                    <motion.button
+                                                        whileHover={{ backgroundColor: T.surfaceHigh }}
+                                                        style={{ width: 34, height: 34, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginLeft: "auto", transition: "background 0.15s" }}
+                                                    >
+                                                        <Lucide.MoreVertical size={18} color={T.outline} />
+                                                    </motion.button>
+                                                )}
+                                            </td>
+                                        </motion.tr>
+                                    );
+                                })}
+                            </tbody>
+                        </table>
+                    </div>
+
+                    {/* Pagination footer */}
+                    <div style={{ padding: "14px 24px", background: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50", borderTop: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>Showing {filtered.length} of {requests.length} requests</span>
+                        <div style={{ display: "flex", gap: 4 }}>
+                            <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                <Lucide.ChevronLeft size={16} color={T.onSurfaceVar} />
+                            </motion.button>
+                            {[1,2,3].map(p => (
+                                <button key={p} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: p === 1 ? T.primary : "transparent", color: p === 1 ? "#fff" : T.onSurfaceVar, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
+                            ))}
+                            <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                <Lucide.ChevronRight size={16} color={T.onSurfaceVar} />
+                            </motion.button>
+                        </div>
                     </div>
                 </div>
 
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <TableHead cols={["Employee", "Leave Type", "From", "To", "Days", "Balance", "Applied On", "Status", "Actions"]} />
-                    <tbody>
-                        {filtered.map((r, i) => (
-                            <tr key={i} style={{ background: i % 2 === 0 ? C.white : C.tableRow }}>
-                                <Td>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                                        <Avatar name={r.name} size={30} />
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 12.5 }}>{r.name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{r.dept}</div>
+                {/* ── Right Side Panel ── */}
+                {!isMyRequests && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+
+                        {/* AI Insight — glass-panel matching attendance page exactly */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                            style={{
+                                background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)",
+                                backdropFilter: "blur(20px)",
+                                WebkitBackdropFilter: "blur(20px)",
+                                borderRadius: 16,
+                                border: "1px solid rgba(255,255,255,0.25)",
+                                boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                                padding: "28px",
+                                position: "relative",
+                                overflow: "hidden",
+                                display: "flex",
+                                flexDirection: "column",
+                            }}
+                        >
+                            <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                                <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                                <Lucide.Zap size={18} color={T.primary} />
+                                <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: T.primary }}>Nexis AI Insight</span>
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Leave Overlap Risk</div>
+                            <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                                <strong style={{ color: _darkMode ? C.text : T.onSurface }}>3 employees</strong> in Engineering have overlapping leave next week. Consider redistributing tasks to avoid delivery delays.
+                            </p>
+                            <motion.button
+                                whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                                style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}
+                            >
+                                View Full Analysis
+                            </motion.button>
+                        </motion.div>
+
+                        {/* Leave Distribution */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                            style={{ ...cardStyle, padding: "24px" }}
+                        >
+                            <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 4 }}>Leave Distribution</div>
+                            <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginBottom: 20 }}>By type this month</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+                                {leaveDistribution.map((d, i) => (
+                                    <div key={d.label}>
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                <div style={{ width: 8, height: 8, borderRadius: "50%", background: d.color }} />
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{d.label}</span>
+                                            </div>
+                                            <span style={{ fontSize: 13, fontWeight: 700, color: T.onSurfaceVar }}>{d.count}</span>
+                                        </div>
+                                        <div style={{ height: 6, borderRadius: 6, background: T.surfaceLow, overflow: "hidden" }}>
+                                            <motion.div
+                                                initial={{ width: 0 }}
+                                                animate={{ width: `${d.pct}%` }}
+                                                transition={{ delay: 0.35 + i * 0.1, duration: 0.5, ease: "easeOut" }}
+                                                style={{ height: "100%", borderRadius: 6, background: d.color }}
+                                            />
                                         </div>
                                     </div>
-                                </Td>
-                                <Td>{r.type}</Td>
-                                <Td muted>{r.from}</Td>
-                                <Td muted>{r.to}</Td>
-                                <Td><span style={{ fontWeight: 700 }}>{r.days}</span></Td>
-                                <Td muted>{r.balance}</Td>
-                                <Td muted>{r.applied}</Td>
-                                <Td><Badge label={r.status} variant={statusVariant[r.status]} /></Td>
-                                <Td>
-                                    {r.status === "Pending" && !isMyRequests ? (
-                                        <div style={{ display: "flex", gap: 6 }}>
-                                            <Btn variant="secondary" size="sm" onClick={() => setRequests(prev => prev.map((rr, ri) => ri === i ? { ...rr, status: "Approved" } : rr))}>Approve</Btn>
-                                            <Btn variant="danger" size="sm" onClick={() => setRequests(prev => prev.map((rr, ri) => ri === i ? { ...rr, status: "Rejected" } : rr))}>Reject</Btn>
-                                        </div>
-                                    ) : <Btn variant="ghost" size="sm"><Icon n="eye" size={13} />View</Btn>}
-                                </Td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </Card>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                        {/* Team Leave Balance */}
+                        <motion.div
+                            initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.35 }}
+                            style={{ ...cardStyle, padding: "24px" }}
+                        >
+                            <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 4 }}>Team Leave Balance</div>
+                            <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginBottom: 20 }}>Avg remaining days per type</div>
+                            <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                {[
+                                    { label: "Annual Leave",   avg: 11, bg: T.primaryFixed,  color: T.primaryFixedText },
+                                    { label: "Medical Leave",  avg: 8,  bg: "#ffdad6",        color: "#ba1a1a"          },
+                                    { label: "Emergency",      avg: 2,  bg: T.tertiaryFixed,  color: T.tertiary         },
+                                    { label: "Casual Leave",   avg: 5,  bg: "#d4f4e8",        color: "#166534"          },
+                                ].map(b => (
+                                    <div key={b.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: 10, background: b.bg + "80", border: `1px solid ${b.bg}` }}>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{b.label}</span>
+                                        <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: b.color }}>{b.avg}d</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </motion.div>
+
+                    </div>
+                )}
+            </div>
 
             <LeaveApplyModal
                 isOpen={showApply}
@@ -7402,7 +7791,7 @@ const ConfigPage = () => {
     const toggleDay = (d) => setWorkDays(p => p.includes(d) ? p.filter(x => x !== d) : [...p, d]);
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <AnimatePresence>
                 {configSaved && (
                     <motion.div initial={{ opacity: 0, y: -12 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -12 }} transition={{ duration: 0.22 }}
@@ -8910,14 +9299,70 @@ const PermissionsPage = () => {
     return <PermissionsPageComponent C={C} employees={employees} jobFamilies={jobFamilies} />;
 };
 
-const NexisAIWidget = () => {
+const NexisAIWidget = ({ sidebarTrigger }) => {
     const { employees, jobFamilies, leaveRequests, setLeaveRequests, attendance, payroll, goals, setGoals, recognitions, setRecognitions, skillRequests, setSkillRequests } = React.useContext(DataCtx);
-    return <NexisAI C={C} employees={employees} jobFamilies={jobFamilies} leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} attendance={attendance} payroll={payroll} goals={goals} setGoals={setGoals} recognitions={recognitions} setRecognitions={setRecognitions} skillRequests={skillRequests} setSkillRequests={setSkillRequests} />;
+    return <NexisAI C={C} employees={employees} jobFamilies={jobFamilies} leaveRequests={leaveRequests} setLeaveRequests={setLeaveRequests} attendance={attendance} payroll={payroll} goals={goals} setGoals={setGoals} recognitions={recognitions} setRecognitions={setRecognitions} skillRequests={skillRequests} setSkillRequests={setSkillRequests} sidebarTrigger={sidebarTrigger} />;
 };
 
 /* ─── PAGE: SETTINGS ──────────────────────────────────────────── */
-const SettingsPage = () => {
+// ── Unified Settings page (tabs: General, Organisation, Policies, Integrations, Data, Access) ──
+const SettingsTabbedPage = ({ pageKey }) => {
+    const tabFromKey = (k) => {
+        if (k === "org") return "organisation";
+        if (k === "allowance") return "policies";
+        if (k === "permissions") return "access";
+        if (k === "integrations") return "integrations";
+        if (k === "devices") return "hardware";
+        if (k === "documents") return "data";
+        if (k === "config" || k === "settings_Configurations" || k === "settings_General") return "general";
+        return "general";
+    };
+    const [tab, setTab] = useState(tabFromKey(pageKey));
+    React.useEffect(() => { if (pageKey === "settings") return; setTab(tabFromKey(pageKey)); }, [pageKey]);
+
+    const tabs = [
+        { key: "general", label: "General" },
+        { key: "organisation", label: "Organisation" },
+        { key: "policies", label: "Policies" },
+        { key: "integrations", label: "Integrations" },
+        { key: "hardware", label: "Hardware" },
+        { key: "data", label: "Data" },
+        { key: "access", label: "Access" },
+    ];
+
+    return (
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Settings</h1>
+            <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>System configuration and preferences</p>
+
+            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
+                {tabs.map(t => (
+                    <div key={t.key} onClick={() => setTab(t.key)}
+                        style={{
+                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
+                            color: tab === t.key ? C.primary : C.textMid,
+                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
+                            cursor: "pointer", transition: "color 0.15s",
+                        }}>
+                        {t.label}
+                    </div>
+                ))}
+            </div>
+
+            {tab === "general" && <SettingsPageInner />}
+            {tab === "organisation" && <OrgPage />}
+            {tab === "policies" && <AllowancePage />}
+            {tab === "integrations" && <IntegrationsPage />}
+            {tab === "hardware" && <DevicesPage />}
+            {tab === "data" && <DocumentsPage />}
+            {tab === "access" && <PermissionsPage />}
+        </div>
+    );
+};
+
+const SettingsPageInner = () => {
     const { companyConfig } = React.useContext(DataCtx);
+    const { isDark, toggleTheme, themeKey, setThemeKey } = React.useContext(ThemeCtx);
     const toast = useToast();
 
     const LS_SETTINGS_KEY = "peoplecore_settings";
@@ -8959,7 +9404,7 @@ const SettingsPage = () => {
     const saveNotifs = () => { persist({ notifs }); toast("Notification preferences saved"); };
 
     return (
-    <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+    <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
         <div style={{ marginBottom: 22 }}>
             <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Settings</h1>
             <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Organisation profile and platform preferences</p>
@@ -9023,6 +9468,38 @@ const SettingsPage = () => {
                             <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{v}</div>
                         </div>
                     ))}
+                </div>
+            </Card>
+            <Card style={{ gridColumn: "1 / -1" }}>
+                <CardHeader title="Appearance & Theme" subtitle="Customise the look and feel across the entire system" />
+                <div style={{ padding: "18px 20px" }}>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>Colour Theme</div>
+                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
+                        {[
+                            { key: "teal",   name: "Teal",   color: "#0d9488" },
+                            { key: "indigo", name: "Indigo", color: "#6366f1" },
+                            { key: "blue",   name: "Blue",   color: "#3b82f6" },
+                            { key: "purple", name: "Purple", color: "#8b5cf6" },
+                            { key: "rose",   name: "Rose",   color: "#f43f5e" },
+                        ].map(t => (
+                            <div key={t.key} onClick={() => setThemeKey(t.key)}
+                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderRadius: 10, border: `2px solid ${themeKey === t.key ? t.color : C.border}`, cursor: "pointer", background: themeKey === t.key ? t.color + "12" : C.bg, transition: "all 0.15s" }}>
+                                <div style={{ width: 18, height: 18, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
+                                <span style={{ fontSize: 13, fontWeight: themeKey === t.key ? 700 : 500, color: themeKey === t.key ? t.color : C.text }}>{t.name}</span>
+                                {themeKey === t.key && <Lucide.Check size={14} color={t.color} strokeWidth={2.5} />}
+                            </div>
+                        ))}
+                    </div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>Display Mode</div>
+                    <div style={{ display: "flex", gap: 10, maxWidth: 360 }}>
+                        {[{ val: false, label: "Light Mode", Icon: Lucide.Sun }, { val: true, label: "Dark Mode", Icon: Lucide.Moon }].map(m => (
+                            <div key={m.label} onClick={() => isDark !== m.val && toggleTheme()}
+                                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", borderRadius: 10, border: `2px solid ${isDark === m.val ? C.primary : C.border}`, cursor: "pointer", background: isDark === m.val ? C.primaryLight : C.bg, transition: "all 0.15s" }}>
+                                <m.Icon size={16} color={isDark === m.val ? C.primary : C.textMid} strokeWidth={1.75} />
+                                <span style={{ fontSize: 13, fontWeight: isDark === m.val ? 700 : 500, color: isDark === m.val ? C.primary : C.textMid }}>{m.label}</span>
+                            </div>
+                        ))}
+                    </div>
                 </div>
             </Card>
         </div>
@@ -9439,7 +9916,7 @@ const OrgPage = () => {
                 {/* Virtual organisation label */}
                 <div style={{
                     padding: "12px 28px", borderRadius: 12,
-                    background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`,
+                    background: `${C.primary}`,
                     color: "#fff", fontWeight: 800, fontSize: 14,
                     boxShadow: "0 4px 16px rgba(99,102,241,0.3)",
                     textAlign: "center", marginBottom: 0,
@@ -9481,7 +9958,7 @@ const OrgPage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                 <div>
@@ -10321,105 +10798,413 @@ const OrgPage = () => {
 };
 
 
+// ── Template color tokens (mapped faithfully from the Selfvora design system) ──
+const T = {
+    surface:      "#f7f9fb",
+    surfaceCard:  "#ffffff",
+    surfaceLow:   "#f2f4f6",
+    surfaceHigh:  "#e6e8ea",
+    outline:      "#737686",
+    outlineVar:   "#c3c6d7",
+    onSurface:    "#191c1e",
+    onSurfaceVar: "#434655",
+    primary:      "#004ac6",
+    primaryFixed: "#dbe1ff",            // "On Time" badge bg
+    primaryFixedText: "#003ea8",        // "On Time" badge text
+    tertiaryFixed:    "#ffdbcd",        // "Late" badge bg
+    tertiary:         "#943700",        // "Late" badge text / "Pending Corrections" number
+    inverseS:     "#2d3133",            // dark button bg
+};
+
 const TimesheetPage = ({ pageKey }) => {
     const { navigate } = React.useContext(DataCtx);
+    const currentUser = React.useContext(UserCtx);
+    const isManager = currentUser?.role === "admin" || currentUser?.role === "manager" || currentUser?.role === "hr_admin";
     const isCorrections = pageKey === "timesheet_Corrections";
     const isOvertime = pageKey === "timesheet_Overtime";
-    const subLabel = isCorrections ? "Corrections" : isOvertime ? "Overtime" : "All Records";
+
+    const [search, setSearch] = useState("");
+    const [sortBy, setSortBy] = useState("Latest Clock-in");
+
+    const roles = { EMP001: "Staff Engineer", EMP002: "HR Specialist", EMP003: "Product Manager", EMP004: "QA Lead", EMP005: "Backend Engineer", EMP006: "Sales Manager", EMP007: "DevOps Lead" };
 
     const data = [
-        ["James Perera", "EMP001", "09:02", "17:58", "8h 56m", "Remote", "Active", "0h 0m", "gps"],
-        ["Nimali Silva", "EMP002", "08:45", "17:32", "8h 47m", "Onsite", "Active", "0h 15m", "biometric"],
-        ["David Chen", "EMP003", "09:18", "—", "Active", "Onsite", "Active", "0h 0m", "biometric"],
-        ["Ayesha Farook", "EMP004", "—", "—", "—", "On Leave", "On Leave", "0h 0m", "—"],
-        ["Rayan Kumar", "EMP005", "09:32", "—", "Active", "Remote", "Active", "0h 0m", "manual"],
-        ["Emma Thompson", "EMP006", "09:05", "17:55", "8h 50m", "Onsite", "Active", "0h 20m", "biometric"],
-        ["Arjun Mehta", "EMP007", "—", "—", "—", "—", "Absent", "0h 0m", "—"],
+        { name: "James Perera",  id: "EMP001", ci: "09:02", co: "17:58", hrs: "8h 56m", mode: "Remote",   status: "Active",   ot: "0h 0m",  src: "gps" },
+        { name: "Nimali Silva",  id: "EMP002", ci: "08:45", co: "17:32", hrs: "8h 47m", mode: "Onsite",   status: "Active",   ot: "0h 15m", src: "biometric" },
+        { name: "David Chen",    id: "EMP003", ci: "09:18", co: "—",     hrs: "Active", mode: "Onsite",   status: "Active",   ot: "0h 0m",  src: "biometric" },
+        { name: "Ayesha Farook", id: "EMP004", ci: "—",     co: "—",     hrs: "0h 0m",  mode: "On Leave", status: "On Leave", ot: "0h 0m",  src: "—" },
+        { name: "Rayan Kumar",   id: "EMP005", ci: "09:32", co: "—",     hrs: "Active", mode: "Remote",   status: "Active",   ot: "0h 0m",  src: "manual" },
+        { name: "Emma Thompson", id: "EMP006", ci: "09:05", co: "17:55", hrs: "8h 50m", mode: "Onsite",   status: "Active",   ot: "0h 20m", src: "biometric" },
+        { name: "Arjun Mehta",   id: "EMP007", ci: "—",     co: "—",     hrs: "0h 0m",  mode: "—",        status: "Absent",   ot: "0h 0m",  src: "—" },
     ];
 
-    const filteredData = isCorrections
-        ? data.filter(r => r[1] === "EMP003" || r[1] === "EMP005") // Mocking corrections pending
+    const getAttendanceStatus = (r) => {
+        if (r.status === "On Leave") return "On Leave";
+        if (r.status === "Absent")   return "Absent";
+        if (r.ci === "—") return "Absent";
+        const h = parseInt(r.ci.split(":")[0], 10);
+        const m = parseInt(r.ci.split(":")[1], 10);
+        return (h > 9 || (h === 9 && m > 5)) ? "Late" : "On Time";
+    };
+
+    const statusStyle = {
+        "On Time":  { bg: C.primary + "18",  color: C.primary,  label: "On Time"  },
+        "Late":     { bg: C.warning + "20",  color: C.warning,  label: "Late"     },
+        "On Leave": { bg: C.textMuted + "20",color: C.textMid,  label: "On Leave" },
+        "Absent":   { bg: C.danger + "18",   color: C.danger,   label: "Absent"   },
+    };
+
+    const filteredData = (isCorrections
+        ? data.filter(r => r.id === "EMP003" || r.id === "EMP005")
         : isOvertime
-            ? data.filter(r => r[7] !== "0h 0m")
-            : data;
+            ? data.filter(r => r.ot !== "0h 0m")
+            : data
+    ).filter(r => !search || r.name.toLowerCase().includes(search.toLowerCase()));
+
+    // ── Status badge definitions — exact color tokens from template ──
+    const attStatusBadge = {
+        "On Time":  { bg: T.primaryFixed,   color: T.primaryFixedText, label: "On Time"  },
+        "Late":     { bg: T.tertiaryFixed,  color: T.tertiary,         label: "Late"     },
+        "On Leave": { bg: T.surfaceHigh,    color: T.onSurfaceVar,     label: "On Leave" },
+        "Absent":   { bg: "#ffdad6",        color: "#ba1a1a",          label: "Absent"   },
+    };
+
+    // bar heights match template proportions
+    const shiftBars = [
+        { label: "06:00", trackH: "75%",  fillH: "67%",  color: T.primary },
+        { label: "09:00", trackH: "100%", fillH: "88%",  color: T.primary },
+        { label: "12:00", trackH: "63%",  fillH: "38%",  color: T.primary },
+        { label: "15:00", trackH: "75%",  fillH: "31%",  color: T.tertiary },
+        { label: "18:00", trackH: "88%",  fillH: "63%",  color: T.tertiary },
+    ];
+
+    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Timesheet", onClick: () => navigate("timesheet") }, { label: subLabel }]} />
-            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 22 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
                         {isCorrections ? "Attendance Corrections" : isOvertime ? "Overtime Records" : "Attendance Timesheet"}
                     </h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>
-                        {isCorrections ? "Review and approve attendance adjustment requests" : isOvertime ? "Monitoring overtime hours and costs" : "Daily attendance records · Wednesday, 11 March 2026"}
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>
+                        {isCorrections ? "Review and approve attendance adjustment requests" : isOvertime ? "Monitoring overtime hours and costs" : "Real-time presence monitoring for Mar 11, 2026"}
                     </p>
                 </div>
-                <div style={{ display: "flex", gap: 10 }}>
-                    <Btn variant="outline">Manual Entry</Btn>
-                    <Btn variant="primary"><Icon n="export" size={13} color="#fff" />Export</Btn>
+                <div style={{ display: "flex", gap: 12 }}>
+                    <motion.button
+                        whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: T.surfaceCard, color: T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                    >
+                        <Lucide.SlidersHorizontal size={16} color={T.onSurface} />
+                        Filters
+                    </motion.button>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+                        onClick={() => {
+                            const csv = ["Name,ID,Clock In,Clock Out,Hours,Mode,Status", ...filteredData.map(r => `${r.name},${r.id},${r.ci},${r.co},${r.hrs},${r.mode},${r.status}`)].join("\n");
+                            const blob = new Blob([csv], { type: "text/csv" });
+                            const url = URL.createObjectURL(blob);
+                            const a = document.createElement("a"); a.href = url; a.download = "attendance.csv"; a.click(); URL.revokeObjectURL(url);
+                        }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: `linear-gradient(to right, ${T.primary}, #2563eb)`, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${T.primary}50` }}
+                    >
+                        <Lucide.Download size={16} color="#fff" />
+                        Export Report
+                    </motion.button>
                 </div>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12, marginBottom: 22 }}>
-                {[["Total", "248", "default"], ["Present", "193", "success"], ["Absent", "35", "danger"], ["On Leave", "20", "warning"], ["Corrections Pending", "3", "info"]].map(([l, v, variant]) => (
-                    <StatCard key={l} label={l} value={v} variant={variant} />
-                ))}
+            {/* ── Metric Cards — 5 columns, exact template typography ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 24, marginBottom: 32 }}>
+                {/* Total Headcount */}
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} style={cardStyle}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Total Headcount</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>248</span>
+                            <div style={{ background: T.primaryFixed, borderRadius: 6, padding: "4px 6px", display: "flex", alignItems: "center" }}>
+                                <Lucide.TrendingUp size={16} color={T.primary} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Present Today */}
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }} style={cardStyle}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Present Today</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>193</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "#f0fdf4", padding: "4px 10px", borderRadius: 999 }}>77.8%</span>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Absent */}
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} style={cardStyle}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Absent</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>35</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: "#ba1a1a", background: "#ffdad6", padding: "4px 10px", borderRadius: 999 }}>14.1%</span>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* On Leave */}
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.21 }} style={cardStyle}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>On Leave</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>20</span>
+                            <span style={{ fontSize: 11.5, fontWeight: 700, color: T.onSurfaceVar, background: T.surfaceHigh, padding: "4px 10px", borderRadius: 999 }}>8.1%</span>
+                        </div>
+                    </div>
+                </motion.div>
+
+                {/* Pending Corrections */}
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }} style={cardStyle}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>Pending Corrections</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: T.tertiary, lineHeight: 1 }}>06</span>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.tertiaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Lucide.AlertCircle size={16} color={T.tertiary} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
             </div>
 
-            <Card>
-                <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", gap: 12, alignItems: "center" }}>
-                    {!isCorrections && <input type="date" defaultValue="2026-03-11" style={{ padding: "7px 10px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", background: C.white, color: C.text, colorScheme: _darkMode ? "dark" : "light" }} />}
-                    <Select options={["All Departments", "Engineering", "HR & Admin", "Product", "Sales"]} />
-                    {!isOvertime && <Select options={["All Work Modes", "Onsite", "Remote", "Hybrid"]} />}
-                    {isCorrections && <Badge label="3 corrections pending" variant="warning" />}
+            {/* ── Employee Presence Log Table ── */}
+            <div style={{ ...cardStyle, overflow: "hidden", marginBottom: 32 }}>
+                {/* Table header bar */}
+                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Employee Presence Log</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ position: "relative" }}>
+                            <Lucide.Search size={14} color={T.outline} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                            <input
+                                placeholder="Search employees or logs..."
+                                value={search}
+                                onChange={e => setSearch(e.target.value)}
+                                style={{ paddingLeft: 34, paddingRight: 12, height: 36, border: "none", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", background: T.surfaceLow, color: T.onSurface, width: 240 }}
+                            />
+                        </div>
+                        <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.5px" }}>Sort by:</span>
+                        <select
+                            value={sortBy} onChange={e => setSortBy(e.target.value)}
+                            style={{ fontSize: 11, fontWeight: 700, background: "transparent", border: "none", outline: "none", cursor: "pointer", color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit" }}
+                        >
+                            {["Latest Clock-in", "Name (A-Z)", "Department"].map(o => <option key={o}>{o}</option>)}
+                        </select>
+                    </div>
                 </div>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <TableHead cols={isOvertime ? ["Employee", "Reg Hours", "Overtime", "Approved By", "Status", "Actions"] : ["Employee", "Clock In", "Clock Out", "Total Hours", "Work Mode", "Source", "Status", "Actions"]} />
-                    <tbody>
-                        {filteredData.map(([name, id, ci, co, hrs, mode, status, ot, src], i) => (
-                            <tr key={i} style={{ background: i % 2 === 0 ? C.white : C.tableRow }}>
-                                <Td>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                                        <Avatar name={name} size={30} />
-                                        <div>
-                                            <div style={{ fontWeight: 600, fontSize: 12.5 }}>{name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted, fontFamily: "monospace" }}>{id}</div>
-                                        </div>
-                                    </div>
-                                </Td>
-                                {isOvertime ? (
-                                    <>
-                                        <Td>{hrs}</Td>
-                                        <Td><span style={{ fontWeight: 700, color: C.warning }}>{ot}</span></Td>
-                                        <Td muted>James Perera</Td>
-                                        <Td><Badge label="Pending" variant="warning" /></Td>
-                                    </>
-                                ) : (
-                                    <>
-                                        <Td><span style={{ fontWeight: 600 }}>{ci}</span></Td>
-                                        <Td><span style={{ fontWeight: 600, color: co === "—" ? C.textMuted : C.text }}>{co}</span></Td>
-                                        <Td><span style={{ fontWeight: 600, color: hrs === "Active" ? C.success : C.text }}>{hrs === "Active" ? "● Active" : hrs}</span></Td>
-                                        <Td><Badge label={mode} variant={mode === "Onsite" ? "success" : mode === "Remote" ? "primary" : mode === "On Leave" ? "info" : "default"} /></Td>
-                                        <Td>
-                                            {src === "biometric" && <span style={{ fontSize: 11, fontWeight: 700, color: "#059669", background: "#ECFDF5", border: "1px solid #6EE7B7", borderRadius: 20, padding: "2px 9px" }}>Verified</span>}
-                                            {src === "gps" && <span style={{ fontSize: 11, fontWeight: 700, color: "#2563EB", background: "#EFF6FF", border: "1px solid #93C5FD", borderRadius: 20, padding: "2px 9px" }}>GPS</span>}
-                                            {src === "manual" && <span style={{ fontSize: 11, fontWeight: 700, color: "#B45309", background: "#FEF3C7", border: "1px solid #FDE68A", borderRadius: 20, padding: "2px 9px" }}>Manual</span>}
-                                            {src === "—" && <span style={{ fontSize: 11, color: C.textMuted }}>—</span>}
-                                        </Td>
-                                        <Td><Badge label={status} variant={status === "Active" ? "success" : status === "On Leave" ? "info" : "danger"} /></Td>
-                                    </>
-                                )}
-                                <Td>
-                                    <div style={{ display: "flex", gap: 5 }}>
-                                        <Btn variant="ghost" size="sm"><Icon n="edit" size={13} /> {isCorrections ? "Review" : "Correct"}</Btn>
-                                    </div>
-                                </Td>
+
+                {/* Table */}
+                <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                            <tr style={{ background: _darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow + "80" }}>
+                                {(isOvertime
+                                    ? ["Employee", "Reg Hours", "Overtime", "Approved By", "Status", "Actions"]
+                                    : ["Employee", "Status", "Clock In", "Clock Out", "Work Mode", "Total Hours", "Actions"]
+                                ).map((h, hi) => (
+                                    <th key={h} style={{ padding: "14px 24px", textAlign: hi === 6 ? "right" : "left", fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>{h}</th>
+                                ))}
                             </tr>
+                        </thead>
+                        <tbody>
+                            {filteredData.map((r, i) => {
+                                const attStatus = getAttendanceStatus(r);
+                                const badge = attStatusBadge[attStatus] || attStatusBadge["Absent"];
+                                const isGhosted = r.status === "On Leave" || r.status === "Absent";
+                                return (
+                                    <motion.tr
+                                        key={r.id}
+                                        initial={{ opacity: 0 }}
+                                        animate={{ opacity: 1 }}
+                                        transition={{ delay: i * 0.04 }}
+                                        whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                        style={{ borderBottom: `1px solid ${T.outlineVar}20`, cursor: "default" }}
+                                    >
+                                        {/* Employee */}
+                                        <td style={{ padding: "16px 24px" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                <Avatar name={r.name} size={36} />
+                                                <div>
+                                                    <div style={{ fontWeight: 700, fontSize: 13.5, color: _darkMode ? C.text : T.onSurface }}>{r.name}</div>
+                                                    <div style={{ fontSize: 11, color: T.onSurfaceVar, marginTop: 2 }}>{roles[r.id] || r.id}</div>
+                                                </div>
+                                            </div>
+                                        </td>
+
+                                        {isOvertime ? (
+                                            <>
+                                                <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{r.hrs}</td>
+                                                <td style={{ padding: "16px 24px" }}><span style={{ fontSize: 13.5, fontWeight: 700, color: T.tertiary }}>{r.ot}</span></td>
+                                                <td style={{ padding: "16px 24px", fontSize: 13.5, color: T.onSurfaceVar }}>Sarah Admin</td>
+                                                <td style={{ padding: "16px 24px" }}><Badge label="Pending" variant="warning" /></td>
+                                            </>
+                                        ) : (
+                                            <>
+                                                {/* Status badge */}
+                                                <td style={{ padding: "16px 24px" }}>
+                                                    <span style={{ display: "inline-block", padding: "4px 14px", borderRadius: 999, fontSize: 10.5, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", background: badge.bg, color: badge.color }}>{badge.label}</span>
+                                                </td>
+                                                {/* Clock In */}
+                                                <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 600, color: isGhosted ? T.outlineVar : (_darkMode ? C.text : T.onSurface) }}>{r.ci}</td>
+                                                {/* Clock Out */}
+                                                <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 600, color: isGhosted ? T.outlineVar : (_darkMode ? C.text : T.onSurface) }}>{r.co}</td>
+                                                {/* Work Mode */}
+                                                <td style={{ padding: "16px 24px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 6, color: isGhosted ? T.outlineVar : T.onSurfaceVar }}>
+                                                        {r.mode === "Remote"   && <Lucide.Home      size={16} />}
+                                                        {r.mode === "Onsite"   && <Lucide.Building2 size={16} />}
+                                                        {r.mode === "On Leave" && <Lucide.Palmtree  size={16} />}
+                                                        <span style={{ fontSize: 13.5, fontWeight: 500 }}>{r.mode === "—" ? "—" : r.mode === "On Leave" ? "Vacation" : r.mode}</span>
+                                                    </div>
+                                                </td>
+                                                {/* Total Hours */}
+                                                <td style={{ padding: "16px 24px" }}>
+                                                    {r.hrs === "Active"
+                                                        ? <span style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13.5, fontWeight: 600, color: "#16a34a" }}><span style={{ width: 7, height: 7, borderRadius: "50%", background: "#16a34a", display: "inline-block" }} />Active</span>
+                                                        : <span style={{ fontSize: 13.5, fontWeight: 600, color: isGhosted ? T.outlineVar : (_darkMode ? C.text : T.onSurface) }}>{r.hrs}</span>}
+                                                </td>
+                                            </>
+                                        )}
+
+                                        {/* Actions */}
+                                        <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                            <motion.button
+                                                whileHover={{ backgroundColor: T.surfaceHigh }}
+                                                style={{ width: 34, height: 34, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginLeft: "auto", transition: "background 0.15s" }}
+                                            >
+                                                <Lucide.MoreVertical size={18} color={T.outline} />
+                                            </motion.button>
+                                        </td>
+                                    </motion.tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+
+                {/* Pagination footer */}
+                <div style={{ padding: "14px 24px", background: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50", borderTop: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>Showing {filteredData.length} of {data.length} employees</span>
+                    <div style={{ display: "flex", gap: 4, alignItems: "center" }}>
+                        <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                            <Lucide.ChevronLeft size={16} color={T.onSurfaceVar} />
+                        </motion.button>
+                        {[1,2,3].map(p => (
+                            <button key={p} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: p === 1 ? T.primary : "transparent", color: p === 1 ? "#fff" : T.onSurfaceVar, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
                         ))}
-                    </tbody>
-                </table>
-            </Card>
+                        <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                            <Lucide.ChevronRight size={16} color={T.onSurfaceVar} />
+                        </motion.button>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Bottom: Shift Distribution (2/3) + AI Insight (1/3) ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 32 }}>
+
+                {/* Shift Distribution */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                    style={{ ...cardStyle, padding: "32px" }}
+                >
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
+                        <div>
+                            <div style={{ fontSize: 19, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Shift Distribution</div>
+                            <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginTop: 4 }}>Active workforce by time blocks</div>
+                        </div>
+                        <div style={{ display: "flex", gap: 16 }}>
+                            {[{ color: T.primary, label: "Morning" }, { color: T.tertiary, label: "Afternoon" }].map(l => (
+                                <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                    <div style={{ width: 8, height: 8, borderRadius: "50%", background: l.color }} />
+                                    <span style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", color: l.color }}>{l.label}</span>
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+
+                    {/* Bars — container height 128px, bars fill from bottom */}
+                    <div style={{ height: 128, display: "flex", alignItems: "flex-end", gap: 16 }}>
+                        {shiftBars.map((b, i) => (
+                            <motion.div
+                                key={b.label}
+                                style={{ flex: 1, background: b.color + "18", borderRadius: "6px 6px 0 0", height: b.trackH, position: "relative", overflow: "hidden" }}
+                                whileHover="hovered"
+                            >
+                                <motion.div
+                                    initial={{ height: 0 }}
+                                    animate={{ height: b.fillH }}
+                                    variants={{ hovered: { height: `calc(${b.fillH} + 10%)` } }}
+                                    transition={{ duration: 0.4, delay: 0.25 + i * 0.07, ease: "easeOut" }}
+                                    style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: b.color, borderRadius: "6px 6px 0 0" }}
+                                />
+                            </motion.div>
+                        ))}
+                    </div>
+
+                    {/* Time labels */}
+                    <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
+                        {shiftBars.map(b => (
+                            <div key={b.label} style={{ flex: 1, textAlign: "center", fontSize: 10, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.6px" }}>{b.label}</div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                {/* AI Insight — glass-panel */}
+                <motion.div
+                    initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                    style={{
+                        background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)",
+                        backdropFilter: "blur(20px)",
+                        WebkitBackdropFilter: "blur(20px)",
+                        borderRadius: 16,
+                        border: `1px solid rgba(255,255,255,0.25)`,
+                        boxShadow: "0 8px 32px rgba(0,0,0,0.12)",
+                        padding: "32px",
+                        position: "relative",
+                        overflow: "hidden",
+                        display: "flex",
+                        flexDirection: "column",
+                    }}
+                >
+                    {/* Decorative icon — exact template: top-right, opacity 0.10 */}
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                        <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                    </div>
+
+                    {/* Label */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                        <Lucide.Zap size={18} color={T.primary} />
+                        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: T.primary }}>Nexis AI Insight</span>
+                    </div>
+
+                    {/* Heading */}
+                    <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Anomaly Detected</div>
+
+                    {/* Body */}
+                    <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                        We've noticed a <strong style={{ color: _darkMode ? C.text : T.onSurface }}>12% increase</strong> in remote clock-ins compared to typical Wednesdays. This correlates with the scheduled maintenance in Block B.
+                    </p>
+
+                    {/* CTA button — inverse-surface = #2d3133 */}
+                    <motion.button
+                        whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                        style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                        View Full Analysis
+                    </motion.button>
+                </motion.div>
+            </div>
         </div>
     );
 };
@@ -10572,7 +11357,7 @@ const CalendarPage = () => {
     const typeColor = (t) => (CAL_EVENT_TYPES.find(x => x.id === t) || { color: "#6366F1" }).color;
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
                 <div>
@@ -10956,7 +11741,7 @@ const DocumentsPage = () => {
     const fmtDate = (iso) => { const d = new Date(iso); return d.toLocaleDateString("en-GB", { day: "numeric", month: "short", year: "numeric" }); };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Documents</h1>
@@ -11213,7 +11998,7 @@ const TeamsPage = () => {
                                 <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? C.primary : C.border}`, background: checked ? C.primary : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                     {checked && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
                                 </div>
-                                <div style={{ width: 28, height: 28, borderRadius: 8, background: `linear-gradient(135deg,${C.primary},#8A7CF0)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                     <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{e.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
                                 </div>
                                 <div style={{ minWidth: 0 }}>
@@ -11232,7 +12017,7 @@ const TeamsPage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Teams</h1>
@@ -11283,7 +12068,7 @@ const TeamsPage = () => {
                                         {t.members.slice(0, 5).map((mid, i) => {
                                             const m = employees.find(e => e.id === mid);
                                             return (
-                                                <div key={mid} style={{ width: 26, height: 26, borderRadius: 8, background: `linear-gradient(135deg,${C.primary},#8A7CF0)`, border: `2px solid ${C.card}`, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -8, zIndex: 5 - i, flexShrink: 0 }}>
+                                                <div key={mid} style={{ width: 26, height: 26, borderRadius: 8, background: `${C.primary}`, border: `2px solid ${C.card}`, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -8, zIndex: 5 - i, flexShrink: 0 }}>
                                                     <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>{m ? m.name.split(" ").map(n => n[0]).join("").slice(0,2) : "?"}</span>
                                                 </div>
                                             );
@@ -11362,7 +12147,7 @@ const TeamsPage = () => {
                             const lead = employees.find(e => e.id === viewTeam.lead);
                             return lead ? (
                                 <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: C.primaryLight, borderRadius: 10, border: `1px solid ${C.primaryMid}`, marginBottom: 18 }}>
-                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `linear-gradient(135deg,${C.primary},#8A7CF0)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                         <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{lead.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
                                     </div>
                                     <div>
@@ -11386,7 +12171,7 @@ const TeamsPage = () => {
                                 if (!m) return null;
                                 return (
                                     <div key={mid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: C.bg, borderRadius: 9, border: `1px solid ${C.border}` }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: `linear-gradient(135deg,${C.primary},#8A7CF0)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                             <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{m.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -11456,6 +12241,58 @@ const TeamsPage = () => {
 };
 
 
+
+/* ═══════════════════════════════════════════════════════════════════════════
+   UNIFIED SKILLS PAGE (tabs: Library, Development, Gaps, Growth Plans)
+   ═══════════════════════════════════════════════════════════════════════════ */
+const SkillsTabbedPage = ({ pageKey }) => {
+    const tabFromKey = (k) => {
+        if (k === "skills_Skill_Development" || k === "skills_Learning_Hub") return "development";
+        if (k === "skills_Gap_Analysis") return "gaps";
+        if (k === "skills_Dev_Plans") return "plans";
+        if (k === "skills_Succession") return "succession";
+        return "library";
+    };
+    const [tab, setTab] = useState(tabFromKey(pageKey));
+    React.useEffect(() => { if (pageKey === "skills") return; setTab(tabFromKey(pageKey)); }, [pageKey]);
+    const { skillRequests } = React.useContext(DataCtx);
+    const pendingSkills = (skillRequests || []).filter(r => r.status === "pending").length;
+
+    const tabs = [
+        { key: "library", label: "Library" },
+        { key: "development", label: `Development${pendingSkills > 0 ? ` (${pendingSkills})` : ""}` },
+        { key: "gaps", label: "Gaps" },
+        { key: "plans", label: "Growth Plans" },
+        { key: "succession", label: "Succession Planning" },
+    ];
+
+    return (
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Skills</h1>
+            <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>Skill tracking, development, and gap analysis</p>
+
+            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
+                {tabs.map(t => (
+                    <div key={t.key} onClick={() => setTab(t.key)}
+                        style={{
+                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
+                            color: tab === t.key ? C.primary : C.textMid,
+                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
+                            cursor: "pointer", transition: "color 0.15s",
+                        }}>
+                        {t.label}
+                    </div>
+                ))}
+            </div>
+
+            {tab === "library" && <SkillLibraryPage />}
+            {tab === "development" && <SkillDevelopmentPage />}
+            {tab === "gaps" && <GapAnalysisPage />}
+            {tab === "plans" && <DevPlansPageEnhanced />}
+            {tab === "succession" && <SuccessionPage />}
+        </div>
+    );
+};
 
 /* ═══════════════════════════════════════════════════════════════════════════
    SKILL LIBRARY PAGE — Central skill taxonomy (HR Admin manages)
@@ -11547,11 +12384,11 @@ const SkillLibraryPage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Skill Library</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Central skill taxonomy — auto-populated from Job Families & employee profiles</p>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>All Skills</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Every skill tracked across your company, pulled from roles and profiles</p>
                 </div>
                 <Btn variant="primary" onClick={() => setShowAdd(true)} style={{ background: C.primary, borderColor: C.primary }}><Icon n="plus" size={13} color="#fff" />Add Skill</Btn>
             </div>
@@ -12080,7 +12917,7 @@ const SkillDevelopmentPage = () => {
         const requiresApproval = selectedSkillDef?.approvalRequired || false;
 
         return (
-            <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
                 <Btn variant="outline" onClick={() => setSelectedEmp(null)} style={{ marginBottom: 16 }}><Icon n="chevRight" size={12} style={{ transform: "rotate(180deg)" }} />Back</Btn>
 
                 <Card style={{ padding: "20px 24px", marginBottom: 16 }}>
@@ -12387,12 +13224,12 @@ const SkillDevelopmentPage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills & Talent", onClick: () => navigate("skills") }, { label: "Skill Development" }]} />
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills", onClick: () => navigate("skills") }, { label: "Development" }]} />
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Skills & Development</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Manage employee skills with proficiency levels, evidence, and validation</p>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Development</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Track skill levels, review evidence, and approve requests</p>
                 </div>
             </div>
 
@@ -12576,11 +13413,11 @@ const GapAnalysisPage = () => {
     const filtered = gapRows.filter(g => (deptFilter === "All" || g.dept === deptFilter) && (severityFilter === "All" || g.severity === severityFilter));
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Gap Analysis</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Org-wide skill gaps — compares employee skills vs Job Family requirements</p>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Skill Gaps</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Where team skills fall short of what each role needs</p>
                 </div>
                 <Btn variant="outline" onClick={() => {
                     const csv = "Skill,Department,Have,Total,Gap,Coverage%,Severity\n" + gapRows.map(g => `${g.skill},${g.dept},${g.have},${g.total},${g.gap},${g.pct}%,${g.severity}`).join("\n");
@@ -12723,7 +13560,7 @@ const GapAnalysisPage = () => {
                             <div style={{ fontSize: 11, color: C.textMuted }}>Skill gap: {gapPlanModal.skill} · {gapPlanModal.dept}</div>
                         </div>
                         <div style={{ padding: "16px 20px" }}>
-                            <div style={{ fontSize: 13, color: C.textMid, marginBottom: 14 }}>Select an employee from the list below, then go to Dev Plans to build their structured roadmap for the <strong style={{ color: C.text }}>{gapPlanModal.skill}</strong> skill.</div>
+                            <div style={{ fontSize: 13, color: C.textMid, marginBottom: 14 }}>Pick someone from the list, then go to Growth Plans to create a learning path for <strong style={{ color: C.text }}>{gapPlanModal.skill}</strong>.</div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                 {(gapPlanModal.missingEmps || []).slice(0, 6).map(emp => (
                                     <div key={emp.id} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 10px", background: C.bg, borderRadius: 8 }}>
@@ -12736,7 +13573,7 @@ const GapAnalysisPage = () => {
                         </div>
                         <div style={{ padding: "12px 20px", borderTop: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "flex-end", gap: 8 }}>
                             <Btn variant="outline" onClick={() => setGapPlanModal(null)}>Cancel</Btn>
-                            <Btn variant="primary" onClick={() => { setGapPlanModal(null); navigate && navigate("skills_Dev_Plans"); }}>Go to Dev Plans →</Btn>
+                            <Btn variant="primary" onClick={() => { setGapPlanModal(null); navigate && navigate("skills_Dev_Plans"); }}>Go to Growth Plans</Btn>
                         </div>
                     </motion.div>
                 </div>
@@ -12871,8 +13708,8 @@ const DevPlansPageEnhanced = () => {
     const INP = { padding: "8px 11px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, background: C.bg, color: C.text, fontFamily: "inherit", outline: "none", width: "100%", boxSizing: "border-box" };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills & Talent", onClick: () => navigate("skills") }, { label: "Dev Plans" }]} />
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills", onClick: () => navigate("skills") }, { label: "Growth Plans" }]} />
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
@@ -13237,11 +14074,11 @@ const TalentDNAPage = () => {
     };
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Talent DNA</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Unified intelligence: skills + attendance + development + role fit → one score</p>
+                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Team Readiness</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>How ready each person is — based on skills, attendance, and role fit</p>
                 </div>
                 <Btn variant="outline" onClick={handleExport}><Icon n="export" size={13} />Export CSV</Btn>
             </div>
@@ -13295,7 +14132,7 @@ const TalentDNAPage = () => {
                         </div>
                     </Card>
                     <Card style={{ padding: 20, marginBottom: 16 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 14 }}>Talent DNA Dimensions</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 14 }}>Readiness Breakdown</div>
                         {dimensions.map(d => (
                             <div key={d.label} style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 12 }}>
                                 <div style={{ width: 100, fontSize: 12, fontWeight: 600, color: C.textMid }}>{d.label}</div>
@@ -13375,7 +14212,7 @@ const PayrollPage = ({ pageKey }) => {
 
     if (isMapping) {
         return (
-            <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
                 <div style={{ marginBottom: 22 }}>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Payroll Field Mapping</h1>
                     <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Map Selfvora fields to External Payroll Provider fields</p>
@@ -13410,7 +14247,7 @@ const PayrollPage = ({ pageKey }) => {
     }
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Payroll Integration</h1>
@@ -13459,7 +14296,7 @@ const PayrollPage = ({ pageKey }) => {
                                             <span style={{ fontSize: 12, fontWeight: 700, color: C.primary }}>{syncProgress}%</span>
                                         </div>
                                         <div style={{ height: 6, borderRadius: 4, background: C.borderLight }}>
-                                            <div style={{ height: "100%", borderRadius: 4, background: `linear-gradient(90deg, ${C.primary}, #8A7CF0)`, width: syncProgress + "%", transition: "width 0.3s ease" }} />
+                                            <div style={{ height: "100%", borderRadius: 4, background: `${C.primary}`, width: syncProgress + "%", transition: "width 0.3s ease" }} />
                                         </div>
                                     </div>
                                 )}
@@ -13764,8 +14601,8 @@ const LearningHubPage = () => {
     const alreadyEnrolled = assignModal ? new Set(enrollments.filter(e => e.courseId === assignModal).map(e => e.empId)) : new Set();
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills & Talent", onClick: () => navigate("skills") }, { label: "Learning Hub" }]} />
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills", onClick: () => navigate("skills") }, { label: "Learning Hub" }]} />
 
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
@@ -14304,7 +15141,7 @@ const IntegrationsPage = () => {
     const PAYROLL_IDS = ["deel", "xero", "adp"];
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Integrations</h1>
@@ -14563,7 +15400,7 @@ const JobFamiliesPage = () => {
         const famEmps = employees.filter(e => e.familyId === fam.id);
         const color = DEPT_COLORS[fam.dept] || "#64748B";
         return (
-            <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
                 <Btn variant="outline" onClick={() => setViewingFamily(null)} style={{ marginBottom: 16 }}><Icon n="chevRight" size={12} style={{ transform: "rotate(180deg)" }} />Back to Job Families</Btn>
                 <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20 }}>
                     <Card style={{ padding: 24 }}>
@@ -14618,7 +15455,7 @@ const JobFamiliesPage = () => {
     }
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Job Families</h1>
@@ -14798,7 +15635,7 @@ const HolidaysPage = () => {
     }, {});
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
                 <div>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Company Holidays</h1>
@@ -14960,17 +15797,14 @@ const EmployeeSidebar = ({ active, onNav, onLogout, user, navItems }) => {
                     );
                 })}
             </nav>
-            <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.borderLight}`, display: "flex", flexDirection: "column", gap: 6 }}>
-                <motion.div whileHover={{ x: 2 }} onClick={toggleTheme}
-                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 9, cursor: "pointer", color: C.textMuted, fontSize: 13 }}>
-                    <Icon n={isDark ? "star" : "globe"} size={15} color={C.textMuted} />
-                    {isDark ? "Light Mode" : "Dark Mode"}
-                </motion.div>
-                <motion.div whileHover={{ x: 2 }} onClick={onLogout}
-                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 9, cursor: "pointer", color: C.danger, fontSize: 13 }}>
-                    <Icon n="close" size={15} color={C.danger} />
-                    Sign Out
-                </motion.div>
+            <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.borderLight}` }}>
+                <div onClick={onLogout}
+                    style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 9, cursor: "pointer", color: C.textMuted, fontSize: 13, transition: "background 0.15s, color 0.15s" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = C.dangerBg; e.currentTarget.style.color = C.danger; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = C.textMuted; }}>
+                    <Lucide.LogOut size={15} color="currentColor" />
+                    Sign out
+                </div>
             </div>
         </div>
     );
@@ -15012,7 +15846,7 @@ const EmployeeDashboard = ({ user, onStartOnboarding, empRecord, onNav, clockedI
                 <motion.div initial={{ opacity: 0, scale: 0.98 }} animate={{ opacity: 1, scale: 1 }}
                     style={{ marginBottom: 22, padding: "16px 20px", background: `linear-gradient(135deg, ${C.primaryLight}, #EEF2FF)`, borderRadius: 14, border: `1.5px solid ${C.primaryMid}`, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
                     <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                        <div style={{ width: 40, height: 40, borderRadius: 12, background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <div style={{ width: 40, height: 40, borderRadius: 12, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                             <Icon n="star" size={20} color="#fff" />
                         </div>
                         <div>
@@ -15021,7 +15855,7 @@ const EmployeeDashboard = ({ user, onStartOnboarding, empRecord, onNav, clockedI
                         </div>
                     </div>
                     <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={onStartOnboarding}
-                        style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                        style={{ padding: "9px 18px", borderRadius: 10, border: "none", background: `${C.primary}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
                         Start Setup →
                     </motion.button>
                 </motion.div>
@@ -15035,13 +15869,13 @@ const EmployeeDashboard = ({ user, onStartOnboarding, empRecord, onNav, clockedI
                     <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
                         {!clockedIn ? (
                             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleClockIn}
-                                style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #10B981, #059669)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", flexShrink: 0 }}>
+                                style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 28px", borderRadius: 12, border: "none", background: "#10B981", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", boxShadow: "none", flexShrink: 0 }}>
                                 <Lucide.Clock size={18} color="#fff" strokeWidth={2} />
                                 Clock In
                             </motion.button>
                         ) : (
                             <motion.button whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }} onClick={handleClockOut}
-                                style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 28px", borderRadius: 12, border: "none", background: "linear-gradient(135deg, #EF4444, #DC2626)", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(239,68,68,0.35)", flexShrink: 0 }}>
+                                style={{ display: "flex", alignItems: "center", gap: 9, padding: "12px 28px", borderRadius: 12, border: "none", background: "#EF4444", color: "#fff", fontSize: 14, fontWeight: 800, cursor: "pointer", fontFamily: "inherit", boxShadow: "none", flexShrink: 0 }}>
                                 <Lucide.StopCircle size={18} color="#fff" strokeWidth={2} />
                                 Clock Out
                             </motion.button>
@@ -16178,6 +17012,335 @@ const EmployeeDocumentsPage = ({ user }) => {
 };
 
 /* ─── EMPLOYEE PROFILE ────────────────────────────────────────── */
+
+/* ─── FULL EMPLOYEE PROFILE PAGE ────────────────────────────── */
+const FullEmployeeProfile = () => {
+    const { employees, selectedEmpId, navigate, leaveRequests, reviews, goals, recognitions } = React.useContext(DataCtx);
+    const emp = (employees || []).find(e => e.id === selectedEmpId);
+    if (!emp) return <div style={{ padding: 40, textAlign: "center" }}><Btn onClick={() => navigate("people_Directory")}><Icon n="arrow-left" size={13} />Back to People</Btn><p style={{ marginTop: 20 }}>Employee not found.</p></div>;
+
+    const [tab, setTab] = useState("overview");
+    const [showActions, setShowActions] = useState(false);
+
+    const myLeaves = (leaveRequests || []).filter(l => l.empId === emp.id);
+    const myReviews = (reviews || []).filter(r => r.empId === emp.id);
+    const myGoals = (goals || []).filter(g => g.empId === emp.id);
+    const myRecognitions = (recognitions || []).filter(r => r.empId === emp.id);
+
+    const TABS = [
+        { key: "overview", label: "Overview", icon: "user" },
+        { key: "history", label: "History", icon: "clock" },
+        { key: "leave", label: "Leave", icon: "calendar" },
+        { key: "performance", label: "Performance", icon: "trending-up" },
+        { key: "skills", label: "Skills", icon: "award" },
+        { key: "documents", label: "Documents", icon: "file-text" },
+    ];
+
+    return (
+        <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1, position: "relative" }}>
+            {/* Nav breadcrumb-style back */}
+            <div onClick={() => navigate("people_Directory")} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: C.textMid, cursor: "pointer", marginBottom: 16, width: "fit-content" }}>
+                <Icon n="arrow-left" size={14} color={C.textMuted} />Back to Directory
+            </div>
+
+            {/* Header section with Actions */}
+            <div style={{ marginBottom: 24, background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden", boxShadow: C.shadow }}>
+                <div style={{ height: 72, background: `linear-gradient(135deg, ${C.primary}20 0%, ${C.primary}06 100%)` }} />
+                <div style={{ padding: "0 28px 22px", marginTop: -40 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: 18 }}>
+                            <div style={{ border: `3px solid ${C.white}`, borderRadius: "50%", boxShadow: C.shadowMd, flexShrink: 0 }}>
+                                <Avatar name={emp.name} size={72} />
+                            </div>
+                            <div style={{ paddingBottom: 4 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+                                    <h1 style={{ fontSize: 22, fontWeight: 900, color: C.text, margin: 0 }}>{emp.name}</h1>
+                                    <Badge label={emp.status} variant={emp.status === "Active" ? "success" : emp.status === "On Leave" ? "info" : "default"} />
+                                </div>
+                                <div style={{ fontSize: 14, color: C.textMuted, marginTop: 3 }}>{emp.level} · {emp.dept}</div>
+                                <div style={{ fontSize: 12.5, color: C.textMid, marginTop: 2 }}>{emp.id} · {emp.email} · {emp.type || "Full-time"}</div>
+                            </div>
+                        </div>
+                        <div style={{ position: "relative", paddingBottom: 4 }}>
+                            <Btn variant="primary" onClick={() => setShowActions(!showActions)}>
+                                Manage <Icon n="chevron-down" size={12} color="#fff" />
+                            </Btn>
+                            <AnimatePresence>
+                                {showActions && (
+                                    <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
+                                        style={{ position: "absolute", top: "110%", right: 0, width: 180, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.1)", zIndex: 100, padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
+                                        {[
+                                            { l: "Promote", i: "trending-up", c: C.primary },
+                                            { l: "Edit Profile", i: "edit", c: C.text },
+                                            { l: "Offboard", i: "log-out", c: C.danger },
+                                        ].map(a => (
+                                            <div key={a.l} onClick={() => setShowActions(false)}
+                                                style={{ padding: "8px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: a.c, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
+                                                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                                                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                                <Icon n={a.i} size={14} color={a.c} /> {a.l}
+                                            </div>
+                                        ))}
+                                    </motion.div>
+                                )}
+                            </AnimatePresence>
+                        </div>
+                    </div>
+                    {/* Quick stats bar */}
+                    <div style={{ display: "flex", gap: 20, marginTop: 20, paddingTop: 20, borderTop: `1px solid ${C.borderLight}` }}>
+                        {[
+                            { label: "Tenure", value: (() => { const start = new Date(emp.startDate); const now = new Date(); const months = (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth(); return months >= 12 ? `${Math.floor(months / 12)}y ${months % 12}m` : `${months}m`; })() },
+                            { label: "Salary", value: emp.salary ? `${(emp.salary).toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "—" },
+                            { label: "Rating", value: emp.rating ? `${emp.rating} / 5` : "—" },
+                            { label: "Leave Balance", value: `${Object.values(emp.leaveBalance || {}).reduce((s, v) => s + v, 0)} days` },
+                            { label: "Role Changes", value: String((emp.history || []).filter(h => h.type === "Promotion" || h.type === "Role Change").length) },
+                        ].map(s => (
+                            <div key={s.label}>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.value}</div>
+                            </div>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* Tab bar */}
+            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 24, padding: "0 4px" }}>
+                {TABS.map(t => (
+                    <button key={t.key} onClick={() => setTab(t.key)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "none", border: "none", borderBottom: tab === t.key ? `3px solid ${C.primary}` : "3px solid transparent", color: tab === t.key ? C.primary : C.textMuted, fontWeight: tab === t.key ? 800 : 500, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
+                        <Icon n={t.icon} size={14} color={tab === t.key ? C.primary : C.textMuted} />
+                        {t.label}
+                    </button>
+                ))}
+            </div>
+
+            {/* Tab Content */}
+            <motion.div key={tab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
+                {tab === "overview" && (
+                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                            <Card title="Employment Details">
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, padding: 6 }}>
+                                    {[
+                                        ["Start Date", emp.startDate],
+                                        ["Employment Type", emp.type],
+                                        ["Department", emp.dept],
+                                        ["Job Level", emp.level],
+                                        ["Current Salary", emp.salary ? `${emp.salary.toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "Confidential"],
+                                        ["Reporting Manager", employees.find(m => m.id === emp.managerId)?.name || "—"],
+                                    ].map(([l, v]) => (
+                                        <div key={l}>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>{l}</div>
+                                            <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{v}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                            <Card title="Contact Information">
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, padding: 6 }}>
+                                    {[
+                                        ["Personal Email", emp.email],
+                                        ["Phone Number", emp.phone],
+                                        ["Work Location", emp.country === "LK" ? "Colombo, Sri Lanka" : "United Kingdom"],
+                                        ["Emergency Contact", "Priya Perera (Spouse)"],
+                                    ].map(([l, v]) => (
+                                        <div key={l}>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>{l}</div>
+                                            <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{v}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </Card>
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                            <Card title="Leave Balance">
+                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+                                    {Object.entries(emp.leaveBalance || {}).map(([type, days]) => (
+                                        <div key={type} style={{ padding: "14px 10px", background: C.bg, borderRadius: 12, border: `1px solid ${C.border}`, textAlign: "center" }}>
+                                            <div style={{ fontSize: 22, fontWeight: 900, color: C.text }}>{days}</div>
+                                            <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2, textTransform: "uppercase", fontWeight: 700 }}>{type}</div>
+                                        </div>
+                                    ))}
+                                </div>
+                                <Btn variant="ghost" size="sm" style={{ width: "100%", marginTop: 14 }}>View Full Calculator</Btn>
+                            </Card>
+                            <Card title="Skills Overview">
+                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                    {(emp.skills || []).map(s => (
+                                        <span key={s} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: C.primaryLight, color: C.primary, border: `1px solid ${C.primaryMid}` }}>{s}</span>
+                                    ))}
+                                </div>
+                                <Btn variant="ghost" size="sm" style={{ width: "100%", marginTop: 14 }}>Endorse Skills</Btn>
+                            </Card>
+                        </div>
+                    </div>
+                )}
+
+                {tab === "history" && (
+                    <Card title="Timeline of Changes">
+                        <div style={{ display: "flex", flexDirection: "column", borderLeft: `2px solid ${C.border}`, marginLeft: 20, paddingLeft: 30, gap: 32, marginTop: 10, paddingBottom: 10 }}>
+                            {(emp.history || []).sort((a, b) => b.date.localeCompare(a.date)).map((h, i) => (
+                                <div key={i} style={{ position: "relative" }}>
+                                    <div style={{ position: "absolute", left: -40, top: 2, width: 16, height: 16, borderRadius: "50%", background: C.white, border: `3px solid ${i === 0 ? C.primary : C.border}` }} />
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
+                                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{h.type}: {h.details}</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid }}>{h.date}</div>
+                                    </div>
+                                    <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>Changed by: {h.user}</div>
+                                    {h.salary && (
+                                        <div style={{ display: "inline-block", marginTop: 8, padding: "4px 10px", background: C.successBg, color: C.success, borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+                                            Salary adjusted to: {h.salary.toLocaleString()}
+                                        </div>
+                                    )}
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                )}
+
+                {tab === "leave" && (
+                    <Card title="Leave History">
+                        {myLeaves.length === 0 ? (
+                            <div style={{ textAlign: "center", padding: "40px 0", color: C.textMuted }}>No leave records found.</div>
+                        ) : (
+                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <thead>
+                                    <tr style={{ textAlign: "left", borderBottom: `1px solid ${C.borderLight}` }}>
+                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Type</th>
+                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Days</th>
+                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Period</th>
+                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {myLeaves.map(l => (
+                                        <tr key={l.id} style={{ borderBottom: `1px solid ${C.borderLight}` }}>
+                                            <td style={{ padding: "12px", fontSize: 13, fontWeight: 600 }}>{l.type}</td>
+                                            <td style={{ padding: "12px", fontSize: 13 }}>{l.days} days</td>
+                                            <td style={{ padding: "12px", fontSize: 13 }}>{l.start} — {l.end}</td>
+                                            <td style={{ padding: "12px" }}>
+                                                <Badge label={l.status} variant={l.status === "Approved" ? "success" : l.status === "Pending" ? "warning" : "default"} />
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        )}
+                    </Card>
+                )}
+
+                {tab === "performance" && (
+                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+                            <Card title="Q1 2026 Goals">
+                                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                                    {myGoals.map(g => (
+                                        <div key={g.id}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+                                                <div style={{ fontSize: 13, fontWeight: 700 }}>{g.title}</div>
+                                                <div style={{ fontSize: 12, fontWeight: 800, color: C.primary }}>{g.progress}%</div>
+                                            </div>
+                                            <div style={{ height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
+                                                <div style={{ height: "100%", background: C.primary, width: `${g.progress}%` }} />
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {myGoals.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No active goals.</div>}
+                                </div>
+                            </Card>
+                            <Card title="Latest Peer Recognitions">
+                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                                    {myRecognitions.map(r => (
+                                        <div key={r.id} style={{ display: "flex", gap: 12, background: C.bg, padding: 12, borderRadius: 12, border: `1px solid ${C.border}` }}>
+                                            <div style={{ fontSize: 24 }}>{r.badge}</div>
+                                            <div>
+                                                <div style={{ fontSize: 14, fontWeight: 700 }}>{r.title}</div>
+                                                <div style={{ fontSize: 11, color: C.textMid }}>Awarded by {r.awardedBy} · {r.date}</div>
+                                            </div>
+                                        </div>
+                                    ))}
+                                    {myRecognitions.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No recognitions yet.</div>}
+                                </div>
+                            </Card>
+                        </div>
+                        <Card title="Performance Review History">
+                            {myReviews.map(r => (
+                                <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                                    <div>
+                                        <div style={{ fontSize: 14, fontWeight: 700 }}>{r.cycle} cycle</div>
+                                        <div style={{ fontSize: 12, color: C.textMuted }}>Reviewer: {r.reviewer}</div>
+                                    </div>
+                                    <div style={{ textAlign: "right" }}>
+                                        <div style={{ fontSize: 20, fontWeight: 900, color: C.success }}>{r.finalScore}/5</div>
+                                        <Badge label="Complete" variant="success" />
+                                    </div>
+                                </div>
+                            ))}
+                            {myReviews.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No past reviews.</div>}
+                        </Card>
+                    </div>
+                )}
+
+                {tab === "skills" && (
+                    <Card title="Skill Matrix">
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+                            {[
+                                { cat: "Technical Skills", items: emp.skills || [] },
+                                { cat: "Soft Skills", items: ["Leadership", "Communication", "Problem Solving"] },
+                            ].map(cat => (
+                                <div key={cat.cat}>
+                                    <div style={{ fontSize: 12, fontWeight: 800, color: C.textMuted, textTransform: "uppercase", marginBottom: 12 }}>{cat.cat}</div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                        {cat.items.map(s => (
+                                            <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: C.bg, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                                                <span style={{ fontSize: 13, fontWeight: 600 }}>{s}</span>
+                                                <div style={{ display: "flex", gap: 3 }}>
+                                                    {[1, 2, 3, 4, 5].map(v => (
+                                                        <div key={v} style={{ width: 8, height: 8, borderRadius: "50%", background: v <= 4 ? C.primary : C.border }} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            ))}
+                        </div>
+                    </Card>
+                )}
+
+                {tab === "documents" && (
+                    <Card title="Personnel Documents">
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
+                            {[
+                                { name: "Identity Proof", type: "PDF", size: "2.4 MB" },
+                                { name: "Educational Certificates", type: "PDF", size: "5.1 MB" },
+                                { name: "Background Check", type: "PDF", size: "1.8 MB" },
+                                { name: "Signed Contract", type: "PDF", size: "1.2 MB" },
+                            ].map(d => (
+                                <div key={d.name} style={{ padding: 16, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, display: "flex", gap: 12, alignItems: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 8, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Icon n="file-text" size={18} color={C.primary} />
+                                    </div>
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{d.name}</div>
+                                        <div style={{ fontSize: 11, color: C.textMuted }}>{d.type} · {d.size}</div>
+                                    </div>
+                                    <Btn variant="ghost" size="sm" style={{ padding: 4 }}><Icon n="export" size={14} /></Btn>
+                                </div>
+                            ))}
+                        </div>
+                        <div style={{ marginTop: 24, textAlign: "center" }}>
+                            <Btn variant="outline"><Icon n="plus" size={14} />Request New Document</Btn>
+                        </div>
+                    </Card>
+                )}
+            </motion.div>
+        </div>
+    );
+};
+
+
 const EmployeeProfilePage = ({ user, empRecord, setEmpRecord }) => {
     const [activeTab, setActiveTab] = React.useState("info");
     const [editing, setEditing] = React.useState(false);
@@ -16222,7 +17385,7 @@ const EmployeeProfilePage = ({ user, empRecord, setEmpRecord }) => {
             {/* Header */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: `linear-gradient(135deg, ${C.primary}, #8A7CF0)`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 900, color: "#fff", flexShrink: 0 }}>
+                    <div style={{ width: 64, height: 64, borderRadius: "50%", background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, fontWeight: 900, color: "#fff", flexShrink: 0 }}>
                         {(user?.name || empRecord?.name || "?").split(" ").map(w => w[0]).join("").slice(0, 2)}
                     </div>
                     <div>
@@ -16531,7 +17694,7 @@ const EmployeePerformancePage = ({ empRecord }) => {
     const totalPoints = myRecognitions.reduce((a, r) => a + (r.points || 0), 0);
 
     return (
-        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <div style={{ marginBottom: 22 }}>
                 <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 4px" }}>My Performance</h1>
                 <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Q1 2026 · Personal view</p>
@@ -16786,10 +17949,15 @@ export default function App() {
     const [currentUser, setCurrentUser] = useState(null);
     const [companyConfig, setCompanyConfig] = useState(null);
     const [page, setPage] = useState("dashboard");
+    const [selectedEmpId, setSelectedEmpId] = useState(null);
     // Dynamic payroll sub-nav — updated when a provider is connected in PayrollPage
     const [payrollSubNav, setPayrollSubNav] = useState([]);
     // Which payroll provider is connected (synced from Integrations page)
     const [connectedPayrollId, setConnectedPayrollId] = useState(null);
+    // Nexis AI panel trigger — incrementing this opens the AI panel
+    const [nexisTrigger, setNexisTrigger] = useState(0);
+    // Leave apply modal trigger — incrementing this opens the modal from outside LeavePage
+    const [leaveApplyTrigger, setLeaveApplyTrigger] = useState(0);
 
     // ═══ CENTRALIZED STATE — Single source of truth ═══
     const [jobFamilies, setJobFamilies] = useState(INITIAL_JOB_FAMILIES);
@@ -16864,11 +18032,26 @@ export default function App() {
         reviews, setReviews,
         successionPlans, setSuccessionPlans,
         companyConfig, setCompanyConfig,
-        navigate: setPage,
+        selectedEmpId, setSelectedEmpId,
+        navigate: (p, params) => {
+            if (params?.id) setSelectedEmpId(params.id);
+            setPage(p);
+        },
     };
 
     const pages = {
+        // ── Main nav (new simplified sidebar) ──
         dashboard: DashboardPage,
+        time_leave: TimesheetPage,
+        calendar: CalendarPage,
+        people: PeoplePage,
+        performance: PerformanceTabbedPage,
+        skills: SkillsTabbedPage,
+        payroll: "payroll_page",
+        settings: SettingsTabbedPage,
+        reports: ReportsPage,
+
+        // ── Legacy timesheet/leave routes (still reachable via internal navigate()) ──
         timesheet: TimesheetPage,
         "timesheet_All_Records": TimesheetPage,
         "timesheet_Corrections": TimesheetPage,
@@ -16881,15 +18064,18 @@ export default function App() {
         "leave_Leave_Entitlements": LeaveEntitlementsPage,
         "leave_Leave_Types": LeavePage,
         "leave_Team_Calendar": LeaveCalendarPage,
-        people: PeoplePage,
+
+        // ── Legacy people routes ──
         "people_Directory": PeoplePage,
+        "people_Profile": FullEmployeeProfile,
         "people_Onboarding": AddEmployeePage,
         "people_Offboarding": OffboardingPage,
         "people_Lifecycle": LifecyclePage,
         "people_Teams": TeamsPage,
         "people_Job_Families": JobFamiliesPage,
         "people_Holidays": HolidaysPage,
-        skills: GapAnalysisPage,
+
+        // ── Legacy skills routes ──
         "skills_Skill_Library": SkillLibraryPage,
         "skills_Skill_Development": SkillDevelopmentPage,
         "skills_Gap_Analysis": GapAnalysisPage,
@@ -16897,14 +18083,15 @@ export default function App() {
         "skills_Talent_DNA": TalentDNAPage,
         "skills_Succession": SuccessionPage,
         "skills_Learning_Hub": LearningHubPage,
-        performance: PerformanceOverviewPage,
+
+        // ── Legacy performance routes ──
         "performance_Overview": PerformanceOverviewPage,
         "performance_Goals_&_OKR": GoalsOKRPage,
         "performance_Feedback": FeedbackPage,
         "performance_Recognition": RecognitionPage,
         "performance_Reviews": ReviewsPage,
-        org: OrgPage,
-        payroll: "payroll_page",
+
+        // ── Legacy payroll routes ──
         "payroll_Overview": "payroll_page",
         "payroll_Total_Rewards": TotalRewardsPage,
         "payroll_Run_Payroll": "payroll_page",
@@ -16912,15 +18099,16 @@ export default function App() {
         "payroll_Sync_History": "payroll_page",
         "payroll_Field_Mapping": "payroll_page",
         "payroll_Settings": "payroll_page",
+
+        // ── Legacy admin/settings routes ──
+        org: OrgPage,
         allowance: AllowancePage,
         permissions: PermissionsPage,
         integrations: IntegrationsPage,
         documents: DocumentsPage,
-        reports: ReportsPage,
         devices: DevicesPage,
         config: ConfigPage,
-        settings: SettingsPage,
-        "settings_General": SettingsPage,
+        "settings_General": SettingsTabbedPage,
         "settings_Configurations": ConfigPage,
     };
 
@@ -16992,20 +18180,28 @@ export default function App() {
         tbody tr:hover { background: #F0F2FF !important; }
       `}
     `}</style>
-                    <div style={{ display: "flex", height: "100vh", background: _darkMode ? "linear-gradient(135deg, #0A0F1E 0%, #0E1530 50%, #0C1220 100%)" : "linear-gradient(135deg, #EEF0FF 0%, #F5F7FA 40%, #EDF1FF 100%)", fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
-                        <Sidebar active={page} onNav={setPage} onLogout={handleLogout} payrollSubNav={payrollSubNav} />
-                        <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", position: "relative", paddingTop: 68 }}>
-                            <AnimatePresence mode="wait">
-                                <motion.div key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2, ease: "easeOut" }}>
-                                    {isPayrollPage
-                                        ? <PayrollPageComponent C={C} employees={employees} pageKey={page} onSubNavChange={setPayrollSubNav} connectedPayrollId={connectedPayrollId} deptCountries={deptCountries} />
-                                        : <PageComp pageKey={page} />}
-                                </motion.div>
-                            </AnimatePresence>
-                        </main>
-                        <TopActions onNav={setPage} onLogout={handleLogout} />
+                    <div style={{ display: "flex", height: "100vh", background: _darkMode ? "#0C1118" : C.bg, fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
+                        <Sidebar active={page} onNav={setPage} onLogout={handleLogout} onNexisAI={() => setNexisTrigger(n => n + 1)} />
+                        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                            <TopBar onNav={setPage} onLogout={handleLogout} page={page} onAction={() => {
+                                const leavePages = ["leave", "leave_My_Requests", "leave_All_Leave_Requests", "leave_Leave_Types", "calendar"];
+                                if (leavePages.includes(page)) setLeaveApplyTrigger(n => n + 1);
+                                else if (page === "people" || page.startsWith("people")) setPage("people_Onboarding");
+                                else if (page === "performance" || page.startsWith("performance")) setPage("performance_Reviews");
+                                else if (page === "skills" || page.startsWith("skills")) setPage("skills");
+                            }} />
+                            <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", position: "relative" }}>
+                                <AnimatePresence mode="wait">
+                                    <motion.div key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                                        {isPayrollPage
+                                            ? <PayrollPageComponent C={C} employees={employees} pageKey={page} onSubNavChange={setPayrollSubNav} connectedPayrollId={connectedPayrollId} deptCountries={deptCountries} />
+                                            : <PageComp pageKey={page} leaveApplyTrigger={PageComp === LeavePage ? leaveApplyTrigger : undefined} />}
+                                    </motion.div>
+                                </AnimatePresence>
+                            </main>
+                        </div>
                     </div>
-                    <NexisAIWidget />
+                    <NexisAIWidget sidebarTrigger={nexisTrigger} />
                 </DataCtx.Provider>
                 </UserCtx.Provider>
             </ThemeCtx.Provider>

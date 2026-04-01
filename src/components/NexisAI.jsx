@@ -912,9 +912,12 @@ const WELCOME_CHIPS = [
     { label: "Compensation analysis", icon: "DollarSign", color: "#0891B2" },
 ];
 
-const NexisAI = ({ C, employees, jobFamilies, leaveRequests, setLeaveRequests, attendance, payroll, goals, setGoals, recognitions, setRecognitions, skillRequests, setSkillRequests }) => {
+const NexisAI = ({ C, employees, jobFamilies, leaveRequests, setLeaveRequests, attendance, payroll, goals, setGoals, recognitions, setRecognitions, skillRequests, setSkillRequests, sidebarTrigger }) => {
     _C = C;
     const [open, setOpen] = useState(false);
+
+    // Open panel when sidebar nav item is clicked
+    React.useEffect(() => { if (sidebarTrigger > 0) setOpen(true); }, [sidebarTrigger]);
     const [messages, setMessages] = useState([]);
     const [input, setInput] = useState("");
     const [loading, setLoading] = useState(false);
@@ -1136,30 +1139,6 @@ const NexisAI = ({ C, employees, jobFamilies, leaveRequests, setLeaveRequests, a
 
     return (
         <>
-            {/* Floating trigger */}
-            <div style={{ position: "fixed", bottom: 24, right: 24, zIndex: 9000 }}>
-                <AnimatePresence>
-                    {!open && (
-                        <motion.div initial={{ scale: 0.8, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.8, opacity: 0 }}>
-                            {/* Pulse ring */}
-                            <motion.div animate={{ scale: [1, 1.25, 1], opacity: [0.4, 0, 0.4] }} transition={{ duration: 2.5, repeat: Infinity, ease: "easeInOut" }}
-                                style={{ position: "absolute", inset: -8, borderRadius: "50%", background: "rgba(99,102,241,0.25)", zIndex: -1 }} />
-                            <motion.button
-                                whileHover={{ scale: 1.06 }}
-                                whileTap={{ scale: 0.94 }}
-                                onClick={() => setOpen(true)}
-                                style={{ width: 58, height: 58, borderRadius: "50%", background: "linear-gradient(135deg, #4F46E5, #7C3AED)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 8px 24px rgba(99,102,241,0.5), 0 2px 8px rgba(0,0,0,0.2)", position: "relative" }}>
-                                <Lucide.Sparkles size={24} color="#fff" strokeWidth={2} />
-                                {unread > 0 && (
-                                    <div style={{ position: "absolute", top: -2, right: -2, width: 18, height: 18, borderRadius: "50%", background: C.danger, border: "2px solid #fff", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff" }}>{unread}</div>
-                                )}
-                            </motion.button>
-                            <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", fontSize: 10, fontWeight: 800, color: C.primary, whiteSpace: "nowrap", letterSpacing: "0.08em", textTransform: "uppercase" }}>Nexis AI</div>
-                        </motion.div>
-                    )}
-                </AnimatePresence>
-            </div>
-
             {/* Chat panel */}
             <AnimatePresence>
                 {open && (
