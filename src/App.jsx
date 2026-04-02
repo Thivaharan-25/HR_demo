@@ -19,11 +19,11 @@ const LIGHT_C = {
     primaryHover:   "#0f766e",
     primaryLight:   "#f0fdfa",
     primaryMid:     "#99f6e4",
-    bg:             "#f8fafc",
+    bg:             "#F4F7FB",
     white:          "#FFFFFF",
     sidebar:        "#FFFFFF",
-    border:         "#e2e8f0",
-    borderLight:    "#EFF2F8",
+    border:         "#E2E8F0",
+    borderLight:    "#F0F4F8",
     text:           "#0f172a",
     textMid:        "#64748b",
     textMuted:      "#94A3B8",
@@ -41,11 +41,11 @@ const LIGHT_C = {
     infoBorder:     "#BFDBFE",
     navActive:      "#f0fdfa",
     navHover:       "#f8fffe",
-    tableHead:      "#F5F7FA",
+    tableHead:      "#F8FAFC",
     tableRow:       "#FFFFFF",
-    shadow:         "0 1px 3px rgba(15,23,42,0.08), 0 1px 2px rgba(15,23,42,0.04)",
-    shadowMd:       "0 4px 16px rgba(15,23,42,0.10), 0 2px 4px rgba(15,23,42,0.06)",
-    shadowLg:       "0 12px 40px rgba(15,23,42,0.14), 0 4px 8px rgba(15,23,42,0.08)",
+    shadow:         "0 4px 14px rgba(0,0,0,0.03)",
+    shadowMd:       "0 10px 30px rgba(0,0,0,0.04)",
+    shadowLg:       "0 20px 40px rgba(0,0,0,0.06)",
 };
 
 const DARK_C = {
@@ -53,8 +53,8 @@ const DARK_C = {
     primaryHover:   "#0d9488",
     primaryLight:   "rgba(45,212,191,0.15)",
     primaryMid:     "rgba(45,212,191,0.30)",
-    bg:             "#0C1118",
-    white:          "#141C2E",
+    bg:             "#06080F",
+    white:          "#101423",
     sidebar:        "#0F1729",
     border:         "#1E2840",
     borderLight:    "#182035",
@@ -75,11 +75,11 @@ const DARK_C = {
     infoBorder:     "rgba(96,165,250,0.25)",
     navActive:      "rgba(45,212,191,0.18)",
     navHover:       "#182035",
-    tableHead:      "#141C2E",
-    tableRow:       "#141C2E",
-    shadow:         "0 1px 3px rgba(0,0,0,0.40), 0 1px 2px rgba(0,0,0,0.30)",
-    shadowMd:       "0 4px 16px rgba(0,0,0,0.50), 0 2px 4px rgba(0,0,0,0.30)",
-    shadowLg:       "0 12px 40px rgba(0,0,0,0.60), 0 4px 8px rgba(0,0,0,0.40)",
+    tableHead:      "#101423",
+    tableRow:       "#101423",
+    shadow:         "0 4px 20px rgba(0,0,0,0.35)",
+    shadowMd:       "0 12px 30px rgba(0,0,0,0.50)",
+    shadowLg:       "0 24px 50px rgba(0,0,0,0.70)",
 };
 
 // Global dark-mode + theme flags — mutated during App render, read by Proxy on every access
@@ -316,8 +316,8 @@ const Badge = ({ label, variant = "default" }) => {
 };
 
 const Btn = ({ children, variant = "ghost", size = "md", onClick, style: sx, disabled }) => {
-    const base = { display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 600, cursor: "pointer", borderRadius: 9, border: "none", fontFamily: "inherit", transition: "background 0.2s, color 0.2s, border-color 0.2s" };
-    const sizes = { sm: { padding: "5px 12px", fontSize: 12 }, md: { padding: "8px 16px", fontSize: 13 }, lg: { padding: "10px 20px", fontSize: 14 } };
+    const base = { display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 600, cursor: "pointer", borderRadius: 12, border: "none", fontFamily: "inherit", transition: "all 0.2s ease-out" };
+    const sizes = { sm: { padding: "6px 14px", fontSize: 13 }, md: { padding: "10px 18px", fontSize: 13.5 }, lg: { padding: "12px 24px", fontSize: 15 } };
     const variants = {
         primary: { background: C.primary, color: "#fff", border: "1px solid transparent" },
         secondary: { background: C.primary, color: "#fff", border: "1px solid transparent" },
@@ -338,7 +338,7 @@ const Btn = ({ children, variant = "ghost", size = "md", onClick, style: sx, dis
 
 const Card = ({ children, style: sx, noPad, initial, animate }) => (
     <div
-        style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, boxShadow: C.shadow, ...(noPad ? {} : { padding: "0" }), overflow: "hidden", ...(sx || {}) }}
+        style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 20, boxShadow: C.shadowMd, ...(noPad ? {} : { padding: "0" }), overflow: "hidden", transition: "all 0.3s ease", ...(sx || {}) }}
     >
         {children}
     </div>
@@ -409,9 +409,10 @@ const StatCard = ({ label, value, unit, sub, severity = "neutral", trend, trendV
             background: C.white,
             border: `1px solid ${C.border}`,
             borderTop: severity !== "neutral" ? `3px solid ${sevBorderColor}` : `1px solid ${C.border}`,
-            borderRadius: 14,
-            boxShadow: "0 1px 3px rgba(0,0,0,0.06), 0 1px 2px rgba(0,0,0,0.04)",
+            borderRadius: 20,
+            boxShadow: C.shadowMd,
             padding: "24px",
+            transition: "all 0.3s ease",
         }}>
             {/* Label + sparkline row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
@@ -1040,7 +1041,10 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
     return (
         <div style={{
             height: 64, flexShrink: 0,
-            background: C.white, borderBottom: `1px solid ${C.border}`,
+            background: isDark ? "rgba(16, 20, 35, 0.75)" : "rgba(255, 255, 255, 0.75)",
+            backdropFilter: "blur(12px)",
+            WebkitBackdropFilter: "blur(12px)",
+            borderBottom: `1px solid ${C.border}`,
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 28px", zIndex: 200,
         }}>
@@ -1176,17 +1180,17 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
 
 // ── Sidebar always-dark color tokens (independent of light/dark theme) ──
 const SB = {
-    bg:          "#2d3133",
-    border:      "rgba(255,255,255,0.07)",
-    label:       "rgba(255,255,255,0.30)",
-    text:        "#94a3b8",
-    textHover:   "#ffffff",
-    textActive:  "#ffffff",
-    itemHover:   "rgba(255,255,255,0.05)",
-    itemActive:  "rgba(255,255,255,0.08)",
+    bg:          "#0F172A",
+    border:      "rgba(255,255,255,0.06)",
+    label:       "rgba(255,255,255,0.45)",
+    text:        "#94A3B8",
+    textHover:   "#F8FAFC",
+    textActive:  "#FFFFFF",
+    itemHover:   "rgba(255,255,255,0.08)",
+    itemActive:  "rgba(255,255,255,0.15)",
     separator:   "rgba(255,255,255,0.08)",
-    footerCard:  "rgba(255,255,255,0.06)",
-    footerBorder:"rgba(255,255,255,0.10)",
+    footerCard:  "rgba(255,255,255,0.05)",
+    footerBorder:"rgba(255,255,255,0.09)",
 };
 
 /* ─── SIDEBAR NAV ITEM — module-level so hover state is stable ── */
@@ -1207,11 +1211,11 @@ const SidebarNavItem = ({ item, isActive, onNav, collapsed, badgeCount, nexisHig
                 display: "flex", alignItems: "center", gap: 10,
                 padding: collapsed ? "11px 0" : "9px 12px",
                 justifyContent: collapsed ? "center" : "flex-start",
-                borderRadius: 9, cursor: "pointer", background: bg,
+                cursor: "pointer", background: bg,
                 fontWeight: isActive ? 600 : 500, fontSize: 13,
-                transition: "background 0.15s", userSelect: "none",
+                transition: "background 0.15s, border 0.15s", userSelect: "none",
                 position: "relative",
-                ...(isActive ? { borderLeft: `3px solid ${C.primary}`, borderRadius: "0 9px 9px 0" } : { borderLeft: "3px solid transparent", borderRadius: "0 9px 9px 0" }),
+                ...(isActive ? { borderLeft: `3px solid ${C.primary}`, borderRadius: "0 10px 10px 0" } : { borderLeft: "3px solid transparent", borderRadius: "0 10px 10px 0" }),
             }}
             role="menuitem"
             aria-label={item.label}
@@ -1240,6 +1244,16 @@ const SidebarNavItem = ({ item, isActive, onNav, collapsed, badgeCount, nexisHig
 /* ─── SIDEBAR ─────────────────────────────────────────────────── */
 const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
     const [collapsed, setCollapsed] = useState(true);
+    const sidebarRef = React.useRef(null);
+    React.useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
+                setCollapsed(true);
+            }
+        };
+        document.addEventListener("mousedown", handleClickOutside);
+        return () => document.removeEventListener("mousedown", handleClickOutside);
+    }, []);
     const currentUser = React.useContext(UserCtx);
     const { leaveRequests } = React.useContext(DataCtx);
     const userName    = currentUser?.name  || "Admin";
@@ -1287,6 +1301,7 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
 
     return (
         <motion.aside
+            ref={sidebarRef}
             role="navigation"
             aria-label="Main navigation"
             onClick={() => { if (collapsed) setCollapsed(false); }}
@@ -5203,20 +5218,6 @@ const PerformanceTabbedPage = ({ pageKey }) => {
         <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
             <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Performance</h1>
             <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>Goals, reviews, and team feedback</p>
-
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
-                {tabs.map(t => (
-                    <div key={t.key} onClick={() => setTab(t.key)}
-                        style={{
-                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
-                            color: tab === t.key ? C.primary : C.textMid,
-                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
-                            cursor: "pointer", transition: "color 0.15s",
-                        }}>
-                        {t.label}
-                    </div>
-                ))}
-            </div>
 
             {tab === "overview" && <PerformanceOverviewPage />}
             {tab === "goals" && <GoalsOKRPage />}
