@@ -5687,18 +5687,34 @@ const PerformanceOverviewPage = () => {
     });
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Performance" }]} />
-            <div style={{ marginBottom: 22 }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 4px" }}>Performance Overview</h1>
-                <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Q1 2026 · March review cycle</p>
+        <div style={{ padding: "28px 32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
+            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Performance" }, { label: "Overview" }]} />
+            
+            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
+                <div style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", flexShrink: 0 }}>
+                    <Lucide.PieChart size={22} color="#fff" strokeWidth={2.2} />
+                </div>
+                <div>
+                    <h1 style={{ fontSize: 24, fontWeight: 900, color: C.text, margin: 0, letterSpacing: "-0.6px" }}>Performance Overview</h1>
+                    <p style={{ fontSize: 13, color: C.textMuted, margin: 0, marginTop: 2 }}>Real-time insights across team goals, reviews, and feedback</p>
+                </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                {[["Avg Review Score", avgRating !== "—" ? avgRating + "/5" : "—", "primary"], ["Goals On Track", onTrackPct, "success"], ["Feedback Entries", (feedbacks || []).length, "warning"], ["Reviews Pending", reviewsDue, "danger"]].map(([l, v]) => (
-                    <div key={l} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 16px", boxShadow: C.shadow }}>
-                        <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, marginBottom: 4 }}>{l}</div>
-                        <div style={{ fontSize: 24, fontWeight: 900, color: C.text }}>{v}</div>
-                    </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16 }}>
+                {[
+                    { label: "Avg Review Score", value: avgRating !== "—" ? avgRating : "—", sub: "Q1 2026 Cycle", icon: <Lucide.Star size={18} color="#10B981" />, bg: "rgba(16,185,129,0.12)" },
+                    { label: "Goals On Track", value: onTrackPct, sub: `${onTrackGoals} of ${totalGoals} objectives`, icon: <Lucide.Target size={18} color="#0D9488" />, bg: "rgba(13,148,136,0.12)" },
+                    { label: "Feedback Entries", value: (feedbacks || []).length, sub: "Recorded this month", icon: <Lucide.MessageSquare size={18} color="#3B82F6" />, bg: "rgba(59,130,246,0.12)" },
+                    { label: "Reviews Pending", value: reviewsDue, sub: "Action required", icon: <Lucide.Clock size={18} color="#F59E0B" />, bg: "rgba(245,158,11,0.12)" }
+                ].map((s, i) => (
+                    <motion.div key={i} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.35, delay: i * 0.08 }}
+                        style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 18, padding: "20px 22px", boxShadow: C.shadowMd, position: "relative", overflow: "hidden" }}>
+                        <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, background: s.bg, borderRadius: "50%", filter: "blur(20px)" }} />
+                        <div style={{ width: 38, height: 38, borderRadius: 11, background: s.bg, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>{s.icon}</div>
+                        <div style={{ fontSize: 32, fontWeight: 900, color: C.text, letterSpacing: "-1.5px", lineHeight: 1, marginBottom: 5 }}>{s.value}</div>
+                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text, marginBottom: 2 }}>{s.label}</div>
+                        <div style={{ fontSize: 11, color: C.textMuted }}>{s.sub}</div>
+                    </motion.div>
                 ))}
             </div>
             <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
@@ -5894,10 +5910,26 @@ const GoalsOKRPage = () => {
 
     const STATUS_COLORS = { "On Track": C.success, "At Risk": C.warning, "Behind": C.danger, "Completed": C.primary };
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Goals</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Q1 2026 goal tracking</p></div>
-                <Btn variant="primary" onClick={() => setShowAdd(true)}><Icon n="plus" size={13} color="#fff" />Add Goal</Btn>
+        <div style={{ padding: "28px 32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
+            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Performance" }, { label: "Goals & OKR" }]} />
+
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                    <div style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #10B981 0%, #0D9488 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", flexShrink: 0 }}>
+                        <Lucide.Target size={22} color="#fff" strokeWidth={2.2} />
+                    </div>
+                    <div>
+                        <h1 style={{ fontSize: 24, fontWeight: 900, color: C.text, margin: 0, letterSpacing: "-0.6px" }}>Goals & OKR Dashboard</h1>
+                        <p style={{ fontSize: 13, color: C.textMuted, margin: 0, marginTop: 2 }}>Strategic alignment and performance tracking for Q1 2026</p>
+                    </div>
+                </div>
+                <button onClick={() => setShowAdd(true)}
+                    style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", background: "linear-gradient(135deg, #10B981, #059669)", border: "none", borderRadius: 12, fontSize: 13.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(16,185,129,0.4)", transition: "all 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(16,185,129,0.55)"}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 14px rgba(16,185,129,0.4)"}>
+                    <Lucide.Plus size={16} color="#fff" />
+                    Add New Goal
+                </button>
             </div>
             <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                 {(goals || []).map(g => {
@@ -6117,27 +6149,40 @@ const FeedbackPage = () => {
                 <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Continuous Feedback</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Ongoing manager-to-employee feedback</p></div>
                 <Btn variant="primary" onClick={() => setShowAdd(true)}><Icon n="plus" size={13} color="#fff" />Give Feedback</Btn>
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                {(feedbacks || []).map(fb => (
-                    <div key={fb.id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 13, padding: "16px 18px", boxShadow: C.shadow }}>
-                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                                <div style={{ width: 34, height: 34, borderRadius: "50%", background: `${TYPE_COLORS[fb.type]}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: TYPE_COLORS[fb.type] }}>{fb.fromName.split(" ").map(w => w[0]).join("").slice(0, 2)}</div>
-                                <div>
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{fb.fromName}</span>
-                                    <span style={{ fontSize: 12, color: C.textMuted }}> → </span>
-                                    <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{fb.toName}</span>
+            <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                {(feedbacks || []).map((fb, idx) => {
+                    const isPraise = fb.type === "Praise" || fb.type === "Recognition";
+                    const isDev = fb.type === "Development" || fb.type === "Concern";
+                    const themeColor = isPraise ? "#10B981" : isDev ? "#f59e0b" : "#6366f1";
+                    const themeBg = isPraise ? "#f0fdf4" : isDev ? "#fffbeb" : "#f5f3ff";
+                    const themeBorder = isPraise ? "#bbf7d0" : isDev ? "#fde68a" : "#ddd6fe";
+
+                    return (
+                        <motion.div key={fb.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.05 }}
+                            style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "18px 20px", boxShadow: C.shadow, position: "relative", overflow: "hidden" }}>
+                            
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                    <div style={{ width: 40, height: 40, borderRadius: "50%", background: themeBg, border: `1.5px solid ${themeBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: themeColor }}>
+                                        {fb.fromName.split(" ").map(w => w[0]).join("").slice(0, 2)}
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{fb.fromName} <span style={{ color: C.textMuted, fontWeight: 400, margin: "0 4px" }}>→</span> {fb.toName}</div>
+                                        <div style={{ fontSize: 11, color: C.textMuted }}>{fb.date} · {fb.visibility}</div>
+                                    </div>
                                 </div>
-                                <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: `${TYPE_COLORS[fb.type]}18`, color: TYPE_COLORS[fb.type] }}>{fb.type}</span>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 10px", borderRadius: 20, background: themeBg, color: themeColor, border: `1px solid ${themeBorder}`, fontSize: 10.5, fontWeight: 700 }}>
+                                    {isPraise ? <Lucide.Heart size={11} fill={themeColor} /> : isDev ? <Lucide.Zap size={11} fill={themeColor} /> : <Lucide.MessageCircle size={11} />}
+                                    {fb.type}
+                                </div>
                             </div>
-                            <div style={{ display: "flex", gap: 6, alignItems: "center" }}>
-                                <span style={{ fontSize: 11, color: C.textMuted }}>{fb.date}</span>
-                                <Badge label={fb.visibility} variant={fb.visibility === "Public" ? "info" : "default"} />
+                            
+                            <div style={{ background: C.bg, padding: "14px 16px", borderRadius: 12, fontSize: 13.5, color: C.textMid, lineHeight: 1.6, fontStyle: "italic", borderLeft: `3px solid ${themeColor}` }}>
+                                "{fb.message}"
                             </div>
-                        </div>
-                        <div style={{ fontSize: 13, color: C.textMid, lineHeight: 1.6, paddingLeft: 44, fontStyle: "italic" }}>"{fb.message}"</div>
-                    </div>
-                ))}
+                        </motion.div>
+                    );
+                })}
             </div>
             <AnimatePresence>
                 {showAdd && (
