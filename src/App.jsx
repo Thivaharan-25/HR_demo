@@ -319,8 +319,8 @@ const Btn = ({ children, variant = "ghost", size = "md", onClick, style: sx, dis
     const base = { display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 600, cursor: "pointer", borderRadius: 12, border: "none", fontFamily: "inherit", transition: "all 0.2s ease-out" };
     const sizes = { sm: { padding: "6px 14px", fontSize: 13 }, md: { padding: "10px 18px", fontSize: 13.5 }, lg: { padding: "12px 24px", fontSize: 15 } };
     const variants = {
-        primary: { background: C.primary, color: "#fff", border: "1px solid transparent" },
-        secondary: { background: C.primary, color: "#fff", border: "1px solid transparent" },
+        primary: { background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "1px solid transparent", boxShadow: "0 4px 14px #004ac650" },
+        secondary: { background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "1px solid transparent", boxShadow: "0 4px 14px #004ac650" },
         outline: { background: C.white, color: C.textMid, border: `1px solid ${C.border}` },
         ghost: { background: "transparent", color: C.textMid, border: "1px solid transparent" },
         danger: { background: C.dangerBg, color: C.danger, border: `1px solid ${C.dangerBorder}` },
@@ -983,11 +983,11 @@ const MODULE_SUB_NAV = {
 const getModuleFromPage = (pageKey) => {
     if (!pageKey) return "dashboard";
     if (pageKey.startsWith("timesheet") || pageKey.startsWith("leave") || pageKey === "time_leave" || pageKey === "calendar" || pageKey.includes("Calendar")) return "time_leave";
-    if (pageKey.startsWith("people") || pageKey === "org") return "people";
+    if (pageKey.startsWith("people")) return "people";
     if (pageKey.startsWith("performance")) return "performance";
     if (pageKey.startsWith("skills")) return "skills";
     if (pageKey.startsWith("payroll")) return "payroll";
-    if (["settings", "config", "allowance", "permissions", "integrations", "documents", "devices"].some(k => pageKey.startsWith(k))) return "settings";
+    if (["settings", "config", "allowance", "permissions", "integrations", "documents", "devices", "org"].some(k => pageKey.startsWith(k))) return "settings";
     return pageKey;
 };
 
@@ -1324,7 +1324,6 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
             animate={{ width: collapsed ? collapsedW : expandedW, minWidth: collapsed ? collapsedW : expandedW }}
             transition={{ duration: 0.25, ease: "easeInOut" }}
             style={{
-                background: SB.bg,
                 background: SB.bg,
                 boxShadow: collapsed ? "none" : "4px 0 24px rgba(0,0,0,0.20)",
                 borderRight: `1px solid ${SB.border}`,
@@ -3716,7 +3715,7 @@ const PeoplePage = ({ pageKey }) => {
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                             onClick={() => setIsAdding(true)}
-                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: "none", background: C.primary, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 2px 10px ${C.primary}40` }}>
+                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
                             <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />
                             Add Employee
                         </motion.button>
@@ -3925,7 +3924,7 @@ const PeoplePage = ({ pageKey }) => {
                             </div>
                             {search
                                 ? <button onClick={() => setSearch("")} style={{ padding: "8px 18px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", color: primaryColor, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>
-                                : <button onClick={() => setIsAdding(true)} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: C.primary, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Add Employee</button>
+                                : <button onClick={() => setIsAdding(true)} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>Add Employee</button>
                             }
                         </div>
                     )}
@@ -4854,18 +4853,62 @@ const OffboardingPage = () => {
         { key: "finalSettlement", label: "Final Settlement",   owner: "Finance", ownerColor: C.warning,  ownerBg: C.warningBg,    icon: Lucide.Receipt },
     ];
 
-    const STAGES = ["Initiated", "In Progress", "Access Cleared", "Settled"];
-    const getStage = (tasks) => {
-        if (tasks.finalSettlement) return 3;
-        if (tasks.accessRevoked)   return 2;
-        if (tasks.exitSurvey || tasks.knowTransfer || tasks.assetsReturned) return 1;
+    /* ── T-token shorthands ── */
+    const surf  = _darkMode ? C.white     : T.surfaceCard;
+    const bdr   = _darkMode ? C.border    : T.outlineVar + "28";
+    const bdrSm = _darkMode ? C.border    : T.outlineVar + "22";
+    const txt   = _darkMode ? C.text      : T.onSurface;
+    const muted = _darkMode ? C.textMuted : T.onSurfaceVar;
+    const low   = _darkMode ? C.bg        : T.surfaceLow;
+    const cardSt = { background: surf, border: `1px solid ${bdr}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
+
+    /* ── Workflow journey stages (5-step) ── */
+    const WORKFLOW_STAGES = [
+        { key: "start",    label: "Resignation",  SIcon: Lucide.FileSignature },
+        { key: "handover", label: "Handover",      SIcon: Lucide.Users },
+        { key: "it",       label: "IT & Assets",   SIcon: Lucide.ShieldOff },
+        { key: "finance",  label: "Settlement",    SIcon: Lucide.Receipt },
+        { key: "done",     label: "Completed",     SIcon: Lucide.CheckCircle2 },
+    ];
+    const getWorkflowStage = (tasks) => {
+        if (tasks.finalSettlement)                          return 4;
+        if (tasks.accessRevoked && tasks.assetsReturned)   return 3;
+        if (tasks.assetsReturned || tasks.accessRevoked)   return 2;
+        if (tasks.knowTransfer   || tasks.exitSurvey)      return 1;
         return 0;
     };
+
+    /* ── Department task groups ── */
+    const DEPT_GROUPS = [
+        { dept: "HR",      color: "#6366f1", bg: "#eef2ff", keys: ["exitSurvey"] },
+        { dept: "Manager", color: "#10b981", bg: "#ecfdf5", keys: ["knowTransfer"] },
+        { dept: "IT",      color: "#0ea5e9", bg: "#e0f2fe", keys: ["assetsReturned", "accessRevoked"] },
+        { dept: "Finance", color: "#f59e0b", bg: "#fffbeb", keys: ["finalSettlement"] },
+    ];
+
     const getDaysLeft = (d) => Math.ceil((new Date(d) - new Date()) / 86400000);
     const progress = (tasks) => {
         const vals = Object.values(tasks);
         const done = vals.filter(Boolean).length;
         return { done, total: vals.length, pct: Math.round((done / vals.length) * 100) };
+    };
+
+    /* ── Knowledge risk per case ── */
+    const getKnowledgeRisk = (cas) => {
+        const emp = employees.find(e => e.id === cas.empId);
+        if (cas.tasks.knowTransfer) return { level: "LOW",  color: "#10b981", bg: "#ecfdf5", reasons: ["Knowledge transfer completed"] };
+        const isEng = ["Engineering","DevOps","Product"].includes(emp?.dept);
+        const tenure = emp?.startDate ? Math.floor((new Date() - new Date(emp.startDate)) / (365.25 * 86400000)) : 0;
+        if (isEng && tenure >= 2)  return { level: "HIGH",   color: "#ef4444", bg: "#fef2f2", reasons: [`${emp.dept} role with ${tenure}y tenure — critical knowledge at risk`, "No KT session scheduled", "Documented processes may be missing"] };
+        if (isEng || tenure >= 1)  return { level: "MEDIUM", color: "#f59e0b", bg: "#fffbeb", reasons: ["Knowledge transfer not yet started", tenure >= 1 ? `${tenure}y institutional knowledge` : "Technical role"] };
+        return { level: "LOW", color: "#10b981", bg: "#ecfdf5", reasons: ["Short tenure — minimal knowledge risk"] };
+    };
+
+    /* ── Build activity timeline for a case ── */
+    const buildTimeline = (cas) => {
+        const items = [{ icon: Lucide.FileSignature, color: "#6366f1", text: `Departure recorded · ${cas.reason}`, sub: `Last day: ${cas.lastDay}` }];
+        TASK_META.forEach(t => { if (cas.tasks[t.key]) items.push({ icon: t.icon, color: "#10b981", text: `${t.label} completed`, sub: t.owner }); });
+        return items;
     };
 
     const handleInitiate = () => {
@@ -4929,431 +4972,456 @@ const OffboardingPage = () => {
 
     const activeCases    = cases.filter(c => !c.tasks.finalSettlement);
     const completedCases = cases.filter(c => c.tasks.finalSettlement);
+    const inpSt = { width: "100%", padding: "9px 12px", border: `1px solid ${bdrSm}`, borderRadius: 9, fontSize: 13, background: low, color: txt, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+        <div style={{ background: _darkMode ? C.bg : T.surface, minHeight: "100%" }}>
+            <div style={{ padding: "24px 28px" }}>
 
-            {/* ── Header ── */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Departures</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>{activeCases.length} active · {completedCases.length} completed this cycle</p>
-                </div>
-                <Btn variant="primary" onClick={() => setShowInit(true)}><Icon n="plus" size={13} color="#fff" />Record Departure</Btn>
-            </div>
-
-            {/* ── Toast ── */}
-            <AnimatePresence>
-                {saved && (
-                    <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-                        style={{ marginBottom: 14, padding: "10px 16px", background: C.successBg, border: `1px solid ${C.successBorder}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: C.success, display: "flex", alignItems: "center", gap: 8 }}>
-                        <Lucide.Check size={14} color={C.success} strokeWidth={2.5} /> Departure recorded and checklist assigned.
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* ── KPI row ── */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                {[
-                    { label: "Active Cases",    value: activeCases.length,    color: C.warning },
-                    { label: "Settled",         value: completedCases.length, color: C.success },
-                    { label: "Pending Tasks",   value: activeCases.reduce((a, c) => a + Object.values(c.tasks).filter(v => !v).length, 0), color: C.danger },
-                    { label: "Avg Completion",  value: cases.length ? Math.round(cases.reduce((a, c) => a + progress(c.tasks).pct, 0) / cases.length) + "%" : "—", color: C.primary },
-                ].map(({ label, value, color }) => (
-                    <div key={label} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 18px", boxShadow: C.shadow }}>
-                        <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 6 }}>{label}</div>
-                        <div style={{ fontSize: 22, fontWeight: 900, color }}>{value}</div>
+                {/* ── Header ── */}
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 20 }}>
+                    <div>
+                        <h1 style={{ fontSize: 26, fontWeight: 800, color: txt, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Departures</h1>
+                        <p style={{ fontSize: 14, color: muted, margin: "8px 0 0" }}>
+                            {activeCases.length} active workflow{activeCases.length !== 1 ? "s" : ""} · {completedCases.length} completed
+                        </p>
                     </div>
-                ))}
-            </div>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowInit(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                        <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
+                        Record Departure
+                    </motion.button>
+                </div>
 
-            {/* ── Cases ── */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {cases.map(cas => {
-                    const prog     = progress(cas.tasks);
-                    const stage    = getStage(cas.tasks);
-                    const daysLeft = getDaysLeft(cas.lastDay);
-                    const urgency  = daysLeft <= 0 ? C.danger : daysLeft <= 5 ? C.warning : C.textMuted;
+                {/* ── Success toast ── */}
+                <AnimatePresence>
+                    {saved && (
+                        <motion.div initial={{ opacity: 0, y: -8 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+                            style={{ marginBottom: 16, padding: "11px 16px", background: "#ecfdf5", border: "1px solid #a7f3d0", borderRadius: 12, fontSize: 13, fontWeight: 600, color: "#10b981", display: "flex", alignItems: "center", gap: 8 }}>
+                            <Lucide.CheckCircle2 size={15} color="#10b981" strokeWidth={2} />
+                            Departure recorded — workflow assigned to HR, IT, Finance, and Manager.
+                        </motion.div>
+                    )}
+                </AnimatePresence>
 
-                    return (
-                        <div key={cas.id} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
 
-                            {/* Case header */}
-                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                    <Avatar name={cas.empName} size={40} />
-                                    <div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
-                                            <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{cas.empName}</span>
-                                            <Badge label={cas.reason} variant={cas.reason === "Resignation" ? "info" : cas.reason === "Termination" ? "danger" : "default"} />
-                                            {cas.penaltyFlag && <Badge label="KT Bypassed" variant="warning" />}
-                                        </div>
-                                        <div style={{ fontSize: 12, color: C.textMuted }}>{cas.dept} · Case {cas.id}</div>
-                                        {/* Penalty record strip */}
-                                        {cas.penaltyRecord && (
-                                            <div style={{ marginTop: 7, display: "flex", alignItems: "center", gap: 8, padding: "6px 10px", borderRadius: 7, background: C.warningBg, border: `1px solid ${C.warningBorder}` }}>
-                                                <Lucide.Receipt size={12} color={C.warning} strokeWidth={2} style={{ flexShrink: 0 }} />
-                                                <span style={{ fontSize: 11, fontWeight: 700, color: C.warning }}>
-                                                    KT Penalty: {cas.penaltyRecord.currency} {Number(cas.penaltyRecord.amount).toLocaleString()}
-                                                    {" · "}
-                                                    {cas.penaltyRecord.deductFrom === "settlement" ? "Deducted from Final Settlement" : "Charged to Department Budget"}
-                                                </span>
-                                                <span style={{ fontSize: 11, color: C.textMuted, marginLeft: "auto", flexShrink: 0 }}>
-                                                    Approved by {cas.penaltyRecord.approvedBy} · {cas.penaltyRecord.date}
-                                                </span>
-                                            </div>
-                                        )}
-                                    </div>
-                                </div>
-                                <div style={{ textAlign: "right" }}>
-                                    <div style={{ fontSize: 13, fontWeight: 700, color: urgency }}>
-                                        {daysLeft > 0 ? `${daysLeft}d remaining` : daysLeft === 0 ? "Last day today" : `${Math.abs(daysLeft)}d overdue`}
-                                    </div>
-                                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2 }}>Last day: {cas.lastDay}</div>
-                                </div>
-                            </div>
-
-                            {/* Stage pipeline */}
-                            <div style={{ padding: "12px 20px", background: C.bg, borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center" }}>
-                                {STAGES.map((s, i) => (
-                                    <React.Fragment key={s}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                            <div style={{ width: 22, height: 22, borderRadius: "50%", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", background: stage > i ? C.success : stage === i ? C.primary : C.border, transition: "background 0.2s" }}>
-                                                {stage > i
-                                                    ? <Lucide.Check size={12} color="#fff" strokeWidth={3} />
-                                                    : <div style={{ width: 7, height: 7, borderRadius: "50%", background: stage === i ? "#fff" : C.textMuted }} />
-                                                }
-                                            </div>
-                                            <span style={{ fontSize: 11, fontWeight: stage >= i ? 700 : 400, color: stage >= i ? (stage > i ? C.success : C.primary) : C.textMuted, whiteSpace: "nowrap" }}>{s}</span>
-                                        </div>
-                                        {i < STAGES.length - 1 && (
-                                            <div style={{ flex: 1, height: 2, background: stage > i ? C.success : C.borderLight, margin: "0 10px", borderRadius: 1, transition: "background 0.2s" }} />
-                                        )}
-                                    </React.Fragment>
-                                ))}
-                            </div>
-
-                            {/* Checklist rows */}
+                {/* ── Stat Cards ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 22 }}>
+                    {[
+                        { label: "ACTIVE CASES",    value: activeCases.length,    sub: "In progress",          iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.GitBranch },
+                        { label: "SETTLED",          value: completedCases.length, sub: "Fully completed",       iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.CheckCircle2 },
+                        { label: "PENDING TASKS",    value: activeCases.reduce((a, c) => a + Object.values(c.tasks).filter(v => !v).length, 0), sub: "Across all cases", iconBg: "#fef2f2", iconColor: "#ef4444", LIcon: Lucide.Clock },
+                        { label: "AVG COMPLETION",   value: cases.length ? Math.round(cases.reduce((a, c) => a + progress(c.tasks).pct, 0) / cases.length) + "%" : "—", sub: "Task progress", iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.TrendingUp },
+                    ].map(s => (
+                        <motion.div key={s.label} whileHover={{ y: -2 }} style={{ ...cardSt, padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                             <div>
-                                {TASK_META.map(({ key, label, owner, ownerColor, ownerBg, icon: TaskIcon }, idx) => {
-                                    const done      = cas.tasks[key];
-                                    const isBlocked = key === "finalSettlement" && !cas.tasks.knowTransfer && !done;
-                                    const isLast    = idx === TASK_META.length - 1;
+                                <div style={{ fontSize: 10.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>{s.label}</div>
+                                <div style={{ fontSize: 24, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.6px", lineHeight: 1 }}>{s.value}</div>
+                                <div style={{ fontSize: 11.5, color: muted, marginTop: 6 }}>{s.sub}</div>
+                            </div>
+                            <div style={{ width: 38, height: 38, borderRadius: "50%", background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <s.LIcon size={16} color={s.iconColor} strokeWidth={1.6} />
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
 
-                                    return (
-                                        <div key={key} onClick={() => toggleTask(cas.id, key)} style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 20px", borderBottom: isLast ? "none" : `1px solid ${C.borderLight}`, background: done ? `${C.success}08` : isBlocked ? `${C.warning}08` : "transparent", transition: "background 0.15s", cursor: "pointer" }}>
-                                            {/* Checkbox */}
-                                            <div onClick={() => toggleTask(cas.id, key)}
-                                                style={{ width: 20, height: 20, borderRadius: 5, flexShrink: 0, border: `2px solid ${done ? C.success : isBlocked ? C.warningBorder : C.border}`, background: done ? C.success : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "all 0.15s" }}>
-                                                {done      && <Lucide.Check size={12} color="#fff" strokeWidth={3} />}
-                                                {isBlocked && !done && <Lucide.Lock size={10} color={C.warning} />}
-                                            </div>
+                {/* ── Offboarding Cases ── */}
+                <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                    {cases.map(cas => {
+                        const prog     = progress(cas.tasks);
+                        const wfStage  = getWorkflowStage(cas.tasks);
+                        const daysLeft = getDaysLeft(cas.lastDay);
+                        const isOverdue = daysLeft <= 0;
+                        const urgencyColor = isOverdue ? "#ef4444" : daysLeft <= 5 ? "#f59e0b" : muted;
+                        const ktRisk = getKnowledgeRisk(cas);
+                        const timeline = buildTimeline(cas);
+                        const offEmp = employees.find(e => e.id === cas.empId);
+                        const candidates = rankCandidates(offEmp || {}, employees, jobFamilies || []);
+                        const plan = successionPlans ? successionPlans.find(p => p.incumbent === cas.empId) : null;
 
-                                            {/* Task icon */}
-                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: done ? C.successBg : isBlocked ? C.warningBg : C.bg, border: `1px solid ${done ? C.successBorder : isBlocked ? C.warningBorder : C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                                <TaskIcon size={14} color={done ? C.success : isBlocked ? C.warning : C.textMuted} strokeWidth={1.8} />
-                                            </div>
+                        return (
+                            <div key={cas.id} style={{ ...cardSt }}>
 
-                                            {/* Label */}
-                                            <div style={{ flex: 1 }}>
-                                                <span style={{ fontSize: 13, fontWeight: 600, color: done ? C.textMuted : C.text, textDecoration: done ? "line-through" : "none" }}>{label}</span>
-                                                {isBlocked && <span style={{ fontSize: 11, color: C.warning, marginLeft: 8, fontWeight: 500 }}>Complete Knowledge Transfer first</span>}
-                                            </div>
-
-                                            {/* Owner badge */}
-                                            <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 20, background: ownerBg, color: ownerColor, flexShrink: 0 }}>{owner}</span>
-
-                                            {/* Status */}
-                                            {done
-                                                ? <span style={{ fontSize: 12, fontWeight: 700, color: C.success, display: "flex", alignItems: "center", gap: 4, minWidth: 52 }}><Lucide.Check size={13} strokeWidth={2.5} color={C.success} /> Done</span>
-                                                : <span style={{ fontSize: 12, color: C.textMuted, minWidth: 52 }}>Pending</span>
-                                            }
+                                {/* ── Case header ── */}
+                                <div style={{ padding: "18px 20px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "flex-start", gap: 14 }}>
+                                    <Avatar name={cas.empName} size={44} />
+                                    <div style={{ flex: 1 }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap", marginBottom: 5 }}>
+                                            <span style={{ fontSize: 16, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif" }}>{cas.empName}</span>
+                                            <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: cas.reason === "Resignation" ? "#eff6ff" : cas.reason === "Termination" ? "#fef2f2" : low, color: cas.reason === "Resignation" ? "#3b82f6" : cas.reason === "Termination" ? "#ef4444" : muted }}>
+                                                {cas.reason}
+                                            </span>
+                                            {cas.penaltyFlag && <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: "#fffbeb", color: "#f59e0b" }}>KT Bypassed</span>}
+                                            {prog.pct === 100 && <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: "#ecfdf5", color: "#10b981" }}>✓ Completed</span>}
                                         </div>
-                                    );
-                                })}
-                            </div>
-
-                            {/* Progress footer */}
-                            <div style={{ padding: "10px 20px", borderTop: `1px solid ${C.borderLight}`, background: C.bg, display: "flex", alignItems: "center", gap: 12 }}>
-                                <div style={{ flex: 1, height: 4, background: C.borderLight, borderRadius: 2, overflow: "hidden" }}>
-                                    <motion.div animate={{ width: prog.pct + "%" }} transition={{ duration: 0.5 }}
-                                        style={{ height: "100%", borderRadius: 2, background: prog.pct === 100 ? C.success : C.primary }} />
-                                </div>
-                                <span style={{ fontSize: 11, fontWeight: 700, color: prog.pct === 100 ? C.success : C.textMid, flexShrink: 0 }}>
-                                    {prog.done} of {prog.total} complete
-                                </span>
-                            </div>
-
-                            {/* KT warning inline */}
-                            <AnimatePresence>
-                                {ktWarning === cas.id && (
-                                    <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
-                                        <div style={{ margin: "0 20px 16px", padding: "14px 16px", borderRadius: 10, background: C.warningBg, border: `1px solid ${C.warningBorder}` }}>
-                                            <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 12 }}>
-                                                <Lucide.AlertTriangle size={16} color={C.warning} style={{ flexShrink: 0, marginTop: 1 }} />
-                                                <div>
-                                                    <div style={{ fontSize: 13, fontWeight: 700, color: C.warning, marginBottom: 3 }}>Knowledge Transfer not completed</div>
-                                                    <div style={{ fontSize: 12, color: C.textMid, lineHeight: 1.55 }}>
-                                                        Final Settlement is blocked until Knowledge Transfer is marked done. Skipping KT risks losing critical institutional knowledge and may expose the company to operational risk.
-                                                    </div>
-                                                </div>
-                                                <button onClick={() => setKtWarning(null)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0, marginLeft: "auto" }}>
-                                                    <Lucide.X size={14} color={C.textMuted} />
-                                                </button>
+                                        <div style={{ fontSize: 12.5, color: muted }}>{cas.dept} · Case {cas.id}</div>
+                                        {cas.penaltyRecord && (
+                                            <div style={{ marginTop: 8, display: "inline-flex", alignItems: "center", gap: 7, padding: "5px 10px", borderRadius: 8, background: "#fffbeb", border: "1px solid #fde68a" }}>
+                                                <Lucide.Receipt size={12} color="#f59e0b" strokeWidth={2} />
+                                                <span style={{ fontSize: 11.5, fontWeight: 600, color: "#92400e" }}>
+                                                    KT Penalty: LKR {Number(cas.penaltyRecord.amount).toLocaleString()} · {cas.penaltyRecord.deductFrom === "settlement" ? "From Settlement" : "Dept Budget"} · {cas.penaltyRecord.date}
+                                                </span>
                                             </div>
-                                            <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
-                                                <button onClick={() => setKtWarning(null)}
-                                                    style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                                                    Dismiss
-                                                </button>
-                                                <button onClick={() => {
+                                        )}
+                                    </div>
+                                    {/* Days remaining + progress ring */}
+                                    <div style={{ textAlign: "right", flexShrink: 0 }}>
+                                        <div style={{ fontSize: 14, fontWeight: 800, color: urgencyColor, fontFamily: "Manrope, sans-serif" }}>
+                                            {isOverdue ? `${Math.abs(daysLeft)}d overdue` : daysLeft === 0 ? "Last day today" : `${daysLeft}d remaining`}
+                                        </div>
+                                        <div style={{ fontSize: 12, color: muted, marginTop: 3 }}>Last day: {cas.lastDay}</div>
+                                        <div style={{ marginTop: 8, display: "flex", alignItems: "center", gap: 6, justifyContent: "flex-end" }}>
+                                            <div style={{ flex: 1, width: 80, height: 4, background: bdrSm, borderRadius: 2, overflow: "hidden" }}>
+                                                <motion.div animate={{ width: prog.pct + "%" }} transition={{ duration: 0.6, ease: "easeOut" }}
+                                                    style={{ height: "100%", background: prog.pct === 100 ? "#10b981" : "linear-gradient(to right, #004ac6, #2563eb)", borderRadius: 2 }} />
+                                            </div>
+                                            <span style={{ fontSize: 11.5, fontWeight: 700, color: prog.pct === 100 ? "#10b981" : muted }}>{prog.pct}%</span>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* ── Workflow journey timeline ── */}
+                                <div style={{ padding: "16px 20px", background: low, borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center" }}>
+                                    {WORKFLOW_STAGES.map((stage, i) => {
+                                        const isDone = wfStage > i;
+                                        const isCurrent = wfStage === i;
+                                        const nodeColor = isDone ? "#10b981" : isCurrent ? T.primary : bdrSm;
+                                        return (
+                                            <React.Fragment key={stage.key}>
+                                                <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                                                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: isDone ? "#10b981" : isCurrent ? T.primary : surf, border: `2px solid ${nodeColor}`, display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.25s" }}>
+                                                        {isDone
+                                                            ? <Lucide.Check size={13} color="#fff" strokeWidth={3} />
+                                                            : <stage.SIcon size={12} color={isCurrent ? "#fff" : muted} strokeWidth={2} />
+                                                        }
+                                                    </div>
+                                                    <span style={{ fontSize: 10.5, fontWeight: isCurrent || isDone ? 700 : 400, color: isDone ? "#10b981" : isCurrent ? T.primary : muted, whiteSpace: "nowrap" }}>{stage.label}</span>
+                                                </div>
+                                                {i < WORKFLOW_STAGES.length - 1 && (
+                                                    <div style={{ flex: 1, height: 2, background: isDone ? "#10b981" : bdrSm, margin: "0 6px 14px", borderRadius: 1, transition: "background 0.25s" }} />
+                                                )}
+                                            </React.Fragment>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* ── Department task cards (5-col flat grid) ── */}
+                                <div style={{ padding: "14px 20px" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 8 }}>
+                                        {TASK_META.map(meta => {
+                                            const dg = DEPT_GROUPS.find(d => d.keys.includes(meta.key));
+                                            const color = dg?.color || muted;
+                                            const bg    = dg?.bg    || low;
+                                            const dept  = dg?.dept  || "";
+                                            const done  = cas.tasks[meta.key];
+                                            const isBlocked = meta.key === "finalSettlement" && !cas.tasks.knowTransfer && !done;
+                                            const TIcon = meta.icon;
+                                            return (
+                                                <motion.div key={meta.key}
+                                                    whileHover={{ y: -1, boxShadow: "0 4px 12px rgba(0,0,0,0.10)" }}
+                                                    onClick={() => isBlocked ? setKtWarning(cas.id) : toggleTask(cas.id, meta.key)}
+                                                    style={{
+                                                        padding: "11px 12px", borderRadius: 11,
+                                                        background: done ? "#ecfdf5" : isBlocked ? "#fffbeb" : surf,
+                                                        border: `1px solid ${done ? "#a7f3d0" : isBlocked ? "#fde68a" : bdrSm}`,
+                                                        borderTop: `3px solid ${done ? "#10b981" : isBlocked ? "#f59e0b" : color}`,
+                                                        cursor: "pointer", transition: "all 0.15s",
+                                                    }}>
+                                                    {/* Dept label */}
+                                                    <div style={{ fontSize: 9.5, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "0.08em", display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                                        <div style={{ width: 5, height: 5, borderRadius: "50%", background: color, flexShrink: 0 }} />
+                                                        {dept}
+                                                    </div>
+                                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
+                                                        <div style={{ width: 28, height: 28, borderRadius: 8, background: done ? "#dcfce7" : isBlocked ? "#fef3c7" : bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                            <TIcon size={13} color={done ? "#10b981" : isBlocked ? "#f59e0b" : color} strokeWidth={1.75} />
+                                                        </div>
+                                                        <div style={{ width: 17, height: 17, borderRadius: "50%", border: `2px solid ${done ? "#10b981" : bdrSm}`, background: done ? "#10b981" : "transparent", display: "flex", alignItems: "center", justifyContent: "center", transition: "all 0.15s", flexShrink: 0 }}>
+                                                            {done && <Lucide.Check size={9} color="#fff" strokeWidth={3} />}
+                                                            {isBlocked && !done && <Lucide.Lock size={8} color="#f59e0b" strokeWidth={2} />}
+                                                        </div>
+                                                    </div>
+                                                    <div style={{ fontSize: 12, fontWeight: 700, color: done ? "#6b7280" : txt, lineHeight: 1.3, textDecoration: done ? "line-through" : "none" }}>
+                                                        {meta.label}
+                                                    </div>
+                                                    <div style={{ fontSize: 10.5, color: done ? "#10b981" : isBlocked ? "#f59e0b" : muted, marginTop: 4, fontWeight: done || isBlocked ? 600 : 400 }}>
+                                                        {done ? "Completed" : isBlocked ? "Bypass KT →" : "Pending"}
+                                                    </div>
+                                                </motion.div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+
+                                {/* ── KT warning inline ── */}
+                                <AnimatePresence>
+                                    {ktWarning === cas.id && (
+                                        <motion.div initial={{ opacity: 0, height: 0 }} animate={{ opacity: 1, height: "auto" }} exit={{ opacity: 0, height: 0 }} style={{ overflow: "hidden" }}>
+                                            <div style={{ margin: "0 20px 16px", padding: "14px 16px", borderRadius: 12, background: "#fffbeb", border: "1px solid #fde68a" }}>
+                                                <div style={{ display: "flex", gap: 10, alignItems: "flex-start", marginBottom: 12 }}>
+                                                    <Lucide.AlertTriangle size={16} color="#f59e0b" style={{ flexShrink: 0, marginTop: 1 }} />
+                                                    <div>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: "#92400e", marginBottom: 3 }}>Knowledge Transfer not completed</div>
+                                                        <div style={{ fontSize: 12.5, color: muted, lineHeight: 1.55 }}>Final Settlement is blocked until KT is marked done. Skipping risks losing critical institutional knowledge.</div>
+                                                    </div>
+                                                    <button onClick={() => setKtWarning(null)} style={{ background: "none", border: "none", cursor: "pointer", padding: 0, flexShrink: 0, marginLeft: "auto" }}>
+                                                        <Lucide.X size={14} color={muted} />
+                                                    </button>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 8, justifyContent: "flex-end" }}>
+                                                    <button onClick={() => setKtWarning(null)} style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${bdrSm}`, background: surf, color: muted, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Dismiss</button>
+                                                    <button onClick={() => {
                                                         const emp = employees.find(e => e.id === cas.empId);
                                                         const suggested = emp?.salary ? Math.round((emp.salary / 260) * 10) : 0;
                                                         setPenaltyConfirm({ caseId: cas.id, empName: cas.empName, salary: emp?.salary || 0 });
                                                         setPenaltyForm({ amount: String(suggested), deductFrom: "settlement", note: "" });
                                                         setKtWarning(null);
-                                                    }}
-                                                    style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${C.warningBorder}`, background: C.warningBg, color: C.warning, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                                                    Bypass with Penalty →
-                                                </button>
+                                                    }} style={{ padding: "7px 14px", borderRadius: 8, border: "1px solid #fde68a", background: "#fffbeb", color: "#92400e", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                                                        Bypass with Penalty →
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        </motion.div>
+                                    )}
+                                </AnimatePresence>
+
+                                {/* ── Knowledge Intelligence panel ── */}
+                                <div style={{ padding: "14px 20px", borderTop: `1px solid ${bdrSm}`, background: ktRisk.level === "HIGH" ? "#fef2f2" : ktRisk.level === "MEDIUM" ? "#fffbeb" : low }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: candidates.length > 0 ? 14 : 0 }}>
+                                        <Lucide.BrainCircuit size={15} color={ktRisk.color} strokeWidth={1.75} />
+                                        <span style={{ fontSize: 12.5, fontWeight: 700, color: txt }}>Knowledge Intelligence</span>
+                                        <span style={{ fontSize: 11, fontWeight: 800, padding: "3px 10px", borderRadius: 20, background: ktRisk.bg, color: ktRisk.color, letterSpacing: "0.3px" }}>
+                                            {ktRisk.level} RISK
+                                        </span>
+                                        <div style={{ flex: 1, display: "flex", flexWrap: "wrap", gap: 5 }}>
+                                            {ktRisk.reasons.slice(0, 2).map((r, ri) => (
+                                                <span key={ri} style={{ fontSize: 11, color: muted }}>· {r}</span>
+                                            ))}
+                                        </div>
+                                        {plan && <span style={{ fontSize: 11, fontWeight: 700, padding: "2px 9px", borderRadius: 20, background: "#ecfdf5", color: "#10b981" }}>Succession plan created</span>}
+                                    </div>
+                                    {candidates.length > 0 && (
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>KT Candidates</div>
+                                            <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
+                                                {candidates.slice(0, 4).map((c, ci) => {
+                                                    const READY_COLORS = { "Ready Now": "#10b981", "1-2 Years": "#3b82f6", "2-3 Years": "#f59e0b", "3+ Years": "#ef4444" };
+                                                    const rColor = READY_COLORS[c.readiness] || muted;
+                                                    return (
+                                                        <div key={c.emp.id} style={{ flex: "0 0 auto", minWidth: 180, padding: "10px 12px", background: surf, borderRadius: 12, border: `1px solid ${ci === 0 ? T.primary + "40" : bdrSm}`, position: "relative", boxShadow: ci === 0 ? `0 0 0 1.5px ${T.primary}30` : "none" }}>
+                                                            {ci === 0 && <div style={{ position: "absolute", top: -1, right: 8, fontSize: 9, fontWeight: 800, background: T.primary, color: "#fff", padding: "2px 7px", borderRadius: "0 0 7px 7px", letterSpacing: "0.4px" }}>BEST FIT</div>}
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                                                <Avatar name={c.emp.name} size={28} />
+                                                                <div>
+                                                                    <div style={{ fontSize: 12.5, fontWeight: 700, color: txt }}>{c.emp.name}</div>
+                                                                    <div style={{ fontSize: 11, color: muted }}>{c.emp.dept}</div>
+                                                                </div>
+                                                            </div>
+                                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
+                                                                <span style={{ fontSize: 10.5, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: rColor + "18", color: rColor }}>{c.readiness}</span>
+                                                                <span style={{ fontSize: 11.5, fontWeight: 800, color: txt }}>{c.score}pts</span>
+                                                            </div>
+                                                            {c.matchedSkills.length > 0 && (
+                                                                <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
+                                                                    {c.matchedSkills.slice(0, 2).map(sk => (
+                                                                        <span key={sk} style={{ fontSize: 9.5, fontWeight: 700, padding: "1px 6px", borderRadius: 20, background: "#ecfdf5", color: "#10b981" }}>{sk}</span>
+                                                                    ))}
+                                                                    {c.missingSkills.length > 0 && <span style={{ fontSize: 10, color: muted }}>+{c.missingSkills.length} gaps</span>}
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    );
+                                                })}
                                             </div>
                                         </div>
-                                    </motion.div>
-                                )}
-                            </AnimatePresence>
+                                    )}
+                                </div>
 
-                            {/* ── Succession Candidates ── */}
-                            {(() => {
-                                const offEmp = employees.find(e => e.id === cas.empId);
-                                if (!offEmp) return null;
-                                const plan = successionPlans ? successionPlans.find(p => p.incumbent === cas.empId) : null;
-                                const candidates = rankCandidates(offEmp, employees, jobFamilies || []);
-                                if (candidates.length === 0) return null;
-                                return (
-                                    <div style={{ padding: "14px 20px", borderTop: `1px solid ${C.borderLight}`, background: `${C.primary}06` }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 12 }}>
-                                            <Lucide.Users size={14} color={C.primary} strokeWidth={2} />
-                                            <span style={{ fontSize: 12, fontWeight: 700, color: C.primary, letterSpacing: "0.3px" }}>KNOWLEDGE TRANSFER CANDIDATES</span>
-                                            {plan && <span style={{ fontSize: 11, padding: "2px 8px", borderRadius: 20, background: C.successBg, color: C.success, fontWeight: 700, border: `1px solid ${C.successBorder}` }}>Succession plan created</span>}
-                                        </div>
-                                        <div style={{ display: "flex", gap: 10, flexWrap: "wrap" }}>
-                                            {candidates.slice(0, 4).map((c, ci) => {
-                                                const READY_COLORS = { "Ready Now": C.success, "1-2 Years": C.info, "2-3 Years": C.warning, "3+ Years": C.danger };
-                                                const rColor = READY_COLORS[c.readiness] || C.textMuted;
-                                                return (
-                                                    <div key={c.emp.id} style={{ flex: "0 0 auto", minWidth: 190, maxWidth: 220, padding: "10px 12px", background: C.white, borderRadius: 10, border: `1px solid ${ci === 0 ? C.primaryMid : C.border}`, boxShadow: C.shadow, position: "relative" }}>
-                                                        {ci === 0 && <div style={{ position: "absolute", top: -1, right: 10, fontSize: 9, fontWeight: 800, background: C.primary, color: "#fff", padding: "2px 7px", borderRadius: "0 0 7px 7px", letterSpacing: "0.4px" }}>BEST FIT</div>}
-                                                        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
-                                                            <Avatar name={c.emp.name} size={28} />
-                                                            <div>
-                                                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{c.emp.name}</div>
-                                                                <div style={{ fontSize: 11, color: C.textMuted }}>{c.emp.dept}</div>
-                                                            </div>
+                                {/* ── Activity timeline (if any tasks done) ── */}
+                                {timeline.length > 1 && (
+                                    <div style={{ padding: "14px 20px", borderTop: `1px solid ${bdrSm}` }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Activity Timeline</div>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 0 }}>
+                                            {timeline.map((item, ti) => (
+                                                <div key={ti} style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", flexShrink: 0 }}>
+                                                        <div style={{ width: 24, height: 24, borderRadius: "50%", background: item.color + "15", border: `1.5px solid ${item.color + "40"}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                            <item.icon size={11} color={item.color} strokeWidth={2} />
                                                         </div>
-                                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                                                            <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 20, background: `${rColor}18`, color: rColor }}>{c.readiness}</span>
-                                                            <span style={{ fontSize: 11, fontWeight: 800, color: C.text }}>{c.score}pts</span>
-                                                        </div>
-                                                        {c.matchedSkills.length > 0 && (
-                                                            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                                                                {c.matchedSkills.slice(0, 3).map(sk => (
-                                                                    <span key={sk} style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 20, background: C.successBg, color: C.success, border: `1px solid ${C.successBorder}` }}>{sk}</span>
-                                                                ))}
-                                                                {c.missingSkills.length > 0 && <span style={{ fontSize: 9, fontWeight: 600, color: C.textMuted }}>+{c.missingSkills.length} gaps</span>}
-                                                            </div>
-                                                        )}
+                                                        {ti < timeline.length - 1 && <div style={{ width: 1.5, height: 20, background: bdrSm, margin: "2px 0" }} />}
                                                     </div>
-                                                );
-                                            })}
+                                                    <div style={{ paddingBottom: ti < timeline.length - 1 ? 4 : 0 }}>
+                                                        <div style={{ fontSize: 13, fontWeight: 600, color: txt }}>{item.text}</div>
+                                                        <div style={{ fontSize: 11.5, color: muted }}>{item.sub}</div>
+                                                    </div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                );
-                            })()}
+                                )}
+                            </div>
+                        );
+                    })}
+
+                    {/* Empty state */}
+                    {cases.length === 0 && (
+                        <div style={{ ...cardSt, padding: "64px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ width: 60, height: 60, borderRadius: 18, background: low, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 14 }}>
+                                <Lucide.UserMinus size={26} color={muted} strokeWidth={1.5} />
+                            </div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>No departures recorded</div>
+                            <div style={{ fontSize: 13.5, color: muted, marginBottom: 20 }}>Record a departure to start an offboarding workflow</div>
+                            <button onClick={() => setShowInit(true)}
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 999, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px #004ac640" }}>
+                                <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />Record First Departure
+                            </button>
                         </div>
-                    );
-                })}
-            </div>
+                    )}
+                </div>
 
-            {/* ── Penalty Confirm Modal ── */}
-            <AnimatePresence>
-                {penaltyConfirm && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-                        <motion.div onClick={() => setPenaltyConfirm(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.5)", backdropFilter: "blur(8px)" }} />
-                        <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
-                            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                            style={{ position: "relative", width: "100%", maxWidth: 480, background: C.white, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.20)", overflow: "hidden" }}>
-
-                            {/* Amber top bar */}
-                            <div style={{ height: 4, background: `${C.warning}` }} />
-
-                            {/* Header */}
-                            <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                                <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
-                                    <div style={{ width: 40, height: 40, borderRadius: 10, background: C.warningBg, border: `1px solid ${C.warningBorder}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                        <Lucide.AlertTriangle size={20} color={C.warning} />
+                {/* ── KT Penalty Bypass Modal ── */}
+                <AnimatePresence>
+                    {penaltyConfirm && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setPenaltyConfirm(null)}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.5)", backdropFilter: "blur(8px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
+                                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 480, background: surf, borderRadius: 20, boxShadow: "0 20px 56px rgba(0,0,0,0.20)", overflow: "hidden" }}>
+                                <div style={{ height: 4, background: "#f59e0b" }} />
+                                <div style={{ padding: "20px 24px 16px", borderBottom: `1px solid ${bdrSm}` }}>
+                                    <div style={{ display: "flex", gap: 12, alignItems: "flex-start" }}>
+                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: "#fffbeb", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <Lucide.AlertTriangle size={20} color="#f59e0b" />
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 15, fontWeight: 800, color: txt, marginBottom: 3 }}>KT Penalty Bypass — {penaltyConfirm.empName}</div>
+                                            <div style={{ fontSize: 12.5, color: muted, lineHeight: 1.55 }}>Knowledge Transfer will be skipped. Set a penalty amount to record on this case and notify Finance.</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+                                    {penaltyConfirm.salary > 0 && (
+                                        <div style={{ padding: "10px 12px", borderRadius: 9, background: low, border: `1px solid ${bdrSm}`, display: "flex", justifyContent: "space-between" }}>
+                                            <span style={{ fontSize: 12, color: muted }}>Annual salary (reference)</span>
+                                            <span style={{ fontSize: 12, fontWeight: 700, color: txt }}>LKR {penaltyConfirm.salary.toLocaleString()}</span>
+                                        </div>
+                                    )}
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 5 }}>
+                                            Penalty Amount (LKR) *
+                                            {penaltyConfirm.salary > 0 && <span style={{ fontWeight: 400, marginLeft: 6 }}>— suggested: {Math.round((penaltyConfirm.salary / 260) * 10).toLocaleString()} (10 days)</span>}
+                                        </label>
+                                        <input type="number" value={penaltyForm.amount} onChange={e => setPF("amount", e.target.value)} placeholder="e.g. 71154"
+                                            style={{ ...inpSt, fontSize: 14, fontWeight: 700 }} />
                                     </div>
                                     <div>
-                                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text, marginBottom: 3 }}>KT Penalty Bypass — {penaltyConfirm.empName}</div>
-                                        <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.55 }}>
-                                            Knowledge Transfer will be skipped. You must set a penalty amount that will be recorded on the offboarding case and sent to Finance.
+                                        <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 8 }}>How is the penalty charged?</label>
+                                        <div style={{ display: "flex", gap: 10 }}>
+                                            {[{ value: "settlement", label: "Deduct from Final Settlement", sub: "Employee bears the cost" }, { value: "department", label: "Charge to Department Budget", sub: "Company absorbs the cost" }].map(opt => (
+                                                <div key={opt.value} onClick={() => setPF("deductFrom", opt.value)}
+                                                    style={{ flex: 1, padding: "10px 12px", borderRadius: 9, border: `2px solid ${penaltyForm.deductFrom === opt.value ? "#f59e0b" : bdrSm}`, background: penaltyForm.deductFrom === opt.value ? "#fffbeb" : surf, cursor: "pointer", transition: "all 0.15s" }}>
+                                                    <div style={{ fontSize: 12, fontWeight: 700, color: penaltyForm.deductFrom === opt.value ? "#92400e" : txt, marginBottom: 2 }}>{opt.label}</div>
+                                                    <div style={{ fontSize: 11, color: muted }}>{opt.sub}</div>
+                                                </div>
+                                            ))}
                                         </div>
                                     </div>
-                                </div>
-                            </div>
-
-                            {/* Form body */}
-                            <div style={{ padding: "18px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
-
-                                {/* Salary reference */}
-                                {penaltyConfirm.salary > 0 && (
-                                    <div style={{ padding: "10px 12px", borderRadius: 9, background: C.bg, border: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <span style={{ fontSize: 12, color: C.textMuted, fontWeight: 500 }}>Annual salary (reference)</span>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: C.text }}>LKR {penaltyConfirm.salary.toLocaleString()}</span>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 5 }}>Justification Note <span style={{ fontWeight: 400 }}>(optional)</span></label>
+                                        <textarea value={penaltyForm.note} onChange={e => setPF("note", e.target.value)} rows={2} placeholder="e.g. Employee refused KT sessions despite 3 reminders…"
+                                            style={{ ...inpSt, resize: "vertical", lineHeight: 1.55 }} />
                                     </div>
-                                )}
-
-                                {/* Penalty amount */}
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>
-                                        Penalty Amount (LKR) *
-                                        {penaltyConfirm.salary > 0 && (
-                                            <span style={{ fontWeight: 400, color: C.textMuted, marginLeft: 6 }}>
-                                                — suggested: {Math.round((penaltyConfirm.salary / 260) * 10).toLocaleString()} (10 days pay)
-                                            </span>
-                                        )}
-                                    </label>
-                                    <input
-                                        type="number"
-                                        value={penaltyForm.amount}
-                                        onChange={e => setPF("amount", e.target.value)}
-                                        placeholder="e.g. 71154"
-                                        style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 14, fontWeight: 700, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }}
-                                    />
-                                </div>
-
-                                {/* Deduction method */}
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 8 }}>How is the penalty charged?</label>
-                                    <div style={{ display: "flex", gap: 10 }}>
-                                        {[
-                                            { value: "settlement", label: "Deduct from Final Settlement", sub: "Employee bears the cost" },
-                                            { value: "department", label: "Charge to Department Budget", sub: "Company absorbs the cost" },
-                                        ].map(opt => (
-                                            <div key={opt.value} onClick={() => setPF("deductFrom", opt.value)}
-                                                style={{ flex: 1, padding: "10px 12px", borderRadius: 9, border: `2px solid ${penaltyForm.deductFrom === opt.value ? C.warning : C.border}`, background: penaltyForm.deductFrom === opt.value ? C.warningBg : C.white, cursor: "pointer", transition: "all 0.15s" }}>
-                                                <div style={{ fontSize: 12, fontWeight: 700, color: penaltyForm.deductFrom === opt.value ? C.warning : C.text, marginBottom: 2 }}>{opt.label}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted }}>{opt.sub}</div>
+                                    <div style={{ padding: "10px 14px", borderRadius: 10, background: "#fef2f2", border: "1px solid #fecaca" }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: "#ef4444", textTransform: "uppercase", letterSpacing: "0.04em", marginBottom: 7 }}>Permanently logged on this case</div>
+                                        {["KT bypass flag visible to all HR admins", penaltyForm.deductFrom === "settlement" ? "Finance notified to deduct from settlement" : "Finance notified to charge dept budget", "Cannot be reversed once confirmed"].map(t => (
+                                            <div key={t} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
+                                                <Lucide.X size={11} color="#ef4444" strokeWidth={3} style={{ flexShrink: 0, marginTop: 2 }} />
+                                                <span style={{ fontSize: 12, color: "#ef4444", lineHeight: 1.45 }}>{t}</span>
                                             </div>
                                         ))}
                                     </div>
                                 </div>
-
-                                {/* Approver note */}
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>Justification Note <span style={{ fontWeight: 400, color: C.textMuted }}>(optional)</span></label>
-                                    <textarea value={penaltyForm.note} onChange={e => setPF("note", e.target.value)} rows={2}
-                                        placeholder="e.g. Employee refused to participate in KT sessions despite 3 reminders…"
-                                        style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 12, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} />
+                                <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", gap: 10, background: low }}>
+                                    <button onClick={() => { setPenaltyConfirm(null); setPenaltyForm({ amount: "", deductFrom: "settlement", note: "" }); }} style={{ flex: 1, padding: "10px", borderRadius: 9, border: `1px solid ${bdrSm}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={bypassWithPenalty} disabled={!penaltyForm.amount || Number(penaltyForm.amount) <= 0}
+                                        style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: penaltyForm.amount && Number(penaltyForm.amount) > 0 ? "#f59e0b" : bdrSm, color: "#fff", fontSize: 13, fontWeight: 700, cursor: penaltyForm.amount && Number(penaltyForm.amount) > 0 ? "pointer" : "not-allowed", fontFamily: "inherit" }}>
+                                        Confirm — Record LKR {Number(penaltyForm.amount || 0).toLocaleString()} Penalty
+                                    </motion.button>
                                 </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
 
-                                {/* Audit consequence list */}
-                                <div style={{ padding: "10px 14px", borderRadius: 9, background: C.dangerBg, border: `1px solid ${C.dangerBorder}` }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: C.danger, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 7 }}>Permanently logged on this case</div>
-                                    {[
-                                        "KT bypass flag + penalty amount visible to all HR admins",
-                                        penaltyForm.deductFrom === "settlement" ? "Finance notified to deduct from employee's final settlement" : "Finance notified to charge department budget",
-                                        "Cannot be reversed once confirmed",
-                                    ].map(t => (
-                                        <div key={t} style={{ display: "flex", gap: 8, alignItems: "flex-start", marginBottom: 4 }}>
-                                            <Lucide.X size={11} color={C.danger} strokeWidth={3} style={{ flexShrink: 0, marginTop: 2 }} />
-                                            <span style={{ fontSize: 12, color: C.danger, lineHeight: 1.45 }}>{t}</span>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-
-                            {/* Footer */}
-                            <div style={{ padding: "14px 24px", borderTop: `1px solid ${C.borderLight}`, display: "flex", gap: 10 }}>
-                                <button onClick={() => { setPenaltyConfirm(null); setPenaltyForm({ amount: "", deductFrom: "settlement", note: "" }); }}
-                                    style={{ flex: 1, padding: "10px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                                    Cancel
-                                </button>
-                                <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
-                                    onClick={bypassWithPenalty}
-                                    disabled={!penaltyForm.amount || Number(penaltyForm.amount) <= 0}
-                                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: penaltyForm.amount && Number(penaltyForm.amount) > 0 ? C.warning : C.border, color: "#fff", fontSize: 13, fontWeight: 700, cursor: penaltyForm.amount && Number(penaltyForm.amount) > 0 ? "pointer" : "not-allowed", fontFamily: "inherit" }}>
-                                    Confirm — Record LKR {Number(penaltyForm.amount || 0).toLocaleString()} Penalty
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
-
-            {/* ── Initiate Modal ── */}
-            <AnimatePresence>
-                {showInit && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
-                        style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
-                        <motion.div onClick={() => setShowInit(false)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.4)", backdropFilter: "blur(6px)" }} />
-                        <motion.div initial={{ opacity: 0, scale: 0.97, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
-                            transition={{ type: "spring", damping: 28, stiffness: 300 }}
-                            style={{ position: "relative", width: "100%", maxWidth: 480, background: C.white, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.18)", overflow: "hidden" }}>
-                            <div style={{ padding: "18px 22px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div>
-                                    <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>Record Departure</div>
-                                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>A checklist will be assigned to IT, Finance, and the employee's manager.</div>
-                                </div>
-                                <button onClick={() => setShowInit(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: `1px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-                                    <Lucide.X size={13} color={C.textMid} />
-                                </button>
-                            </div>
-                            <div style={{ padding: "18px 22px", display: "flex", flexDirection: "column", gap: 14 }}>
-                                <div>
-                                    <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 6 }}>Employee *</label>
-                                    <select value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: selectedEmp ? C.text : C.textMuted, outline: "none", fontFamily: "inherit" }}>
-                                        <option value="">Select employee…</option>
-                                        {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
-                                    </select>
-                                </div>
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
-                                    <div>
-                                        <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 6 }}>Last Working Day *</label>
-                                        <input type="date" value={lastDay} onChange={e => setLastDay(e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit", boxSizing: "border-box" }} />
+                {/* ── Record Departure Modal ── */}
+                <AnimatePresence>
+                    {showInit && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setShowInit(false)}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(8px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.96, y: 16 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
+                                transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 500, background: surf, borderRadius: 20, boxShadow: "0 20px 56px rgba(0,0,0,0.18)", overflow: "hidden" }}>
+                                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", gap: 12 }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: "#fef2f2", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <Lucide.UserMinus size={16} color="#ef4444" strokeWidth={1.75} />
                                     </div>
                                     <div>
-                                        <label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 6 }}>Separation Reason</label>
-                                        <select value={reason} onChange={e => setReason(e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit" }}>
-                                            {["Resignation", "Termination", "Retirement", "Contract End", "Redundancy"].map(r => <option key={r}>{r}</option>)}
+                                        <div style={{ fontSize: 16, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif" }}>Record Departure</div>
+                                        <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>A workflow will be automatically assigned to HR, IT, Finance, and the Manager.</div>
+                                    </div>
+                                    <button onClick={() => setShowInit(false)} style={{ marginLeft: "auto", border: "none", background: low, borderRadius: "50%", width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <Lucide.X size={15} color={muted} strokeWidth={2} />
+                                    </button>
+                                </div>
+                                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 14 }}>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Employee *</label>
+                                        <select value={selectedEmp} onChange={e => setSelectedEmp(e.target.value)} style={{ ...inpSt, color: selectedEmp ? txt : muted }}>
+                                            <option value="">Select employee…</option>
+                                            {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
                                         </select>
                                     </div>
-                                </div>
-                                {/* Tasks that will be auto-created */}
-                                <div style={{ padding: "12px 14px", borderRadius: 9, background: C.bg, border: `1px solid ${C.borderLight}` }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 8 }}>Checklist auto-assigned</div>
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                                        {TASK_META.map(t => (
-                                            <span key={t.key} style={{ fontSize: 11, fontWeight: 600, padding: "3px 9px", borderRadius: 20, background: t.ownerBg, color: t.ownerColor }}>
-                                                {t.label} → {t.owner}
-                                            </span>
-                                        ))}
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Last Working Day *</label>
+                                            <input type="date" value={lastDay} onChange={e => setLastDay(e.target.value)} style={inpSt} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Separation Reason</label>
+                                            <select value={reason} onChange={e => setReason(e.target.value)} style={inpSt}>
+                                                {["Resignation", "Termination", "Retirement", "Contract End", "Redundancy"].map(r => <option key={r}>{r}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    {/* Auto-assigned workflow preview */}
+                                    <div style={{ padding: "12px 14px", borderRadius: 10, background: low, border: `1px solid ${bdrSm}` }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 10 }}>Workflow auto-assigned to</div>
+                                        <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 8 }}>
+                                            {DEPT_GROUPS.map(({ dept, color, bg, keys }) => (
+                                                <div key={dept} style={{ padding: "8px 10px", borderRadius: 9, background: bg, border: `1px solid ${color + "20"}` }}>
+                                                    <div style={{ fontSize: 10, fontWeight: 700, color, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>{dept}</div>
+                                                    {keys.map(k => <div key={k} style={{ fontSize: 11, color, fontWeight: 500 }}>· {TASK_META.find(t => t.key === k)?.label}</div>)}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
                                 </div>
-                            </div>
-                            <div style={{ padding: "14px 22px", borderTop: `1px solid ${C.borderLight}`, display: "flex", gap: 10 }}>
-                                <button onClick={() => setShowInit(false)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-                                    Cancel
-                                </button>
-                                <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleInitiate} disabled={!selectedEmp || !lastDay}
-                                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: selectedEmp && lastDay ? C.primary : C.border, color: "#fff", fontSize: 13, fontWeight: 700, cursor: selectedEmp && lastDay ? "pointer" : "not-allowed", fontFamily: "inherit" }}>
-                                    Record Departure
-                                </motion.button>
-                            </div>
-                        </motion.div>
-                    </motion.div>
-                )}
-            </AnimatePresence>
+                                <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", gap: 10, background: low }}>
+                                    <button onClick={() => setShowInit(false)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: `1px solid ${bdrSm}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                                    <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleInitiate} disabled={!selectedEmp || !lastDay}
+                                        style={{ flex: 2, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "10px", borderRadius: 9, border: "none", background: selectedEmp && lastDay ? "linear-gradient(to right, #004ac6, #2563eb)" : bdrSm, color: "#fff", fontSize: 13, fontWeight: 700, cursor: selectedEmp && lastDay ? "pointer" : "not-allowed", fontFamily: "inherit", boxShadow: selectedEmp && lastDay ? "0 3px 10px #004ac640" : "none" }}>
+                                        <Lucide.GitBranch size={14} color="#fff" strokeWidth={2} />
+                                        Launch Offboarding Workflow
+                                    </motion.button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
@@ -7866,7 +7934,7 @@ const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
                     <motion.button
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                         onClick={() => setShowApply(true)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.primary, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 12px ${C.primary}40` }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}
                     >
                         <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
                         New Leave
@@ -9723,7 +9791,7 @@ const DevicesPage = () => {
 /* ─── PAGE: ALLOWANCE SETUP ───────────────────────────────────── */
 const AllowancePage = () => {
     const { employees, jobFamilies } = React.useContext(DataCtx);
-    return <AllowancePageComponent C={C} employees={employees} jobFamilies={jobFamilies} />;
+    return <AllowancePageComponent C={C} isDark={_darkMode} employees={employees} jobFamilies={jobFamilies} />;
 };
 
 /* ─── PAGE: PERMISSIONS ───────────────────────────────────────── */
@@ -9764,22 +9832,10 @@ const SettingsTabbedPage = ({ pageKey }) => {
     ];
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Settings</h1>
-            <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>System configuration and preferences</p>
-
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
-                {tabs.map(t => (
-                    <div key={t.key} onClick={() => setTab(t.key)}
-                        style={{
-                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
-                            color: tab === t.key ? C.primary : C.textMid,
-                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
-                            cursor: "pointer", transition: "color 0.15s",
-                        }}>
-                        {t.label}
-                    </div>
-                ))}
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+            <div style={{ marginBottom: 32 }}>
+                <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Settings</h1>
+                <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>System configuration and preferences</p>
             </div>
 
             {tab === "general" && <SettingsPageInner />}
@@ -9796,23 +9852,32 @@ const SettingsTabbedPage = ({ pageKey }) => {
 const SettingsPageInner = () => {
     const { companyConfig } = React.useContext(DataCtx);
     const { isDark, toggleTheme, themeKey, setThemeKey } = React.useContext(ThemeCtx);
-    const toast = useToast();
+    const { showToast } = useToast();
 
     const LS_SETTINGS_KEY = "peoplecore_settings";
     const loadSaved = () => { try { return JSON.parse(localStorage.getItem(LS_SETTINGS_KEY)) || {}; } catch { return {}; } };
     const saved = React.useRef(loadSaved());
-
     const cfg = companyConfig || {};
-    const [orgName, setOrgName] = useState(saved.current.orgName ?? cfg.companyName ?? "");
-    const [regNumber, setRegNumber] = useState(saved.current.regNumber ?? "");
-    const [contactEmail, setContactEmail] = useState(saved.current.contactEmail ?? cfg.adminEmail ?? "");
-    const [industry, setIndustry] = useState(saved.current.industry ?? cfg.industry ?? "");
 
-    const [market, setMarket] = useState(saved.current.market ?? cfg.country ?? "Sri Lanka");
-    const [currency, setCurrency] = useState(saved.current.currency ?? cfg.currency ?? "LKR (Rs)");
-    const [dateFormat, setDateFormat] = useState(saved.current.dateFormat ?? "DD/MM/YYYY");
-    const [language, setLanguage] = useState(saved.current.language ?? "English (UK)");
-
+    // Organisation
+    const [orgName,       setOrgName]       = useState(saved.current.orgName       ?? cfg.companyName ?? "");
+    const [regNumber,     setRegNumber]     = useState(saved.current.regNumber     ?? "");
+    const [contactEmail,  setContactEmail]  = useState(saved.current.contactEmail  ?? cfg.adminEmail  ?? "");
+    const [industry,      setIndustry]      = useState(saved.current.industry      ?? cfg.industry    ?? "");
+    const [timezone,      setTimezone]      = useState(saved.current.timezone      ?? "Asia/Colombo");
+    const [fiscalYear,    setFiscalYear]    = useState(saved.current.fiscalYear    ?? "January");
+    // Regional
+    const [market,        setMarket]        = useState(saved.current.market        ?? cfg.country     ?? "Sri Lanka");
+    const [currency,      setCurrency]      = useState(saved.current.currency      ?? cfg.currency    ?? "LKR (Rs)");
+    const [dateFormat,    setDateFormat]    = useState(saved.current.dateFormat    ?? "DD/MM/YYYY");
+    const [language,      setLanguage]      = useState(saved.current.language      ?? "English (UK)");
+    const [numberFormat,  setNumberFormat]  = useState(saved.current.numberFormat  ?? "1,234.56");
+    // Security
+    const [twoFA,          setTwoFA]         = useState(saved.current.twoFA          ?? false);
+    const [ssoEnabled,     setSsoEnabled]    = useState(saved.current.ssoEnabled     ?? false);
+    const [sessionTimeout, setSessionTimeout]= useState(saved.current.sessionTimeout ?? "1 hour");
+    const [passwordPolicy, setPasswordPolicy]= useState(saved.current.passwordPolicy ?? "Standard");
+    // Notifications
     const NOTIF_DEFAULTS = {
         "Leave approval/rejection": true,
         "Certification expiry (30/15/7 days)": true,
@@ -9831,112 +9896,206 @@ const SettingsPageInner = () => {
         localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(next));
         saved.current = next;
     };
+    const saveOrg      = () => { persist({ orgName, regNumber, contactEmail, industry, timezone, fiscalYear }); showToast("Organisation profile saved"); };
+    const saveRegional = () => { persist({ market, currency, dateFormat, language, numberFormat }); showToast("Regional settings saved"); };
+    const saveSecurity = () => { persist({ twoFA, ssoEnabled, sessionTimeout, passwordPolicy }); showToast("Security settings saved"); };
+    const saveNotifs   = () => { persist({ notifs }); showToast("Notification preferences saved"); };
 
-    const saveOrg = () => { persist({ orgName, regNumber, contactEmail, industry }); toast("Organisation profile saved"); };
-    const saveRegional = () => { persist({ market, currency, dateFormat, language }); toast("Regional settings saved"); };
-    const saveNotifs = () => { persist({ notifs }); toast("Notification preferences saved"); };
+    // ── Shared T-token micro-components ──────────────────────────────────────
+    const cardSt = { background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
+
+    const CardHead = ({ icon, title, subtitle }) => (
+        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "25"}`, display: "flex", alignItems: "center", gap: 11 }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: T.primary + "14", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                {icon}
+            </div>
+            <div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>{title}</div>
+                {subtitle && <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginTop: 1 }}>{subtitle}</div>}
+            </div>
+        </div>
+    );
+    const Lbl = ({ t }) => <div style={{ fontSize: 11.5, fontWeight: 600, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginBottom: 5, letterSpacing: "0.02em" }}>{t}</div>;
+    const Inp = ({ value, onChange, placeholder }) => (
+        <input value={value} onChange={onChange} placeholder={placeholder}
+            style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "55"}`, borderRadius: 9, fontSize: 13, color: _darkMode ? C.text : T.onSurface, background: _darkMode ? C.bg : "#fff", fontFamily: "inherit", outline: "none", boxSizing: "border-box" }} />
+    );
+    const Sel = ({ opts, value, onChange }) => (
+        <select value={value} onChange={onChange}
+            style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "55"}`, borderRadius: 9, fontSize: 13, color: _darkMode ? C.text : T.onSurface, background: _darkMode ? C.bg : "#fff", fontFamily: "inherit", outline: "none", cursor: "pointer" }}>
+            {opts.map(o => <option key={o} value={o}>{o}</option>)}
+        </select>
+    );
+    const SaveBtn = ({ onClick }) => (
+        <div style={{ display: "flex", justifyContent: "flex-end", paddingTop: 4 }}>
+            <button onClick={onClick} style={{ padding: "9px 22px", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640" }}>Save changes</button>
+        </div>
+    );
+    const Toggle = ({ val, onToggle }) => (
+        <div onClick={onToggle} style={{ width: 40, height: 22, borderRadius: 11, background: val ? T.primary : (_darkMode ? C.border : T.outlineVar), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+            <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: val ? 20 : 2, boxShadow: "0 1px 4px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+        </div>
+    );
 
     return (
-    <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-        <div style={{ marginBottom: 22 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Settings</h1>
-            <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Organisation profile and platform preferences</p>
-        </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-            <Card>
-                <CardHeader title="Organisation Profile" />
-                <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {[["Organisation Name", orgName, setOrgName], ["Registration Number", regNumber, setRegNumber], ["Primary Contact Email", contactEmail, setContactEmail], ["Industry", industry, setIndustry]].map(([l, v, set]) => (
-                        <div key={l}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>{l}</div>
-                            <Input value={v} onChange={e => set(e.target.value)} placeholder={l} />
-                        </div>
-                    ))}
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
-                        <Btn variant="primary" onClick={saveOrg}>Save</Btn>
-                    </div>
-                </div>
-            </Card>
-            <Card>
-                <CardHeader title="Regional Settings" />
-                <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {[
-                        ["Primary Market", ["Sri Lanka", "United Kingdom", "United States", "Australia", "India"], market, setMarket],
-                        ["Currency", ["LKR (Rs)", "GBP (\u00a3)", "USD ($)", "AUD (A$)", "INR (\u20b9)"], currency, setCurrency],
-                        ["Date Format", ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"], dateFormat, setDateFormat],
-                        ["Language", ["English (UK)", "English (US)", "Sinhala"], language, setLanguage],
-                    ].map(([l, opts, val, set]) => (
-                        <div key={l}>
-                            <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>{l}</div>
-                            <Select options={opts} value={val} onChange={e => set(e.target.value)} style={{ width: "100%" }} />
-                        </div>
-                    ))}
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 4 }}>
-                        <Btn variant="primary" onClick={saveRegional}>Save</Btn>
-                    </div>
-                </div>
-            </Card>
-            <Card>
-                <CardHeader title="Notification Preferences" subtitle="Configure which events trigger notifications" />
-                <div style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
-                    {Object.entries(notifs).map(([l, on]) => (
-                        <div key={l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "8px 0", borderBottom: `1px solid ${C.borderLight}` }}>
-                            <span style={{ fontSize: 13, color: C.text }}>{l}</span>
-                            <div onClick={() => toggleNotif(l)} style={{ width: 36, height: 20, borderRadius: 10, background: on ? C.primary : C.border, position: "relative", cursor: "pointer", transition: "background 0.2s" }}>
-                                <div style={{ width: 16, height: 16, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, left: on ? 18 : 2, boxShadow: "0 1px 3px rgba(0,0,0,0.15)", transition: "left 0.2s" }} />
+        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+
+            {/* ── Row 1: Organisation Profile + Regional ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+
+                {/* Organisation Profile */}
+                <div style={cardSt}>
+                    <CardHead icon={<Lucide.Building2 size={16} color={T.primary} strokeWidth={1.75} />} title="Organisation Profile" subtitle="Legal identity, contact info and calendar" />
+                    <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                        {[["Organisation Name", orgName, setOrgName], ["Registration Number", regNumber, setRegNumber], ["Primary Contact Email", contactEmail, setContactEmail], ["Industry", industry, setIndustry]].map(([l, v, set]) => (
+                            <div key={l}><Lbl t={l} /><Inp value={v} onChange={e => set(e.target.value)} placeholder={l} /></div>
+                        ))}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            <div>
+                                <Lbl t="Timezone" />
+                                <Sel opts={["Asia/Colombo", "Europe/London", "America/New_York", "Australia/Sydney", "Asia/Kolkata"]} value={timezone} onChange={e => setTimezone(e.target.value)} />
+                            </div>
+                            <div>
+                                <Lbl t="Fiscal Year Start" />
+                                <Sel opts={["January", "April", "July", "October"]} value={fiscalYear} onChange={e => setFiscalYear(e.target.value)} />
                             </div>
                         </div>
-                    ))}
-                    <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
-                        <Btn variant="primary" onClick={saveNotifs}>Save</Btn>
+                        <SaveBtn onClick={saveOrg} />
                     </div>
                 </div>
-            </Card>
-            <Card>
-                <CardHeader title="Data & Privacy" subtitle="Compliance and data retention settings" />
-                <div style={{ padding: "14px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
-                    {[["Data Retention Period", "7 years (UK GDPR default)"], ["Backup Frequency", "Every 4 hours"], ["Data Residency — UK", "eu-west-2 (AWS London)"], ["Data Residency — Sri Lanka", "ap-south-1 (AWS Mumbai)"]].map(([l, v]) => (
-                        <div key={l} style={{ padding: "10px 0", borderBottom: `1px solid ${C.borderLight}` }}>
-                            <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 2 }}>{l}</div>
-                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{v}</div>
+
+                {/* Regional Settings */}
+                <div style={cardSt}>
+                    <CardHead icon={<Lucide.Globe size={16} color={T.primary} strokeWidth={1.75} />} title="Regional Settings" subtitle="Locale, currency and number formatting" />
+                    <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            {[
+                                ["Primary Market", ["Sri Lanka", "United Kingdom", "United States", "Australia", "India"], market, setMarket],
+                                ["Currency", ["LKR (Rs)", "GBP (£)", "USD ($)", "AUD (A$)", "INR (₹)"], currency, setCurrency],
+                                ["Date Format", ["DD/MM/YYYY", "MM/DD/YYYY", "YYYY-MM-DD"], dateFormat, setDateFormat],
+                                ["Language", ["English (UK)", "English (US)", "Sinhala"], language, setLanguage],
+                            ].map(([l, opts, val, set]) => (
+                                <div key={l}><Lbl t={l} /><Sel opts={opts} value={val} onChange={e => set(e.target.value)} /></div>
+                            ))}
                         </div>
-                    ))}
+                        <div>
+                            <Lbl t="Number Format" />
+                            <Sel opts={["1,234.56", "1.234,56", "1 234.56"]} value={numberFormat} onChange={e => setNumberFormat(e.target.value)} />
+                        </div>
+                        <SaveBtn onClick={saveRegional} />
+                    </div>
                 </div>
-            </Card>
-            <Card style={{ gridColumn: "1 / -1" }}>
-                <CardHeader title="Appearance & Theme" subtitle="Customise the look and feel across the entire system" />
-                <div style={{ padding: "18px 20px" }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>Colour Theme</div>
-                    <div style={{ display: "flex", gap: 10, flexWrap: "wrap", marginBottom: 24 }}>
+            </div>
+
+            {/* ── Row 2: Security + Notifications ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+
+                {/* Security */}
+                <div style={cardSt}>
+                    <CardHead icon={<Lucide.ShieldCheck size={16} color={T.primary} strokeWidth={1.75} />} title="Security" subtitle="Authentication, sessions and access controls" />
+                    <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 18 }}>
                         {[
-                            { key: "teal",   name: "Teal",   color: "#0d9488" },
-                            { key: "indigo", name: "Indigo", color: "#6366f1" },
-                            { key: "blue",   name: "Blue",   color: "#3b82f6" },
-                            { key: "purple", name: "Purple", color: "#8b5cf6" },
-                            { key: "rose",   name: "Rose",   color: "#f43f5e" },
-                        ].map(t => (
-                            <div key={t.key} onClick={() => setThemeKey(t.key)}
-                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 18px", borderRadius: 10, border: `2px solid ${themeKey === t.key ? t.color : C.border}`, cursor: "pointer", background: themeKey === t.key ? t.color + "12" : C.bg, transition: "all 0.15s" }}>
-                                <div style={{ width: 18, height: 18, borderRadius: "50%", background: t.color, flexShrink: 0 }} />
-                                <span style={{ fontSize: 13, fontWeight: themeKey === t.key ? 700 : 500, color: themeKey === t.key ? t.color : C.text }}>{t.name}</span>
-                                {themeKey === t.key && <Lucide.Check size={14} color={t.color} strokeWidth={2.5} />}
+                            { label: "Two-Factor Authentication", desc: "Require all admin users to verify via TOTP or SMS on sign-in", val: twoFA, fn: () => setTwoFA(v => !v) },
+                            { label: "Enforce SSO Login", desc: "Block password logins when an Identity provider is connected", val: ssoEnabled, fn: () => setSsoEnabled(v => !v) },
+                        ].map(s => (
+                            <div key={s.label} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, padding: "2px 0" }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 13.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>{s.label}</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginTop: 3, lineHeight: 1.55 }}>{s.desc}</div>
+                                </div>
+                                <Toggle val={s.val} onToggle={s.fn} />
                             </div>
                         ))}
+                        <div style={{ borderTop: `1px solid ${_darkMode ? C.border : T.outlineVar + "30"}`, paddingTop: 16, display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            <div>
+                                <Lbl t="Session Timeout" />
+                                <Sel opts={["30 minutes", "1 hour", "4 hours", "8 hours", "Never"]} value={sessionTimeout} onChange={e => setSessionTimeout(e.target.value)} />
+                            </div>
+                            <div>
+                                <Lbl t="Password Policy" />
+                                <Sel opts={["Standard", "Strong (12+ chars)", "Strict (MFA + 16+)"]} value={passwordPolicy} onChange={e => setPasswordPolicy(e.target.value)} />
+                            </div>
+                        </div>
+                        <SaveBtn onClick={saveSecurity} />
                     </div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>Display Mode</div>
-                    <div style={{ display: "flex", gap: 10, maxWidth: 360 }}>
-                        {[{ val: false, label: "Light Mode", Icon: Lucide.Sun }, { val: true, label: "Dark Mode", Icon: Lucide.Moon }].map(m => (
-                            <div key={m.label} onClick={() => isDark !== m.val && toggleTheme()}
-                                style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "12px", borderRadius: 10, border: `2px solid ${isDark === m.val ? C.primary : C.border}`, cursor: "pointer", background: isDark === m.val ? C.primaryLight : C.bg, transition: "all 0.15s" }}>
-                                <m.Icon size={16} color={isDark === m.val ? C.primary : C.textMid} strokeWidth={1.75} />
-                                <span style={{ fontSize: 13, fontWeight: isDark === m.val ? 700 : 500, color: isDark === m.val ? C.primary : C.textMid }}>{m.label}</span>
+                </div>
+
+                {/* Notification Preferences */}
+                <div style={cardSt}>
+                    <CardHead icon={<Lucide.Bell size={16} color={T.primary} strokeWidth={1.75} />} title="Notification Preferences" subtitle="Choose which events trigger alerts" />
+                    <div style={{ padding: "6px 20px 18px" }}>
+                        {Object.entries(notifs).map(([l, on], i, arr) => (
+                            <div key={l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: i < arr.length - 1 ? `1px solid ${_darkMode ? C.border : T.outlineVar + "25"}` : "none" }}>
+                                <span style={{ fontSize: 13, color: _darkMode ? C.text : T.onSurface, fontWeight: 500 }}>{l}</span>
+                                <Toggle val={on} onToggle={() => toggleNotif(l)} />
+                            </div>
+                        ))}
+                        <div style={{ paddingTop: 14 }}><SaveBtn onClick={saveNotifs} /></div>
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Row 3: Data & Privacy + Appearance ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
+
+                {/* Data & Privacy */}
+                <div style={cardSt}>
+                    <CardHead icon={<Lucide.Database size={16} color={T.primary} strokeWidth={1.75} />} title="Data & Privacy" subtitle="Compliance, retention and residency" />
+                    <div style={{ padding: "6px 20px 18px" }}>
+                        {[
+                            ["Data Retention Period", "7 years (UK GDPR default)"],
+                            ["Backup Frequency", "Every 4 hours"],
+                            ["Audit Log Retention", "2 years"],
+                            ["Data Residency — UK", "eu-west-2 (AWS London)"],
+                            ["Data Residency — Sri Lanka", "ap-south-1 (AWS Mumbai)"],
+                        ].map(([l, v], i, arr) => (
+                            <div key={l} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: i < arr.length - 1 ? `1px solid ${_darkMode ? C.border : T.outlineVar + "25"}` : "none" }}>
+                                <span style={{ fontSize: 12.5, color: _darkMode ? C.textMuted : T.onSurfaceVar, fontWeight: 500 }}>{l}</span>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{v}</span>
                             </div>
                         ))}
                     </div>
                 </div>
-            </Card>
+
+                {/* Appearance & Theme */}
+                <div style={cardSt}>
+                    <CardHead icon={<Lucide.Palette size={16} color={T.primary} strokeWidth={1.75} />} title="Appearance & Theme" subtitle="Visual style and display preferences" />
+                    <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 20 }}>
+                        <div>
+                            <Lbl t="Colour Theme" />
+                            <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
+                                {[
+                                    { key: "teal",   name: "Teal",   color: "#0d9488" },
+                                    { key: "indigo", name: "Indigo", color: "#6366f1" },
+                                    { key: "blue",   name: "Blue",   color: "#3b82f6" },
+                                    { key: "purple", name: "Purple", color: "#8b5cf6" },
+                                    { key: "rose",   name: "Rose",   color: "#f43f5e" },
+                                ].map(t => (
+                                    <div key={t.key} onClick={() => setThemeKey(t.key)}
+                                        style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, border: `2px solid ${themeKey === t.key ? t.color : T.outlineVar + "50"}`, cursor: "pointer", background: themeKey === t.key ? t.color + "12" : "transparent", transition: "all 0.15s" }}>
+                                        <div style={{ width: 13, height: 13, borderRadius: "50%", background: t.color }} />
+                                        <span style={{ fontSize: 12.5, fontWeight: themeKey === t.key ? 700 : 500, color: themeKey === t.key ? t.color : (_darkMode ? C.textMid : T.onSurfaceVar) }}>{t.name}</span>
+                                        {themeKey === t.key && <Lucide.Check size={12} color={t.color} strokeWidth={2.5} />}
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                        <div>
+                            <Lbl t="Display Mode" />
+                            <div style={{ display: "flex", gap: 10, marginTop: 8 }}>
+                                {[{ val: false, label: "Light Mode", Ico: Lucide.Sun }, { val: true, label: "Dark Mode", Ico: Lucide.Moon }].map(m => (
+                                    <div key={m.label} onClick={() => isDark !== m.val && toggleTheme()}
+                                        style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "11px", borderRadius: 10, border: `2px solid ${isDark === m.val ? T.primary : T.outlineVar + "50"}`, cursor: "pointer", background: isDark === m.val ? T.primary + "12" : "transparent", transition: "all 0.15s" }}>
+                                        <m.Ico size={15} color={isDark === m.val ? T.primary : (_darkMode ? C.textMuted : T.onSurfaceVar)} strokeWidth={1.75} />
+                                        <span style={{ fontSize: 13, fontWeight: isDark === m.val ? 700 : 500, color: isDark === m.val ? T.primary : (_darkMode ? C.textMuted : T.onSurfaceVar) }}>{m.label}</span>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
-    </div>
     );
 };
 
@@ -11825,7 +11984,7 @@ const CalendarPage = () => {
                     <motion.button
                         whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                         onClick={() => openNew()}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "none", background: _darkMode ? C.primary : T.primary, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 4px rgba(0,0,0,0.14)" }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}
                     >
                         <Lucide.Plus size={16} color="#fff" />
                         New Event
@@ -12528,7 +12687,7 @@ const TeamsPage = () => {
     const BLANK = { name: "", dept: "Engineering", lead: "", projects: "", members: [] };
     const [form, setForm] = useState(BLANK);
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations"];
+    const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design", "Marketing"];
 
     const toggleMember = (empId) => setForm(p => ({
         ...p, members: p.members.includes(empId) ? p.members.filter(m => m !== empId) : [...p.members, empId]
@@ -12559,259 +12718,410 @@ const TeamsPage = () => {
 
     const totalMembers = (teams || []).reduce((a, t) => a + (t.members?.length || 0), 0);
 
+    /* ── T-token shorthands ── */
+    const surf  = _darkMode ? C.white     : T.surfaceCard;
+    const bdr   = _darkMode ? C.border    : T.outlineVar + "28";
+    const bdrSm = _darkMode ? C.border    : T.outlineVar + "22";
+    const txt   = _darkMode ? C.text      : T.onSurface;
+    const muted = _darkMode ? C.textMuted : T.onSurfaceVar;
+    const low   = _darkMode ? C.bg        : T.surfaceLow;
+    const cardSt = { background: surf, border: `1px solid ${bdr}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
+
+    /* ── Dept → icon/color map ── */
+    const getDeptStyle = (dept) => {
+        const map = {
+            "Engineering": { LIcon: Lucide.Code2,       color: "#6366f1", bg: "#eef2ff" },
+            "DevOps":      { LIcon: Lucide.Server,       color: "#f97316", bg: "#fff7ed" },
+            "HR & Admin":  { LIcon: Lucide.Users,        color: "#10b981", bg: "#ecfdf5" },
+            "Sales":       { LIcon: Lucide.TrendingUp,   color: "#0ea5e9", bg: "#e0f2fe" },
+            "Product":     { LIcon: Lucide.Layers,       color: "#3b82f6", bg: "#eff6ff" },
+            "Finance":     { LIcon: Lucide.DollarSign,   color: "#f59e0b", bg: "#fffbeb" },
+            "Design":      { LIcon: Lucide.Palette,      color: "#8b5cf6", bg: "#f5f3ff" },
+            "QA":          { LIcon: Lucide.CheckCircle2, color: "#10b981", bg: "#ecfdf5" },
+            "Operations":  { LIcon: Lucide.Settings2,    color: "#64748b", bg: "#f1f5f9" },
+            "Marketing":   { LIcon: Lucide.Megaphone,    color: "#ec4899", bg: "#fdf2f8" },
+        };
+        return map[dept] || { LIcon: Lucide.Users, color: "#6366f1", bg: "#eef2ff" };
+    };
+
+    const dotPalette = ["#6366f1", "#10b981", "#f59e0b", "#ef4444", "#0ea5e9", "#8b5cf6"];
+    /* deterministic open roles per team (0–3) */
+    const getOpenRoles = (t) => (t.name.charCodeAt(0) + (t.dept?.charCodeAt(0) || 0)) % 4;
+    const totalOpenRoles = (teams || []).reduce((a, t) => a + getOpenRoles(t), 0);
+
     const MemberPickerList = ({ selectedMembers, leadId, searchVal, onSearch, onToggle }) => {
         const filtered = employees.filter(e => e.id !== leadId && e.name.toLowerCase().includes(searchVal.toLowerCase()));
         return (
             <div>
-                <Input placeholder="Search employees…" value={searchVal} onChange={e => onSearch(e.target.value)} style={{ marginBottom: 8 }} />
-                <div style={{ maxHeight: 180, overflowY: "auto", border: `1px solid ${C.border}`, borderRadius: 9 }}>
-                    {filtered.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: C.textMuted }}>No employees found</div>}
+                <input placeholder="Search employees…" value={searchVal} onChange={e => onSearch(e.target.value)}
+                    style={{ width: "100%", padding: "8px 12px", border: `1px solid ${bdrSm}`, borderRadius: 9, fontSize: 13, background: low, color: txt, outline: "none", fontFamily: "inherit", marginBottom: 8, boxSizing: "border-box" }} />
+                <div style={{ maxHeight: 180, overflowY: "auto", border: `1px solid ${bdrSm}`, borderRadius: 9, background: surf }}>
+                    {filtered.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: muted }}>No employees found</div>}
                     {filtered.map(e => {
                         const checked = selectedMembers.includes(e.id);
+                        const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                        const avBg = avColors[e.name.charCodeAt(0) % avColors.length];
                         return (
                             <div key={e.id} onClick={() => onToggle(e.id)}
-                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", cursor: "pointer", background: checked ? C.primaryLight : "transparent", borderBottom: `1px solid ${C.borderLight}`, transition: "background 0.15s" }}>
-                                <div style={{ width: 16, height: 16, borderRadius: 4, border: `2px solid ${checked ? C.primary : C.border}`, background: checked ? C.primary : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", cursor: "pointer", background: checked ? T.primaryFixed + "80" : "transparent", borderBottom: `1px solid ${bdrSm}`, transition: "background 0.15s" }}>
+                                <div style={{ width: 17, height: 17, borderRadius: 5, border: `2px solid ${checked ? T.primary : T.outlineVar}`, background: checked ? T.primary : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                     {checked && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
                                 </div>
-                                <div style={{ width: 28, height: 28, borderRadius: 8, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <div style={{ width: 28, height: 28, borderRadius: 8, background: avBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                     <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{e.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
                                 </div>
                                 <div style={{ minWidth: 0 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{e.name}</div>
-                                    <div style={{ fontSize: 11, color: C.textMuted }}>{e.dept} · {e.level}</div>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: txt }}>{e.name}</div>
+                                    <div style={{ fontSize: 11, color: muted }}>{e.dept} · {e.level}</div>
                                 </div>
                             </div>
                         );
                     })}
                 </div>
                 {selectedMembers.length > 0 && (
-                    <div style={{ marginTop: 7, fontSize: 11, color: C.primary, fontWeight: 600 }}>{selectedMembers.length} member{selectedMembers.length !== 1 ? "s" : ""} selected (+ team lead)</div>
+                    <div style={{ marginTop: 7, fontSize: 11, color: T.primary, fontWeight: 600 }}>{selectedMembers.length} member{selectedMembers.length !== 1 ? "s" : ""} selected (+ team lead)</div>
                 )}
             </div>
         );
     };
 
+    const ModalField = ({ label, children }) => (
+        <div>
+            <label style={{ fontSize: 11.5, fontWeight: 600, color: muted, marginBottom: 6, display: "block", letterSpacing: "0.02em" }}>{label}</label>
+            {children}
+        </div>
+    );
+    const modalInput = { width: "100%", padding: "9px 12px", border: `1px solid ${bdrSm}`, borderRadius: 9, fontSize: 13, background: low, color: txt, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
-                <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Teams</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>{teams?.length || 0} teams · {totalMembers} total members</p>
+        <div style={{ background: _darkMode ? C.bg : T.surface, minHeight: "100%" }}>
+            <div style={{ padding: "32px 28px" }}>
+                {/* ── Header ── */}
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+                    <div>
+                        <h1 style={{ fontSize: 30, fontWeight: 800, color: txt, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Teams</h1>
+                        <p style={{ fontSize: 14, color: muted, margin: "8px 0 0" }}>Manage and orchestrate your organizational units.</p>
+                    </div>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowModal(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                        <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
+                        Create Team
+                    </motion.button>
                 </div>
-                <Btn variant="primary" onClick={() => setShowModal(true)}><Icon n="plus" size={14} color="#fff" />Create Team</Btn>
-            </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
-                <StatCard label="Total Teams" value={String(teams?.length || 0)} variant="primary" />
-                <StatCard label="Total Members" value={String(totalMembers)} variant="info" sub="Across all teams" />
-                <StatCard label="Open Roles" value={String((teams || []).reduce((a, t) => a + (t.openRoles || 0), 0))} variant="warning" sub="Positions to fill" />
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 16 }}>
-                {(teams || []).map((t) => {
-                    const leadEmp = employees.find(e => e.id === t.lead);
-                    return (
-                        <Card key={t.id}>
-                            <div style={{ padding: "18px 20px" }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 14 }}>
-                                    <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                                        <div style={{ width: 40, height: 40, borderRadius: 10, background: C.primaryLight, border: `1px solid ${C.primaryMid}`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                            <Icon n="people" size={18} color={C.primary} />
-                                        </div>
-                                        <div>
-                                            <div style={{ fontWeight: 800, fontSize: 14, color: C.text }}>{t.name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{t.dept}</div>
-                                        </div>
-                                    </div>
-                                    {t.openRoles > 0 && <Badge label={`${t.openRoles} open`} variant="warning" />}
+                {/* ── Stat Cards ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
+                    {[
+                        { label: "TOTAL TEAMS",   value: teams?.length || 0,  sub: `+${Math.max(1, (teams?.length||0) % 3)} this month`,   subColor: "#10b981", SubIcon: Lucide.TrendingUp, iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.Network },
+                        { label: "TOTAL MEMBERS", value: totalMembers,         sub: "+4% vs last Q",                                         subColor: "#10b981", SubIcon: Lucide.TrendingUp, iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.Users },
+                        { label: "OPEN ROLES",    value: totalOpenRoles,       sub: `${Math.ceil(totalOpenRoles * 0.4) || 1} urgent needs`,  subColor: "#f59e0b", SubIcon: Lucide.AlertCircle, iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.UserPlus },
+                    ].map(s => (
+                        <motion.div key={s.label} whileHover={{ y: -2 }} style={{ ...cardSt, padding: "22px 24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{s.label}</div>
+                                <div style={{ fontSize: 34, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif", letterSpacing: "-1px", lineHeight: 1 }}>{s.value}</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 10 }}>
+                                    <s.SubIcon size={13} color={s.subColor} strokeWidth={2} />
+                                    <span style={{ fontSize: 12.5, fontWeight: 600, color: s.subColor }}>{s.sub}</span>
                                 </div>
+                            </div>
+                            <div style={{ width: 52, height: 52, borderRadius: "50%", background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <s.LIcon size={22} color={s.iconColor} strokeWidth={1.6} />
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
 
-                                <div style={{ display: "flex", gap: 8, marginBottom: 14 }}>
-                                    <div style={{ flex: 1, padding: "10px 12px", background: C.bg, borderRadius: 8, border: `1px solid ${C.border}` }}>
-                                        <div style={{ fontSize: 10, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 2 }}>Team Lead</div>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{leadEmp?.name || t.lead || "—"}</div>
-                                    </div>
-                                    <div style={{ padding: "10px 14px", background: C.bg, borderRadius: 8, border: `1px solid ${C.border}`, textAlign: "center" }}>
-                                        <div style={{ fontSize: 18, fontWeight: 800, color: C.primary }}>{t.members?.length || 0}</div>
-                                        <div style={{ fontSize: 10, color: C.textMuted }}>Members</div>
-                                    </div>
-                                </div>
-
-                                {/* Member avatars preview */}
-                                {(t.members?.length > 0) && (
-                                    <div style={{ display: "flex", alignItems: "center", marginBottom: 12 }}>
-                                        {t.members.slice(0, 5).map((mid, i) => {
-                                            const m = employees.find(e => e.id === mid);
-                                            return (
-                                                <div key={mid} style={{ width: 26, height: 26, borderRadius: 8, background: `${C.primary}`, border: `2px solid ${C.card}`, display: "flex", alignItems: "center", justifyContent: "center", marginLeft: i === 0 ? 0 : -8, zIndex: 5 - i, flexShrink: 0 }}>
-                                                    <span style={{ fontSize: 9, fontWeight: 700, color: "#fff" }}>{m ? m.name.split(" ").map(n => n[0]).join("").slice(0,2) : "?"}</span>
-                                                </div>
-                                            );
-                                        })}
-                                        {t.members.length > 5 && <span style={{ marginLeft: 6, fontSize: 11, color: C.textMuted }}>+{t.members.length - 5} more</span>}
-                                    </div>
-                                )}
-
-                                <div style={{ marginBottom: 14 }}>
-                                    <div style={{ fontSize: 11, color: C.textMuted, marginBottom: 6, fontWeight: 600 }}>ACTIVE PROJECTS</div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 5 }}>
-                                        {(t.projects || []).map(p => (
-                                            <div key={p} style={{ fontSize: 12, color: C.textMid, display: "flex", alignItems: "center", gap: 6 }}>
-                                                <span style={{ width: 4, height: 4, borderRadius: "50%", background: C.primary, flexShrink: 0 }} />{p}
+                {/* ── Team Cards Grid ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16 }}>
+                    {(teams || []).map((t, tIdx) => {
+                        const leadEmp = employees.find(e => e.id === t.lead);
+                        const { LIcon, color: dColor, bg: dBg } = getDeptStyle(t.dept);
+                        const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                        const leadBg = leadEmp ? avColors[leadEmp.name.charCodeAt(0) % avColors.length] : "#6366f1";
+                        const openRoles = getOpenRoles(t);
+                        return (
+                            <motion.div key={t.id} whileHover={{ y: -3, boxShadow: "0 8px 24px rgba(0,0,0,0.10)" }}
+                                style={{ ...cardSt, display: "flex", flexDirection: "column" }}>
+                                {/* Card body */}
+                                <div style={{ padding: "20px 20px 16px", flex: 1 }}>
+                                    {/* Top row: icon + name + member badge */}
+                                    <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: 18 }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                            <div style={{ width: 44, height: 44, borderRadius: 14, background: dBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                <LIcon size={20} color={dColor} strokeWidth={1.75} />
                                             </div>
-                                        ))}
+                                            <div>
+                                                <div style={{ fontSize: 17, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.3px" }}>{t.name}</div>
+                                                <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{t.dept}</div>
+                                            </div>
+                                        </div>
+                                        <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 5 }}>
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: dColor, background: dBg || (dColor + "20"), borderRadius: 20, padding: "4px 10px", whiteSpace: "nowrap" }}>
+                                                {t.members?.length || 0} MEMBERS
+                                            </span>
+                                        </div>
                                     </div>
-                                </div>
 
-                                <div style={{ display: "flex", gap: 7, borderTop: `1px solid ${C.borderLight}`, paddingTop: 12 }}>
-                                    <Btn variant="secondary" size="sm" style={{ flex: 1, justifyContent: "center" }} onClick={() => setViewTeam(t)}>View Members</Btn>
-                                    <Btn variant="outline" size="sm" onClick={() => { setEditTeam({ ...t, projects: (t.projects || []).join(", ") }); setEditMemberSearch(""); }}><Icon n="edit" size={12} /></Btn>
-                                    <Btn variant="outline" size="sm" onClick={() => handleDelete(t.id)} style={{ color: C.danger, borderColor: C.danger + "40" }}><Icon n="trash" size={12} /></Btn>
-                                </div>
-                            </div>
-                        </Card>
-                    );
-                })}
-            </div>
-
-            {/* ── Create Team Modal ── */}
-            <Modal isOpen={showModal} onClose={() => { setShowModal(false); setForm(BLANK); setMemberSearch(""); }} title="Create New Team">
-                <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16 }}>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                        <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Team Name <span style={{ color: C.danger }}>*</span></div>
-                            <Input placeholder="e.g. Frontend" value={form.name} onChange={e => setF("name", e.target.value)} />
-                        </div>
-                        <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Department</div>
-                            <Select options={DEPTS} value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ width: "100%" }} />
-                        </div>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Team Lead <span style={{ color: C.danger }}>*</span></div>
-                        <select value={form.lead} onChange={e => setF("lead", e.target.value)}
-                            style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: form.lead ? C.text : C.textMuted, outline: "none", fontFamily: "inherit", cursor: "pointer" }}>
-                            <option value="">Select team lead…</option>
-                            {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
-                        </select>
-                    </div>
-                    <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Team Members</div>
-                        <MemberPickerList selectedMembers={form.members} leadId={form.lead} searchVal={memberSearch} onSearch={setMemberSearch} onToggle={toggleMember} />
-                    </div>
-                    <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Active Projects <span style={{ fontSize: 11, fontWeight: 400, color: C.textMuted }}>(comma-separated)</span></div>
-                        <Input placeholder="e.g. App Redesign, API Migration" value={form.projects} onChange={e => setF("projects", e.target.value)} />
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, borderTop: `1px solid ${C.borderLight}`, paddingTop: 16 }}>
-                        <Btn variant="outline" onClick={() => { setShowModal(false); setForm(BLANK); setMemberSearch(""); }}>Cancel</Btn>
-                        <Btn variant="primary" onClick={handleAdd} disabled={!form.name.trim() || !form.lead}>
-                            <Icon n="plus" size={14} color="#fff" />Create Team
-                        </Btn>
-                    </div>
-                </div>
-            </Modal>
-
-            {/* ── View Members Modal ── */}
-            <Modal isOpen={!!viewTeam} onClose={() => setViewTeam(null)} title={viewTeam ? `${viewTeam.name} — Members` : ""}>
-                {viewTeam && (
-                    <div style={{ padding: "20px 24px" }}>
-                        {/* Team lead */}
-                        <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>Team Lead</div>
-                        {(() => {
-                            const lead = employees.find(e => e.id === viewTeam.lead);
-                            return lead ? (
-                                <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: C.primaryLight, borderRadius: 10, border: `1px solid ${C.primaryMid}`, marginBottom: 18 }}>
-                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>{lead.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
+                                    {/* Team Lead */}
+                                    <div style={{ marginBottom: 16 }}>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Team Lead</div>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            {leadEmp ? (
+                                                <img src={`https://i.pravatar.cc/150?u=${leadEmp.id}`} alt={leadEmp.name} style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: `2px solid ${surf}`, boxShadow: "0 0 0 1px " + dColor + "30" }} />
+                                            ) : (
+                                                <div style={{ width: 36, height: 36, borderRadius: "50%", background: leadBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, border: `2px solid ${surf}`, boxShadow: "0 0 0 1px " + dColor + "30" }}>
+                                                    <span style={{ fontSize: 12, fontWeight: 700, color: "#fff" }}>?</span>
+                                                </div>
+                                            )}
+                                            <div style={{ fontSize: 13.5, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif" }}>
+                                                {leadEmp?.name || "—"}
+                                            </div>
+                                        </div>
                                     </div>
+
+                                    {/* Active Projects */}
                                     <div>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{lead.name}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted }}>{lead.dept} · {lead.level}</div>
+                                        <div style={{ fontSize: 10.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 8 }}>Active Projects</div>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                            {(t.projects || []).slice(0, 3).map((p, i) => (
+                                                <div key={p} style={{ fontSize: 13, color: txt, display: "flex", alignItems: "center", gap: 8 }}>
+                                                    <span style={{ width: 7, height: 7, borderRadius: "50%", background: dColor, flexShrink: 0 }} />
+                                                    {p}
+                                                </div>
+                                            ))}
+                                        </div>
                                     </div>
-                                    <Badge label="Lead" variant="primary" style={{ marginLeft: "auto" }} />
                                 </div>
-                            ) : null;
-                        })()}
-                        {/* Other members */}
-                        <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 10 }}>
-                            Members ({(viewTeam.members || []).filter(m => m !== viewTeam.lead).length})
-                        </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 8, maxHeight: 320, overflowY: "auto" }}>
-                            {(viewTeam.members || []).filter(m => m !== viewTeam.lead).length === 0 && (
-                                <div style={{ textAlign: "center", padding: "20px", color: C.textMuted, fontSize: 13 }}>No other members assigned yet.</div>
-                            )}
-                            {(viewTeam.members || []).filter(m => m !== viewTeam.lead).map(mid => {
-                                const m = employees.find(e => e.id === mid);
-                                if (!m) return null;
-                                return (
-                                    <div key={mid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: C.bg, borderRadius: 9, border: `1px solid ${C.border}` }}>
-                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: `${C.primary}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                            <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{m.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
-                                        </div>
-                                        <div style={{ flex: 1, minWidth: 0 }}>
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{m.name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{m.dept} · {m.level}</div>
-                                        </div>
-                                        <div style={{ fontSize: 11, color: C.textMuted }}>{m.type}</div>
-                                    </div>
-                                );
-                            })}
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 20, borderTop: `1px solid ${C.borderLight}`, paddingTop: 16 }}>
-                            <Btn variant="primary" onClick={() => { setViewTeam(null); setEditTeam({ ...viewTeam, projects: (viewTeam.projects||[]).join(", ") }); setEditMemberSearch(""); }}>
-                                <Icon n="edit" size={13} color="#fff" />Edit Team
-                            </Btn>
-                        </div>
-                    </div>
-                )}
-            </Modal>
 
-            {/* ── Edit Team Modal ── */}
-            <Modal isOpen={!!editTeam} onClose={() => { setEditTeam(null); setEditMemberSearch(""); }} title="Edit Team">
-                {editTeam && (
-                    <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                            <div>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Team Name</div>
-                                <Input value={editTeam.name} onChange={e => setEditTeam(p => ({ ...p, name: e.target.value }))} />
-                            </div>
-                            <div>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Department</div>
-                                <Select options={DEPTS} value={editTeam.dept} onChange={e => setEditTeam(p => ({ ...p, dept: e.target.value }))} style={{ width: "100%" }} />
-                            </div>
+                                {/* Card footer */}
+                                <div style={{ borderTop: `1px solid ${bdrSm}`, padding: "0 14px 14px", display: "flex", gap: 8, marginTop: 4 }}>
+                                    <button onClick={() => setViewTeam(t)}
+                                        style={{ flex: 1, padding: "10px 0", marginTop: 14, borderRadius: 10, border: `1.5px solid ${bdrSm}`, background: "transparent", color: txt, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "background 0.15s" }}
+                                        onMouseEnter={e => e.currentTarget.style.background = low}
+                                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                        View Members
+                                    </button>
+                                    <button onClick={() => { setEditTeam({ ...t, projects: (t.projects || []).join(", ") }); setEditMemberSearch(""); }}
+                                        style={{ width: 40, height: 40, marginTop: 14, borderRadius: 10, border: `1.5px solid ${bdrSm}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}
+                                        onMouseEnter={e => e.currentTarget.style.background = low}
+                                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                        <Lucide.Pencil size={14} color={T.primary} strokeWidth={1.75} />
+                                    </button>
+                                    <button onClick={() => handleDelete(t.id)}
+                                        style={{ width: 40, height: 40, marginTop: 14, borderRadius: 10, border: "1.5px solid #fecaca", background: "#fef2f2", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <Lucide.Trash2 size={14} color="#ef4444" strokeWidth={1.75} />
+                                    </button>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+                </div>
+
+                {/* ── Create Team Modal ── */}
+                <AnimatePresence>
+                    {showModal && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setShowModal(false); setForm(BLANK); setMemberSearch(""); }}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(8px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 520, background: surf, borderRadius: 20, boxShadow: "0 25px 50px rgba(0,0,0,0.20)", overflow: "hidden" }}>
+                                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", gap: 12 }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Lucide.Users size={17} color={T.primary} strokeWidth={1.75} />
+                                    </div>
+                                    <h2 style={{ fontSize: 16, fontWeight: 800, color: txt, margin: 0, fontFamily: "Manrope, sans-serif" }}>Create New Team</h2>
+                                    <button onClick={() => { setShowModal(false); setForm(BLANK); setMemberSearch(""); }} style={{ marginLeft: "auto", border: "none", background: low, borderRadius: "50%", width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Lucide.X size={15} color={muted} strokeWidth={2} />
+                                    </button>
+                                </div>
+                                <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                        <ModalField label="Team Name *">
+                                            <input placeholder="e.g. Frontend" value={form.name} onChange={e => setF("name", e.target.value)} style={modalInput} />
+                                        </ModalField>
+                                        <ModalField label="Department">
+                                            <select value={form.dept} onChange={e => setF("dept", e.target.value)} style={modalInput}>
+                                                {DEPTS.map(d => <option key={d}>{d}</option>)}
+                                            </select>
+                                        </ModalField>
+                                    </div>
+                                    <ModalField label="Team Lead *">
+                                        <select value={form.lead} onChange={e => setF("lead", e.target.value)} style={{ ...modalInput, color: form.lead ? txt : muted }}>
+                                            <option value="">Select team lead…</option>
+                                            {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
+                                        </select>
+                                    </ModalField>
+                                    <ModalField label="Team Members">
+                                        <MemberPickerList selectedMembers={form.members} leadId={form.lead} searchVal={memberSearch} onSearch={setMemberSearch} onToggle={toggleMember} />
+                                    </ModalField>
+                                    <ModalField label="Active Projects (comma-separated)">
+                                        <input placeholder="e.g. App Redesign, API Migration" value={form.projects} onChange={e => setF("projects", e.target.value)} style={modalInput} />
+                                    </ModalField>
+                                </div>
+                                <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", justifyContent: "flex-end", gap: 10, background: low }}>
+                                    <button onClick={() => { setShowModal(false); setForm(BLANK); setMemberSearch(""); }} style={{ padding: "9px 18px", borderRadius: 9, border: `1px solid ${T.outlineVar + "60"}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                                    <button onClick={handleAdd} disabled={!form.name.trim() || !form.lead} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640", opacity: (!form.name.trim() || !form.lead) ? 0.5 : 1 }}>
+                                        <Lucide.Plus size={14} color="#fff" strokeWidth={2.5} />
+                                        Create Team
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Team Lead</div>
-                            <select value={editTeam.lead} onChange={e => setEditTeam(p => ({ ...p, lead: e.target.value }))}
-                                style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit", cursor: "pointer" }}>
-                                {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
-                            </select>
+                    )}
+                </AnimatePresence>
+
+                {/* ── View Members Modal ── */}
+                <AnimatePresence>
+                    {!!viewTeam && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => setViewTeam(null)}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(8px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 480, background: surf, borderRadius: 20, boxShadow: "0 25px 50px rgba(0,0,0,0.20)", overflow: "hidden" }}>
+                                {viewTeam && (() => {
+                                    const { LIcon, color: dColor, bg: dBg } = getDeptStyle(viewTeam.dept);
+                                    return (
+                                        <>
+                                            <div style={{ padding: "20px 24px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", gap: 12 }}>
+                                                <div style={{ width: 36, height: 36, borderRadius: 10, background: dBg, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <LIcon size={17} color={dColor} strokeWidth={1.75} />
+                                                </div>
+                                                <div>
+                                                    <h2 style={{ fontSize: 16, fontWeight: 800, color: txt, margin: 0, fontFamily: "Manrope, sans-serif" }}>{viewTeam.name}</h2>
+                                                    <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{viewTeam.dept}</div>
+                                                </div>
+                                                <button onClick={() => setViewTeam(null)} style={{ marginLeft: "auto", border: "none", background: low, borderRadius: "50%", width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <Lucide.X size={15} color={muted} strokeWidth={2} />
+                                                </button>
+                                            </div>
+                                            <div style={{ padding: "20px 24px", maxHeight: 440, overflowY: "auto" }}>
+                                                <div style={{ fontSize: 10.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Team Lead</div>
+                                                {(() => {
+                                                    const lead = employees.find(e => e.id === viewTeam.lead);
+                                                    const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                                                    const lBg = lead ? avColors[lead.name.charCodeAt(0) % avColors.length] : "#6366f1";
+                                                    return lead ? (
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: T.primaryFixed + "60", borderRadius: 12, border: `1px solid ${T.primaryFixed}`, marginBottom: 20 }}>
+                                                            <div style={{ width: 40, height: 40, borderRadius: "50%", background: lBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                                <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{lead.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
+                                                            </div>
+                                                            <div style={{ flex: 1 }}>
+                                                                <div style={{ fontSize: 14, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif" }}>{lead.name}</div>
+                                                                <div style={{ fontSize: 11.5, color: muted, marginTop: 2 }}>{lead.dept} · {lead.level}</div>
+                                                            </div>
+                                                            <span style={{ fontSize: 11, fontWeight: 700, color: T.primary, background: T.primaryFixed, borderRadius: 20, padding: "4px 10px" }}>Lead</span>
+                                                        </div>
+                                                    ) : null;
+                                                })()}
+                                                <div style={{ fontSize: 10.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>
+                                                    Members ({(viewTeam.members || []).filter(m => m !== viewTeam.lead).length})
+                                                </div>
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                                    {(viewTeam.members || []).filter(m => m !== viewTeam.lead).length === 0 && (
+                                                        <div style={{ textAlign: "center", padding: "20px", color: muted, fontSize: 13 }}>No other members assigned yet.</div>
+                                                    )}
+                                                    {(viewTeam.members || []).filter(m => m !== viewTeam.lead).map(mid => {
+                                                        const m = employees.find(e => e.id === mid);
+                                                        if (!m) return null;
+                                                        const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                                                        const mBg = avColors[m.name.charCodeAt(0) % avColors.length];
+                                                        return (
+                                                            <div key={mid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: low, borderRadius: 10, border: `1px solid ${bdrSm}` }}>
+                                                                <div style={{ width: 34, height: 34, borderRadius: "50%", background: mBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{m.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
+                                                                </div>
+                                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                                    <div style={{ fontSize: 13, fontWeight: 600, color: txt }}>{m.name}</div>
+                                                                    <div style={{ fontSize: 11, color: muted }}>{m.dept} · {m.level}</div>
+                                                                </div>
+                                                                <div style={{ fontSize: 11, color: muted, background: low, padding: "3px 8px", borderRadius: 6, border: `1px solid ${bdrSm}` }}>{m.type}</div>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                            <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", justifyContent: "flex-end", gap: 10, background: low }}>
+                                                <button onClick={() => setViewTeam(null)} style={{ padding: "9px 18px", borderRadius: 9, border: `1px solid ${T.outlineVar + "60"}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Close</button>
+                                                <button onClick={() => { setViewTeam(null); setEditTeam({ ...viewTeam, projects: (viewTeam.projects||[]).join(", ") }); setEditMemberSearch(""); }}
+                                                    style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640" }}>
+                                                    <Lucide.Pencil size={13} color="#fff" strokeWidth={2} />
+                                                    Edit Team
+                                                </button>
+                                            </div>
+                                        </>
+                                    );
+                                })()}
+                            </motion.div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Team Members</div>
-                            <MemberPickerList
-                                selectedMembers={(editTeam.members || []).filter(m => m !== editTeam.lead)}
-                                leadId={editTeam.lead}
-                                searchVal={editMemberSearch}
-                                onSearch={setEditMemberSearch}
-                                onToggle={toggleEditMember}
-                            />
+                    )}
+                </AnimatePresence>
+
+                {/* ── Edit Team Modal ── */}
+                <AnimatePresence>
+                    {!!editTeam && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onClick={() => { setEditTeam(null); setEditMemberSearch(""); }}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(8px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 520, background: surf, borderRadius: 20, boxShadow: "0 25px 50px rgba(0,0,0,0.20)", overflow: "hidden" }}>
+                                {editTeam && (
+                                    <>
+                                        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", gap: 12 }}>
+                                            <div style={{ width: 36, height: 36, borderRadius: 10, background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <Lucide.Pencil size={16} color={T.primary} strokeWidth={1.75} />
+                                            </div>
+                                            <h2 style={{ fontSize: 16, fontWeight: 800, color: txt, margin: 0, fontFamily: "Manrope, sans-serif" }}>Edit Team</h2>
+                                            <button onClick={() => { setEditTeam(null); setEditMemberSearch(""); }} style={{ marginLeft: "auto", border: "none", background: low, borderRadius: "50%", width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <Lucide.X size={15} color={muted} strokeWidth={2} />
+                                            </button>
+                                        </div>
+                                        <div style={{ padding: "20px 24px", display: "flex", flexDirection: "column", gap: 16 }}>
+                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                                <ModalField label="Team Name">
+                                                    <input value={editTeam.name} onChange={e => setEditTeam(p => ({ ...p, name: e.target.value }))} style={modalInput} />
+                                                </ModalField>
+                                                <ModalField label="Department">
+                                                    <select value={editTeam.dept} onChange={e => setEditTeam(p => ({ ...p, dept: e.target.value }))} style={modalInput}>
+                                                        {DEPTS.map(d => <option key={d}>{d}</option>)}
+                                                    </select>
+                                                </ModalField>
+                                            </div>
+                                            <ModalField label="Team Lead">
+                                                <select value={editTeam.lead} onChange={e => setEditTeam(p => ({ ...p, lead: e.target.value }))} style={modalInput}>
+                                                    {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
+                                                </select>
+                                            </ModalField>
+                                            <ModalField label="Team Members">
+                                                <MemberPickerList
+                                                    selectedMembers={(editTeam.members || []).filter(m => m !== editTeam.lead)}
+                                                    leadId={editTeam.lead}
+                                                    searchVal={editMemberSearch}
+                                                    onSearch={setEditMemberSearch}
+                                                    onToggle={toggleEditMember}
+                                                />
+                                            </ModalField>
+                                            <ModalField label="Active Projects (comma-separated)">
+                                                <input value={editTeam.projects} onChange={e => setEditTeam(p => ({ ...p, projects: e.target.value }))} style={modalInput} />
+                                            </ModalField>
+                                        </div>
+                                        <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", justifyContent: "flex-end", gap: 10, background: low }}>
+                                            <button onClick={() => { setEditTeam(null); setEditMemberSearch(""); }} style={{ padding: "9px 18px", borderRadius: 9, border: `1px solid ${T.outlineVar + "60"}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                                            <button onClick={handleSaveEdit} disabled={!editTeam.name.trim() || !editTeam.lead} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640", opacity: (!editTeam.name.trim() || !editTeam.lead) ? 0.5 : 1 }}>
+                                                <Lucide.Save size={14} color="#fff" strokeWidth={2} />
+                                                Save Changes
+                                            </button>
+                                        </div>
+                                    </>
+                                )}
+                            </motion.div>
                         </div>
-                        <div>
-                            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Active Projects <span style={{ fontSize: 11, fontWeight: 400, color: C.textMuted }}>(comma-separated)</span></div>
-                            <Input value={editTeam.projects} onChange={e => setEditTeam(p => ({ ...p, projects: e.target.value }))} />
-                        </div>
-                        <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, borderTop: `1px solid ${C.borderLight}`, paddingTop: 16 }}>
-                            <Btn variant="outline" onClick={() => { setEditTeam(null); setEditMemberSearch(""); }}>Cancel</Btn>
-                            <Btn variant="primary" onClick={handleSaveEdit} disabled={!editTeam.name.trim() || !editTeam.lead}>
-                                Save Changes
-                            </Btn>
-                        </div>
-                    </div>
-                )}
-            </Modal>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
@@ -15673,6 +15983,25 @@ const LearningHubPage = () => {
     );
 };
 
+// SimpleIcons CDN (free, no API key): https://cdn.simpleicons.org/{slug}/{hexcolor}
+// Google Favicon API used for brands not on SimpleIcons
+const INTEGRATION_LOGOS = {
+    deel:             "https://cdn.simpleicons.org/deel/000000",
+    xero:             "https://cdn.simpleicons.org/xero/1AB4D7",
+    adp:              "https://www.google.com/s2/favicons?domain=adp.com&sz=128",
+    gcal:             "https://cdn.simpleicons.org/googlecalendar/4285F4",
+    outlook:          "https://cdn.simpleicons.org/microsoftoutlook/0078D4",
+    gsso:             "https://cdn.simpleicons.org/google/4285F4",
+    azure:            "https://cdn.simpleicons.org/okta/007DC1",
+    thinkific:        "https://www.google.com/s2/favicons?domain=thinkific.com&sz=128",
+    linkedin_learning:"https://cdn.simpleicons.org/linkedin/0A66C2",
+    scorm_cloud:      "https://www.google.com/s2/favicons?domain=scorm.com&sz=128",
+    stripe:           "https://cdn.simpleicons.org/stripe/635BFF",
+    dpo:              "https://www.google.com/s2/favicons?domain=directpayonline.co.ke&sz=128",
+    fcm:              "https://cdn.simpleicons.org/firebase/FF6F00",
+    sendgrid:         "https://cdn.simpleicons.org/sendgrid/1A82E2",
+};
+
 const IntegrationsPage = () => {
     const [activeGroup, setActiveGroup] = useState("All");
     const { connectedPayrollId, setConnectedPayrollId } = React.useContext(PayrollIntegrationCtx);
@@ -15717,29 +16046,46 @@ const IntegrationsPage = () => {
     const PAYROLL_IDS = ["deel", "xero", "adp"];
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+            {/* ── Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Integrations</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>{connected} of {INTEGRATIONS_DATA.length} integrations connected</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Integrations</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>{connected} of {INTEGRATIONS_DATA.length} integrations connected</p>
                 </div>
+                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                    <Lucide.Plus size={16} color="#fff" />
+                    Request New Integration
+                </motion.button>
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                <StatCard label="Connected" value={String(connected)} variant="success" sub="Active integrations" />
-                <StatCard label="Available" value={String(INTEGRATIONS_DATA.length - connected)} variant="default" sub="Ready to connect" />
-                <StatCard label="API Calls Today" value="3.2k" variant="info" />
-                <StatCard label="Data Synced Today" value="2.1 MB" variant="primary" />
-            </div>
-
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
-                {allGroups.map(g => (
-                    <button key={g} onClick={() => setActiveGroup(g)}
-                        style={{ padding: "7px 16px", background: "none", border: "none", borderBottom: activeGroup === g ? `2px solid ${C.primary}` : "2px solid transparent", color: activeGroup === g ? C.primary : C.textMuted, fontWeight: activeGroup === g ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginBottom: -1, whiteSpace: "nowrap" }}>{g}</button>
+            {/* ── Stat row ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
+                {[
+                    { label: "CONNECTED",       value: String(connected),                               sub: "Active integrations" },
+                    { label: "AVAILABLE",        value: String(INTEGRATIONS_DATA.length - connected),   sub: "Ready to connect"   },
+                    { label: "API CALLS TODAY",  value: "3k",                                           sub: ""                   },
+                    { label: "DATA SYNCED",      value: "2 MB",                                         sub: ""                   },
+                ].map(s => (
+                    <div key={s.label} style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 16, padding: "22px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                        <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{s.label}</div>
+                        <div style={{ fontSize: 32, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.5px" }}>{s.value}</div>
+                        {s.sub && <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginTop: 8, textAlign: "right" }}>{s.sub}</div>}
+                    </div>
                 ))}
             </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
+            {/* ── Category tabs ── */}
+            <div style={{ display: "flex", gap: 24, borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "40"}`, marginBottom: 28 }}>
+                {allGroups.map(g => (
+                    <button key={g} onClick={() => setActiveGroup(g)}
+                        style={{ padding: "10px 0", background: "none", border: "none", borderBottom: activeGroup === g ? "2px solid #004ac6" : "2px solid transparent", color: activeGroup === g ? "#004ac6" : (_darkMode ? C.textMuted : T.onSurfaceVar), fontWeight: activeGroup === g ? 700 : 500, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", marginBottom: -1, whiteSpace: "nowrap", transition: "color 0.15s" }}>{g}</button>
+                ))}
+            </div>
+
+            {/* ── 4-col grid ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14 }}>
                 {filtered.map(item => {
                     const isConnected = statuses[item.id] === "Connected";
                     const isPayroll = PAYROLL_IDS.includes(item.id);
@@ -15841,84 +16187,85 @@ const IntegrationsPage = () => {
     );
 };
 
-/* ─── Integration Card with hover tooltip ───────────────────────────────── */
+/* ─── Integration Card — compact cool design ────────────────────────────── */
 const IntegrationCard = ({ item, isConnected, isPayroll, isThisPayrollConnected, onConnect, onDisconnect, C }) => {
+    const [imgErr, setImgErr] = React.useState(false);
     const [hovered, setHovered] = React.useState(false);
+    const logoUrl = INTEGRATION_LOGOS[item.id];
+    const tags = [item.group, ...(item.badge ? [item.badge] : [])];
+
     return (
-        <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column" }}
-            onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}>
-            <Card style={{ flex: 1, display: "flex", flexDirection: "column" }}>
-                <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", flex: 1 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                        <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
-                            <div style={{ width: 44, height: 44, borderRadius: 11, background: item.color + "18", border: `1px solid ${item.color}30`, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                <Icon n={item.icon} size={20} color={item.color} />
-                            </div>
-                            <div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                    <div style={{ fontWeight: 700, fontSize: 14, color: C.text }}>{item.name}</div>
-                                    {item.badge && <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 10, background: C.primaryLight, color: C.primary, border: `1px solid ${C.primaryMid}` }}>{item.badge}</span>}
-                                </div>
-                                <div style={{ fontSize: 11, color: C.textMuted }}>{item.group}</div>
-                            </div>
-                        </div>
-                        <Badge label={isConnected ? "Connected" : "Not Connected"} variant={isConnected ? "success" : "default"} />
+        <motion.div
+            onMouseEnter={() => setHovered(true)} onMouseLeave={() => setHovered(false)}
+            animate={{ y: hovered ? -3 : 0, boxShadow: hovered ? "0 8px 24px rgba(0,0,0,0.10)" : "0 1px 3px rgba(0,0,0,0.06)" }}
+            transition={{ duration: 0.18 }}
+            style={{
+                background: _darkMode ? C.white : T.surfaceCard,
+                border: `1px solid ${isConnected ? item.color + "40" : (_darkMode ? C.border : T.outlineVar + "28")}`,
+                borderTop: isConnected ? `2.5px solid ${item.color}` : `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`,
+                borderRadius: 14,
+                overflow: "hidden",
+                display: "flex", flexDirection: "column",
+            }}>
+
+            {/* Card body */}
+            <div style={{ padding: "16px", display: "flex", flexDirection: "column", gap: 10, flex: 1 }}>
+
+                {/* Header: logo + name + status */}
+                <div style={{ display: "flex", alignItems: "flex-start", gap: 11 }}>
+                    {/* Logo */}
+                    <div style={{ width: 42, height: 42, borderRadius: 10, background: "#fff", border: `1.5px solid ${item.color}22`, display: "flex", alignItems: "center", justifyContent: "center", overflow: "hidden", flexShrink: 0, boxShadow: `0 2px 8px ${item.color}18` }}>
+                        {logoUrl && !imgErr
+                            ? <img src={logoUrl} alt={item.name} width={26} height={26} style={{ objectFit: "contain", display: "block" }} onError={() => setImgErr(true)} />
+                            : <span style={{ fontSize: 15, fontWeight: 900, color: item.color, fontFamily: "Manrope, sans-serif" }}>{item.name[0]}</span>
+                        }
                     </div>
 
-                    <p style={{ fontSize: 12.5, color: C.textMuted, lineHeight: 1.55, margin: "0 0 12px" }}>{item.desc}</p>
-
-                    {isConnected && item.fields.length > 0 && (
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6, padding: "12px 14px", background: C.bg, borderRadius: 9, border: `1px solid ${C.border}`, marginBottom: 14 }}>
-                            {item.fields.map(([l, v]) => (
-                                <div key={l} style={{ display: "flex", justifyContent: "space-between" }}>
-                                    <span style={{ fontSize: 11.5, color: C.textMuted }}>{l}</span>
-                                    <span style={{ fontSize: 11.5, fontWeight: 600, color: C.text }}>{v}</span>
-                                </div>
+                    {/* Name + tags */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{ fontSize: 13.5, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.2px", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{item.name}</div>
+                        <div style={{ display: "flex", gap: 4, flexWrap: "wrap", marginTop: 5 }}>
+                            {tags.map(t => (
+                                <span key={t} style={{ fontSize: 10, fontWeight: 600, padding: "2px 7px", borderRadius: 5, background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.textMuted : T.onSurfaceVar, border: `1px solid ${T.outlineVar}30` }}>{t}</span>
                             ))}
-                            {item.since && <div style={{ display: "flex", justifyContent: "space-between" }}><span style={{ fontSize: 11.5, color: C.textMuted }}>Connected Since</span><span style={{ fontSize: 11.5, fontWeight: 600, color: C.success }}>{item.since}</span></div>}
                         </div>
-                    )}
+                    </div>
 
-                    {isPayroll && isThisPayrollConnected && (
-                        <div style={{ padding: "10px 12px", background: C.successBg, border: `1px solid ${C.successBorder}`, borderRadius: 9, marginBottom: 12, display: "flex", alignItems: "center", gap: 8 }}>
-                            <Icon n="check" size={13} color={C.success} strokeWidth={2.5} />
-                            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.success }}>Active payroll provider — click Payroll in the top nav to see outcomes</span>
-                        </div>
-                    )}
-
-                    <div style={{ display: "flex", gap: 8, marginTop: "auto" }}>
-                        {isConnected ? (
-                            <>
-                                <Btn variant="secondary" size="sm"><Icon n="settings" size={12} color={C.primary} />Configure</Btn>
-                                <Btn variant="outline" size="sm"><Icon n="eye" size={12} />Logs</Btn>
-                                <Btn variant="danger" size="sm" style={{ marginLeft: "auto" }} onClick={onDisconnect}>Disconnect</Btn>
-                            </>
-                        ) : (
-                            <Btn variant="primary" size="sm" style={{ width: "100%", justifyContent: "center" }} onClick={onConnect}>
-                                <Icon n="link" size={12} color="#fff" />Connect {item.name}
-                            </Btn>
-                        )}
+                    {/* Status dot */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 5, flexShrink: 0 }}>
+                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: isConnected ? "#22c55e" : T.outlineVar, boxShadow: isConnected ? "0 0 0 3px #22c55e28" : "none" }} />
+                        <span style={{ fontSize: 10, fontWeight: 700, color: isConnected ? "#16a34a" : (_darkMode ? C.textMuted : T.onSurfaceVar), letterSpacing: "0.04em" }}>{isConnected ? "Connected" : "Not connected"}</span>
                     </div>
                 </div>
-            </Card>
 
-            {/* Hover tooltip — countries & connect hint (no pricing) */}
-            <AnimatePresence>
-                {hovered && !isConnected && (item.countries || item.pricing) && (
-                    <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 4 }}
-                        transition={{ duration: 0.14 }}
-                        style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, right: 0, zIndex: 60, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 10px 32px rgba(0,0,0,0.12)", padding: "12px 16px", pointerEvents: "none" }}>
-                        {item.countries && (
-                            <div style={{ fontSize: 12, color: C.textMid, marginBottom: 8 }}>{item.countries}</div>
-                        )}
-                        <div style={{ display: "flex", gap: 6, alignItems: "center", paddingTop: item.countries ? 8 : 0, borderTop: item.countries ? `1px solid ${C.borderLight}` : "none" }}>
-                            <Lucide.Info size={12} color={C.textMuted} />
-                            <span style={{ fontSize: 11.5, color: C.textMuted }}>Log in or provide your account token to connect</span>
-                        </div>
-                    </motion.div>
+                {/* Description — 3-line clamp */}
+                <p style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.onSurfaceVar, lineHeight: 1.6, margin: 0, overflow: "hidden", display: "-webkit-box", WebkitLineClamp: 3, WebkitBoxOrient: "vertical" }}>{item.desc}</p>
+
+                {/* Payroll active note */}
+                {isPayroll && isThisPayrollConnected && (
+                    <div style={{ display: "flex", alignItems: "center", gap: 6, padding: "6px 10px", background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 7 }}>
+                        <Lucide.CheckCircle2 size={12} color="#16a34a" />
+                        <span style={{ fontSize: 11, fontWeight: 600, color: "#16a34a" }}>Active payroll provider</span>
+                    </div>
                 )}
-            </AnimatePresence>
-        </div>
+            </div>
+
+            {/* Action footer */}
+            <div style={{ padding: "10px 16px", borderTop: `1px solid ${_darkMode ? C.border : T.outlineVar + "25"}`, background: _darkMode ? C.bg + "80" : T.surfaceLow + "80" }}>
+                {isConnected ? (
+                    <div style={{ display: "flex", gap: 7 }}>
+                        <button style={{ flex: 1, padding: "8px", borderRadius: 8, border: `1px solid ${T.outlineVar}40`, background: _darkMode ? C.white : "#fff", color: _darkMode ? C.textMid : T.onSurface, fontWeight: 600, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>Manage</button>
+                        <button onClick={onDisconnect} title="Disconnect" style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${T.outlineVar}40`, background: _darkMode ? C.white : "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+                            <Lucide.Trash2 size={13} color={C.danger} />
+                        </button>
+                    </div>
+                ) : (
+                    <button onClick={onConnect} style={{ width: "100%", padding: "9px", borderRadius: 8, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640" }}>
+                        Connect {item.name}
+                    </button>
+                )}
+            </div>
+        </motion.div>
     );
 };
 /* ─── PAGE: JOB FAMILIES ─────────────────────────────────────── */
@@ -15927,6 +16274,7 @@ const JobFamiliesPage = () => {
     const [showModal, setShowModal] = useState(false);
     const [editingFamily, setEditingFamily] = useState(null);
     const [viewingFamily, setViewingFamily] = useState(null);
+    const [openMenuId, setOpenMenuId] = useState(null);
     const blankForm = { name: "", dept: "Engineering", desc: "", levels: "Junior, Mid, Senior", requiredSkills: "" };
     const [form, setForm] = useState(blankForm);
     const [modalRoleSkills, setModalRoleSkills] = useState({});
@@ -15935,6 +16283,13 @@ const JobFamiliesPage = () => {
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
     const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design"];
     const DEPT_COLORS = { Engineering: "#6366F1", "HR & Admin": "#10B981", DevOps: "#8B5CF6", Sales: "#F59E0B", Product: "#3B82F6", QA: "#EF4444", Finance: "#059669", Operations: "#64748B", Design: "#EC4899" };
+
+    React.useEffect(() => {
+        if (!openMenuId) return;
+        const close = () => setOpenMenuId(null);
+        document.addEventListener("click", close);
+        return () => document.removeEventListener("click", close);
+    }, [openMenuId]);
 
     const handleSave = () => {
         if (!form.name.trim()) return;
@@ -15948,230 +16303,435 @@ const JobFamiliesPage = () => {
             const newId = "jf" + (jobFamilies.length + 1);
             setJobFamilies(prev => [...prev, { id: newId, name: form.name, dept: form.dept, desc: form.desc, levels: levelArr, requiredSkills: skillsArr, color: DEPT_COLORS[form.dept] || "#64748B" }]);
         }
-        setForm(blankForm);
-        setEditingFamily(null);
-        setShowModal(false);
+        setForm(blankForm); setEditingFamily(null); setShowModal(false);
+        setModalRoleSkills({}); setModalExpandedRole({}); setModalRoleInput({});
     };
 
     const openEdit = (fam) => {
         setEditingFamily(fam);
         setForm({ name: fam.name, dept: fam.dept, desc: fam.desc, levels: fam.levels.join(", "), requiredSkills: (fam.requiredSkills || []).join(", ") });
-        setModalRoleSkills({});
-        setModalExpandedRole({});
-        setModalRoleInput({});
+        setModalRoleSkills({}); setModalExpandedRole({}); setModalRoleInput({});
         setShowModal(true);
     };
 
     const deleteFamily = (fam) => {
         const empCount = employees.filter(e => e.familyId === fam.id).length;
-        if (empCount > 0) { alert(`Cannot delete "${fam.name}" — ${empCount} employee(s) are assigned to this family. Reassign them first.`); return; }
-        if (window.confirm(`Delete job family "${fam.name}"?`)) {
-            setJobFamilies(prev => prev.filter(f => f.id !== fam.id));
-        }
+        if (empCount > 0) { alert(`Cannot delete "${fam.name}" — ${empCount} employee(s) assigned. Reassign them first.`); return; }
+        if (window.confirm(`Delete job family "${fam.name}"?`)) setJobFamilies(prev => prev.filter(f => f.id !== fam.id));
     };
 
-    // View Family Detail
+    /* ── T-token shorthands ── */
+    const surf  = _darkMode ? C.white     : T.surfaceCard;
+    const bdr   = _darkMode ? C.border    : T.outlineVar + "28";
+    const bdrSm = _darkMode ? C.border    : T.outlineVar + "22";
+    const txt   = _darkMode ? C.text      : T.onSurface;
+    const muted = _darkMode ? C.textMuted : T.onSurfaceVar;
+    const low   = _darkMode ? C.bg        : T.surfaceLow;
+    const cardSt = { background: surf, border: `1px solid ${bdr}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
+
+    const getDeptStyle = (dept) => {
+        const map = {
+            "Engineering": { LIcon: Lucide.Code2,       color: "#6366f1" },
+            "DevOps":      { LIcon: Lucide.Server,       color: "#8b5cf6" },
+            "HR & Admin":  { LIcon: Lucide.Users,        color: "#10b981" },
+            "Sales":       { LIcon: Lucide.TrendingUp,   color: "#f59e0b" },
+            "Product":     { LIcon: Lucide.Layers,       color: "#3b82f6" },
+            "Finance":     { LIcon: Lucide.DollarSign,   color: "#059669" },
+            "Design":      { LIcon: Lucide.Palette,      color: "#ec4899" },
+            "QA":          { LIcon: Lucide.CheckCircle2, color: "#ef4444" },
+            "Operations":  { LIcon: Lucide.Settings2,    color: "#64748b" },
+        };
+        return map[dept] || { LIcon: Lucide.Briefcase, color: "#64748b" };
+    };
+
+    const inpSt = { width: "100%", padding: "9px 12px", border: `1px solid ${bdrSm}`, borderRadius: 9, fontSize: 13, background: low, color: txt, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
+
+    /* ── View Family Detail ── */
     if (viewingFamily) {
         const fam = viewingFamily;
         const famEmps = employees.filter(e => e.familyId === fam.id);
         const color = DEPT_COLORS[fam.dept] || "#64748B";
+        const { LIcon } = getDeptStyle(fam.dept);
         return (
-            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-                <Btn variant="outline" onClick={() => setViewingFamily(null)} style={{ marginBottom: 16 }}><Icon n="chevRight" size={12} style={{ transform: "rotate(180deg)" }} />Back to Job Families</Btn>
-                <div style={{ display: "grid", gridTemplateColumns: "340px 1fr", gap: 20 }}>
-                    <Card style={{ padding: 24 }}>
-                        <div style={{ width: 56, height: 56, borderRadius: 16, background: color + "18", border: `2px solid ${color}33`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
-                            <span style={{ fontSize: 24, fontWeight: 800, color }}>{fam.name.charAt(0)}</span>
-                        </div>
-                        <h2 style={{ fontSize: 18, fontWeight: 800, color: C.text, margin: "0 0 4px" }}>{fam.name}</h2>
-                        <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 12 }}>{fam.dept}</div>
-                        <p style={{ fontSize: 12.5, color: C.textMid, lineHeight: 1.6, margin: "0 0 16px" }}>{fam.desc}</p>
-                        <div style={{ borderTop: `1px solid ${C.borderLight}`, paddingTop: 14, marginBottom: 14 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", marginBottom: 8 }}>Career Levels</div>
-                            {fam.levels.map((level, i) => (
-                                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                                    <span style={{ width: 20, height: 20, borderRadius: "50%", background: color + "18", border: `1px solid ${color}33`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color }}>{i + 1}</span>
-                                    <span style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{level}</span>
-                                    <span style={{ fontSize: 11, color: C.textMuted, marginLeft: "auto" }}>{famEmps.filter(e => e.level === level).length} people</span>
+            <div style={{ background: _darkMode ? C.bg : T.surface, minHeight: "100%" }}>
+                <div style={{ padding: "32px 28px" }}>
+                    <button onClick={() => setViewingFamily(null)}
+                        style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "8px 16px", background: surf, border: `1px solid ${bdr}`, borderRadius: 10, fontSize: 13, fontWeight: 600, color: muted, cursor: "pointer", fontFamily: "inherit", marginBottom: 24 }}>
+                        <Lucide.ChevronLeft size={15} color={muted} strokeWidth={2} />
+                        Back to Job Families
+                    </button>
+                    <div style={{ display: "grid", gridTemplateColumns: "300px 1fr", gap: 20 }}>
+                        {/* Left panel */}
+                        <div style={{ ...cardSt, borderLeft: `4px solid ${color}`, display: "flex", flexDirection: "column" }}>
+                            <div style={{ padding: "24px", flex: 1 }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                                    <div style={{ width: 48, height: 48, borderRadius: 14, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <LIcon size={22} color={color} strokeWidth={1.75} />
+                                    </div>
+                                    <div>
+                                        <div style={{ fontSize: 18, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif" }}>{fam.name}</div>
+                                        <div style={{ fontSize: 12.5, color: muted, marginTop: 2 }}>{fam.dept}</div>
+                                    </div>
                                 </div>
-                            ))}
-                        </div>
-                        <div style={{ borderTop: `1px solid ${C.borderLight}`, paddingTop: 14 }}>
-                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", marginBottom: 8 }}>Required Skills</div>
-                            <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
-                                {(fam.requiredSkills || []).map((sk, i) => <span key={i} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 20, background: color + "12", border: `1px solid ${color}33`, color, fontWeight: 600 }}>{sk}</span>)}
+                                <p style={{ fontSize: 13.5, color: muted, lineHeight: 1.65, margin: "0 0 20px" }}>{fam.desc || "No description provided."}</p>
+                                <div style={{ borderTop: `1px solid ${bdrSm}`, paddingTop: 16, marginBottom: 16 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Career Levels</div>
+                                    {fam.levels.map((level, i) => (
+                                        <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                                            <div style={{ width: 22, height: 22, borderRadius: 7, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color, flexShrink: 0 }}>{i + 1}</div>
+                                            <span style={{ fontSize: 13, fontWeight: 600, color: txt, flex: 1 }}>{level}</span>
+                                            <span style={{ fontSize: 11.5, color: muted, background: low, padding: "2px 9px", borderRadius: 6 }}>{famEmps.filter(e => e.level === level).length} people</span>
+                                        </div>
+                                    ))}
+                                </div>
+                                {(fam.requiredSkills || []).length > 0 && (
+                                    <div style={{ borderTop: `1px solid ${bdrSm}`, paddingTop: 16 }}>
+                                        <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 10 }}>Required Skills</div>
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                            {(fam.requiredSkills || []).map((sk, i) => (
+                                                <span key={i} style={{ fontSize: 11.5, padding: "4px 11px", borderRadius: 20, background: color + "12", color, fontWeight: 600 }}>{sk}</span>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                            <div style={{ padding: "14px 20px", borderTop: `1px solid ${bdrSm}`, display: "flex", gap: 8, background: low }}>
+                                <button onClick={() => { setViewingFamily(null); openEdit(fam); }}
+                                    style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", gap: 7, padding: "9px 0", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640" }}>
+                                    <Lucide.Pencil size={13} color="#fff" strokeWidth={2} />Edit Family
+                                </button>
+                                <button onClick={() => { setViewingFamily(null); deleteFamily(fam); }}
+                                    style={{ width: 40, borderRadius: 9, border: "1.5px solid #fecaca", background: "#fef2f2", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Lucide.Trash2 size={14} color="#ef4444" strokeWidth={1.75} />
+                                </button>
                             </div>
                         </div>
-                        <div style={{ display: "flex", gap: 8, marginTop: 20 }}>
-                            <Btn variant="primary" size="sm" style={{ flex: 1 }} onClick={() => { setViewingFamily(null); openEdit(fam); }}><Icon n="edit" size={13} color="#fff" />Edit</Btn>
-                            <Btn variant="danger" size="sm" onClick={() => deleteFamily(fam)}><Icon n="trash" size={13} /></Btn>
-                        </div>
-                    </Card>
-                    <Card>
-                        <CardHeader title={`Employees in ${fam.name} (${famEmps.length})`} subtitle="People assigned to this job family" />
-                        {famEmps.length === 0 ? <div style={{ padding: 30, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No employees assigned to this family yet</div> : (
-                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                                <TableHead cols={["Employee", "Level", "Department", "Status"]} />
-                                <tbody>
-                                    {famEmps.map((emp, i) => (
-                                        <tr key={emp.id} style={{ background: i % 2 === 0 ? C.white : C.tableRow }}>
-                                            <Td><div style={{ display: "flex", alignItems: "center", gap: 9 }}><Avatar name={emp.name} size={28} /><span style={{ fontWeight: 600, fontSize: 13 }}>{emp.name}</span></div></Td>
-                                            <Td>{emp.level}</Td>
-                                            <Td muted>{emp.dept}</Td>
-                                            <Td><Badge label={emp.status} variant={emp.status === "Active" ? "success" : emp.status === "On Leave" ? "info" : "default"} /></Td>
+                        {/* Right: employees */}
+                        <div style={cardSt}>
+                            <div style={{ padding: "18px 20px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center" }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif" }}>Employees in {fam.name}</div>
+                                    <div style={{ fontSize: 12.5, color: muted, marginTop: 2 }}>{famEmps.length} people assigned to this job family</div>
+                                </div>
+                                <div style={{ fontSize: 26, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.5px" }}>{famEmps.length}</div>
+                            </div>
+                            {famEmps.length === 0 ? (
+                                <div style={{ padding: "56px 0", textAlign: "center" }}>
+                                    <div style={{ width: 52, height: 52, borderRadius: 16, background: low, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 12px" }}>
+                                        <Lucide.Users size={22} color={muted} strokeWidth={1.5} />
+                                    </div>
+                                    <div style={{ fontSize: 14, fontWeight: 600, color: muted }}>No employees assigned yet</div>
+                                </div>
+                            ) : (
+                                <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                    <thead>
+                                        <tr style={{ background: low }}>
+                                            {["Employee", "Level", "Department", "Status"].map(h => (
+                                                <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${bdrSm}` }}>{h}</th>
+                                            ))}
                                         </tr>
-                                    ))}
-                                </tbody>
-                            </table>
-                        )}
-                    </Card>
+                                    </thead>
+                                    <tbody>
+                                        {famEmps.map((emp, i) => (
+                                            <tr key={emp.id} style={{ borderBottom: i < famEmps.length - 1 ? `1px solid ${bdrSm}` : "none" }}>
+                                                <td style={{ padding: "12px 16px" }}><div style={{ display: "flex", alignItems: "center", gap: 10 }}><Avatar name={emp.name} size={30} /><span style={{ fontWeight: 600, fontSize: 13.5, color: txt }}>{emp.name}</span></div></td>
+                                                <td style={{ padding: "12px 16px", fontSize: 13, color: muted }}>{emp.level}</td>
+                                                <td style={{ padding: "12px 16px", fontSize: 13, color: muted }}>{emp.dept}</td>
+                                                <td style={{ padding: "12px 16px" }}>
+                                                    <span style={{ fontSize: 11.5, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: emp.status === "Active" ? "#ecfdf5" : emp.status === "On Leave" ? "#eff6ff" : low, color: emp.status === "Active" ? "#10b981" : emp.status === "On Leave" ? "#3b82f6" : muted }}>
+                                                        {emp.status}
+                                                    </span>
+                                                </td>
+                                            </tr>
+                                        ))}
+                                    </tbody>
+                                </table>
+                            )}
+                        </div>
+                    </div>
                 </div>
             </div>
         );
     }
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
-                <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Job Families</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>{jobFamilies.length} job families · {jobFamilies.reduce((a, f) => a + f.levels.length, 0)} total levels — define role structure before adding employees</p>
+        <div style={{ background: _darkMode ? C.bg : T.surface, minHeight: "100%" }}>
+            <div style={{ padding: "32px 28px" }}>
+                {/* ── Header ── */}
+                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", marginBottom: 28 }}>
+                    <div>
+                        <h1 style={{ fontSize: 30, fontWeight: 800, color: txt, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Job Families</h1>
+                        <p style={{ fontSize: 14, color: muted, margin: "8px 0 0" }}>Define role structure, career levels, and skill requirements.</p>
+                    </div>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                        onClick={() => { setEditingFamily(null); setForm(blankForm); setModalRoleSkills({}); setModalExpandedRole({}); setModalRoleInput({}); setShowModal(true); }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                        <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
+                        Add Job Family
+                    </motion.button>
                 </div>
-                <Btn variant="primary" onClick={() => { setEditingFamily(null); setForm(blankForm); setShowModal(true); }}>
-                    <Icon n="plus" size={14} color="#fff" />Add Job Family
-                </Btn>
-            </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                <StatCard label="Job Families" value={String(jobFamilies.length)} variant="primary" />
-                <StatCard label="Total Levels" value={String(jobFamilies.reduce((a, f) => a + f.levels.length, 0))} variant="info" />
-                <StatCard label="Departments" value={String(new Set(jobFamilies.map(f => f.dept)).size)} variant="success" />
-                <StatCard label="Linked Employees" value={String(employees.filter(e => jobFamilies.some(f => f.id === e.familyId)).length)} variant="warning" />
-            </div>
+                {/* ── Stat Cards ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
+                    {[
+                        { label: "JOB FAMILIES",      value: jobFamilies.length,                                                        sub: `${new Set(jobFamilies.map(f => f.dept)).size} departments`,   iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.Briefcase },
+                        { label: "CAREER LEVELS",      value: jobFamilies.reduce((a, f) => a + f.levels.length, 0),                      sub: "Progression steps",                                         iconBg: "#eff6ff", iconColor: "#3b82f6", LIcon: Lucide.Layers },
+                        { label: "LINKED EMPLOYEES",   value: employees.filter(e => jobFamilies.some(f => f.id === e.familyId)).length,  sub: "With assigned families",                                    iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.Users },
+                        { label: "SKILL REQUIREMENTS", value: jobFamilies.reduce((a, f) => a + (f.requiredSkills || []).length, 0),       sub: "Across all families",                                       iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.Zap },
+                    ].map(s => (
+                        <motion.div key={s.label} whileHover={{ y: -2 }} style={{ ...cardSt, padding: "20px 22px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+                            <div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>{s.label}</div>
+                                <div style={{ fontSize: 30, fontWeight: 800, color: txt, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.8px", lineHeight: 1 }}>{s.value}</div>
+                                <div style={{ fontSize: 12, color: muted, marginTop: 8 }}>{s.sub}</div>
+                            </div>
+                            <div style={{ width: 44, height: 44, borderRadius: "50%", background: s.iconBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <s.LIcon size={19} color={s.iconColor} strokeWidth={1.6} />
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 16 }}>
-                {jobFamilies.map((fam) => {
-                    const color = DEPT_COLORS[fam.dept] || "#64748B";
-                    const empCount = employees.filter(e => e.familyId === fam.id).length;
-                    return (
-                        <Card key={fam.id}>
-                            <div style={{ padding: "20px 22px" }}>
-                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                                        <div style={{ width: 46, height: 46, borderRadius: 13, background: color + "18", border: `1.5px solid ${color}33`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                            <span style={{ fontSize: 18, fontWeight: 800, color }}>{fam.name.charAt(0)}</span>
+                {/* ── Family Cards ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 16 }}>
+                    {jobFamilies.map((fam) => {
+                        const color = DEPT_COLORS[fam.dept] || "#64748B";
+                        const empCount = employees.filter(e => e.familyId === fam.id).length;
+                        const { LIcon } = getDeptStyle(fam.dept);
+                        return (
+                            <motion.div key={fam.id} whileHover={{ y: -2, boxShadow: "0 8px 24px rgba(0,0,0,0.09)" }}
+                                style={{ ...cardSt, borderLeft: `4px solid ${color}`, display: "flex", flexDirection: "column" }}>
+                                <div style={{ padding: "20px 20px 16px", flex: 1 }}>
+                                    {/* Header */}
+                                    <div style={{ display: "flex", alignItems: "flex-start", gap: 12, marginBottom: 14 }}>
+                                        <div style={{ width: 44, height: 44, borderRadius: 13, background: color + "15", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <LIcon size={20} color={color} strokeWidth={1.75} />
                                         </div>
-                                        <div>
-                                            <div style={{ fontWeight: 700, fontSize: 15, color: C.text }}>{fam.name}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{fam.dept}</div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 16, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.2px" }}>{fam.name}</div>
+                                            <div style={{ fontSize: 12, color: muted, marginTop: 2 }}>{fam.dept}</div>
+                                        </div>
+                                        <div style={{ display: "flex", gap: 5, flexShrink: 0, paddingTop: 2 }}>
+                                            <span style={{ fontSize: 11.5, fontWeight: 600, color, background: color + "12", padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap" }}>{fam.levels.length} levels</span>
+                                            <span style={{ fontSize: 11.5, fontWeight: 600, color: muted, background: low, padding: "3px 9px", borderRadius: 20 }}>{empCount}</span>
                                         </div>
                                     </div>
-                                    <div style={{ display: "flex", gap: 7 }}>
-                                        <Badge label={`${fam.levels.length} levels`} variant="primary" />
-                                        <Badge label={`${empCount} people`} variant="default" />
-                                    </div>
-                                </div>
-                                <p style={{ fontSize: 12.5, color: C.textMuted, margin: "0 0 14px", lineHeight: 1.55 }}>{fam.desc}</p>
-                                <div style={{ borderTop: `1px solid ${C.borderLight}`, paddingTop: 12 }}>
-                                    <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.4px", marginBottom: 8 }}>Career Levels</div>
-                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                                    {/* Description */}
+                                    <p style={{ fontSize: 13.5, color: muted, lineHeight: 1.6, margin: "0 0 16px" }}>{fam.desc || "No description."}</p>
+                                    {/* Level chips */}
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 5 }}>
                                         {fam.levels.map((level, li) => (
-                                            <span key={li} style={{ fontSize: 11, padding: "4px 10px", borderRadius: 20, background: color + "12", border: `1px solid ${color}33`, color, fontWeight: 600 }}>{level}</span>
+                                            <span key={li} style={{ fontSize: 11.5, padding: "4px 11px", borderRadius: 20, background: color + "10", color, fontWeight: 600 }}>{level}</span>
                                         ))}
                                     </div>
                                 </div>
-                            </div>
-                            <div style={{ padding: "10px 22px", borderTop: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                                <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 600 }}>
-                                    {empCount > 0 ? `${empCount} employee${empCount > 1 ? "s" : ""} in this family` : "No employees linked yet"}
-                                </span>
-                                <div style={{ display: "flex", gap: 8 }}>
-                                    <Btn variant="ghost" size="sm" onClick={() => setViewingFamily(fam)}><Icon n="eye" size={12} />View</Btn>
-                                    <Btn variant="ghost" size="sm" onClick={() => openEdit(fam)}><Icon n="edit" size={12} />Edit</Btn>
-                                    <Btn variant="ghost" size="sm" onClick={() => deleteFamily(fam)}><Icon n="trash" size={12} color={C.danger} /></Btn>
-                                </div>
-                            </div>
-                        </Card>
-                    );
-                })}
-            </div>
-
-            <Modal isOpen={showModal} onClose={() => { setShowModal(false); setEditingFamily(null); }} title={editingFamily ? `Edit ${editingFamily.name}` : "Add Job Family"}>
-                <div style={{ padding: "24px", display: "flex", flexDirection: "column", gap: 16 }}>
-                    <div style={{ padding: "14px 16px", background: C.infoBg, borderRadius: 10, border: `1px solid ${C.infoBorder}`, display: "flex", gap: 10, alignItems: "center", marginBottom: 8 }}>
-                        <Icon n="shield" size={18} color={C.info} />
-                        <span style={{ fontSize: 12.5, color: C.info, fontWeight: 500 }}>{editingFamily ? "Update job family structure. Career levels define what roles employees can be assigned." : "Define a new job family. This creates the role structure that employees will be assigned to."}</span>
-                    </div>
-                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
-                        <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Family Name <span style={{ color: C.danger }}>*</span></div><Input placeholder="e.g. Design" value={form.name} onChange={e => setF("name", e.target.value)} /></div>
-                        <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Department</div><Select options={DEPTS} value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ width: "100%" }} /></div>
-                    </div>
-                    <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Description</div>
-                        <textarea value={form.desc} onChange={e => setF("desc", e.target.value)} placeholder="Describe this job family..." rows={2}
-                            style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} /></div>
-                    <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 4 }}>Career Levels <span style={{ fontSize: 11, fontWeight: 400, color: C.textMuted }}>(comma-separated)</span></div>
-                        <Input placeholder="e.g. Junior, Mid, Senior, Lead" value={form.levels} onChange={e => setF("levels", e.target.value)} />
-                        {form.levels.trim() && <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 8 }}>{form.levels.split(",").map(l => l.trim()).filter(Boolean).map((l, li) => <span key={li} style={{ fontSize: 11, padding: "3px 9px", borderRadius: 20, background: C.primaryLight, border: `1px solid ${C.primaryMid}`, color: C.primary, fontWeight: 600 }}>{l}</span>)}</div>}</div>
-                    <div>
-                        <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Skills Per Role</div>
-                        <div style={{ fontSize: 11.5, color: C.textMuted, marginBottom: 8 }}>Assign required skills to each career level. These power Gap Analysis and Nexis AI.</div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
-                            {form.levels.split(",").map(l => l.trim()).filter(Boolean).map((lvl, li) => {
-                                const lvlSkills = (modalRoleSkills || {})[lvl] || [];
-                                const expKey = `modal__${lvl}`;
-                                const isExp = modalExpandedRole[expKey];
-                                return (
-                                    <div key={li} style={{ borderRadius: 9, border: `1px solid ${C.border}`, background: C.bg, overflow: "hidden" }}>
-                                        <div onClick={() => setModalExpandedRole(prev => ({ ...prev, [expKey]: !prev[expKey] }))}
-                                            style={{ padding: "8px 12px", display: "flex", alignItems: "center", gap: 8, cursor: "pointer", userSelect: "none" }}>
-                                            <div style={{ width: 18, height: 18, borderRadius: 5, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 9, fontWeight: 800, color: C.primary }}>{li + 1}</div>
-                                            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text, flex: 1 }}>{lvl}</span>
-                                            <span style={{ fontSize: 11, color: C.primary, fontWeight: 700, background: C.primaryLight, padding: "2px 7px", borderRadius: 10 }}>{lvlSkills.length} skills</span>
-                                            <Icon n="chevDown" size={12} color={C.textMuted} style={{ transform: isExp ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s" }} />
-                                        </div>
-                                        {isExp && (
-                                            <div style={{ padding: "8px 12px 12px", borderTop: `1px solid ${C.borderLight}` }}>
-                                                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 8 }}>
-                                                    {lvlSkills.map(sk => (
-                                                        <span key={sk} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "3px 9px", borderRadius: 20, background: C.primaryLight, border: `1px solid ${C.primaryMid}`, fontSize: 11.5, fontWeight: 600, color: C.primary }}>
-                                                            {sk}
-                                                            <button onClick={() => setModalRoleSkills(prev => ({ ...prev, [lvl]: (prev[lvl] || []).filter(s => s !== sk) }))}
-                                                                style={{ width: 13, height: 13, borderRadius: "50%", border: "none", background: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0 }}>
-                                                                <Icon n="x" size={8} color={C.primary} />
-                                                            </button>
-                                                        </span>
-                                                    ))}
-                                                    {lvlSkills.length === 0 && <span style={{ fontSize: 11, color: C.textMuted, fontStyle: "italic" }}>No skills yet</span>}
-                                                </div>
-                                                <div style={{ display: "flex", gap: 6 }}>
-                                                    <input
-                                                        value={modalRoleInput[expKey] || ""}
-                                                        onChange={e => setModalRoleInput(prev => ({ ...prev, [expKey]: e.target.value }))}
-                                                        onKeyDown={e => { if (e.key === "Enter") { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); }}}}
-                                                        placeholder="Add skill for this role…"
-                                                        style={{ flex: 1, padding: "6px 10px", border: `1px solid ${C.border}`, borderRadius: 7, fontSize: 12, outline: "none", background: C.white, color: C.text, fontFamily: "inherit" }}
-                                                    />
-                                                    <button onClick={() => { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); }}}
-                                                        style={{ padding: "6px 13px", borderRadius: 7, border: "none", background: C.primary, color: "#fff", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
-                                                        Add
+                                {/* Footer */}
+                                <div style={{ padding: "11px 16px", borderTop: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", gap: 8 }}>
+                                    <span style={{ fontSize: 12, color: muted, flex: 1, fontWeight: 500 }}>
+                                        {empCount > 0 ? `${empCount} employee${empCount > 1 ? "s" : ""} assigned` : "No employees linked"}
+                                    </span>
+                                    <button onClick={() => setViewingFamily(fam)}
+                                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 13px", borderRadius: 8, border: `1.5px solid ${color + "40"}`, background: color + "08", color, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                                        Manage <Lucide.ChevronRight size={13} color={color} strokeWidth={2} />
+                                    </button>
+                                    {/* Kebab menu */}
+                                    <div style={{ position: "relative" }} onClick={e => e.stopPropagation()}>
+                                        <button onClick={() => setOpenMenuId(openMenuId === fam.id ? null : fam.id)}
+                                            style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${bdrSm}`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+                                            onMouseEnter={e => e.currentTarget.style.background = low}
+                                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                            <Lucide.MoreHorizontal size={15} color={muted} strokeWidth={2} />
+                                        </button>
+                                        <AnimatePresence>
+                                            {openMenuId === fam.id && (
+                                                <motion.div initial={{ opacity: 0, scale: 0.95, y: -4 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: -4 }} transition={{ duration: 0.12 }}
+                                                    style={{ position: "absolute", right: 0, top: "calc(100% + 4px)", zIndex: 100, background: surf, border: `1px solid ${bdr}`, borderRadius: 11, boxShadow: "0 8px 24px rgba(0,0,0,0.12)", overflow: "hidden", minWidth: 150 }}>
+                                                    <button onClick={() => { openEdit(fam); setOpenMenuId(null); }}
+                                                        style={{ width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 9, fontSize: 13, color: txt, fontFamily: "inherit", fontWeight: 500 }}
+                                                        onMouseEnter={e => e.currentTarget.style.background = low}
+                                                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                                        <Lucide.Pencil size={13} color={muted} strokeWidth={1.75} />Edit Family
                                                     </button>
+                                                    <div style={{ height: 1, background: bdrSm }} />
+                                                    <button onClick={() => { deleteFamily(fam); setOpenMenuId(null); }}
+                                                        style={{ width: "100%", padding: "10px 14px", border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", gap: 9, fontSize: 13, color: "#ef4444", fontFamily: "inherit", fontWeight: 500 }}
+                                                        onMouseEnter={e => e.currentTarget.style.background = "#fef2f2"}
+                                                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                                        <Lucide.Trash2 size={13} color="#ef4444" strokeWidth={1.75} />Delete Family
+                                                    </button>
+                                                </motion.div>
+                                            )}
+                                        </AnimatePresence>
+                                    </div>
+                                </div>
+                            </motion.div>
+                        );
+                    })}
+
+                    {/* Empty state */}
+                    {jobFamilies.length === 0 && (
+                        <div style={{ gridColumn: "1 / -1", ...cardSt, padding: "64px 0", display: "flex", flexDirection: "column", alignItems: "center" }}>
+                            <div style={{ width: 64, height: 64, borderRadius: 20, background: low, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 16 }}>
+                                <Lucide.Briefcase size={28} color={muted} strokeWidth={1.5} />
+                            </div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif", marginBottom: 6 }}>No job families yet</div>
+                            <div style={{ fontSize: 13.5, color: muted, marginBottom: 20 }}>Define role structure before adding employees</div>
+                            <button onClick={() => { setEditingFamily(null); setForm(blankForm); setShowModal(true); }}
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "10px 20px", borderRadius: 999, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 12px #004ac640" }}>
+                                <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />Add Your First Job Family
+                            </button>
+                        </div>
+                    )}
+                </div>
+
+                {/* ── Add / Edit Modal ── */}
+                <AnimatePresence>
+                    {showModal && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                onClick={() => { setShowModal(false); setEditingFamily(null); }}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(8px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.95, y: 20 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 20 }}
+                                transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 580, maxHeight: "90vh", background: surf, borderRadius: 20, boxShadow: "0 25px 50px rgba(0,0,0,0.20)", display: "flex", flexDirection: "column", overflow: "hidden" }}>
+
+                                {/* Modal header */}
+                                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", gap: 12, flexShrink: 0 }}>
+                                    <div style={{ width: 36, height: 36, borderRadius: 10, background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <Lucide.Briefcase size={16} color={T.primary} strokeWidth={1.75} />
+                                    </div>
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <h2 style={{ fontSize: 16, fontWeight: 800, color: txt, margin: 0, fontFamily: "Manrope, sans-serif" }}>{editingFamily ? `Edit ${editingFamily.name}` : "Add Job Family"}</h2>
+                                        <p style={{ fontSize: 12, color: muted, margin: "2px 0 0" }}>{editingFamily ? "Update role structure and skill requirements." : "Define a new job family with career levels and skills."}</p>
+                                    </div>
+                                    <button onClick={() => { setShowModal(false); setEditingFamily(null); }} style={{ border: "none", background: low, borderRadius: "50%", width: 32, height: 32, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                        <Lucide.X size={15} color={muted} strokeWidth={2} />
+                                    </button>
+                                </div>
+
+                                {/* Modal body — scrollable */}
+                                <div style={{ overflowY: "auto", flex: 1 }}>
+
+                                    {/* § 1  Basic Information */}
+                                    <div style={{ padding: "20px 24px 18px" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
+                                            <Lucide.Info size={12} color={muted} strokeWidth={2} />
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Basic Information</span>
+                                        </div>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                                <div>
+                                                    <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Family Name <span style={{ color: "#ef4444" }}>*</span></label>
+                                                    <input placeholder="e.g. Engineering & Tech" value={form.name} onChange={e => setF("name", e.target.value)} style={inpSt} />
                                                 </div>
+                                                <div>
+                                                    <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Department</label>
+                                                    <select value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                                        {DEPTS.map(d => <option key={d}>{d}</option>)}
+                                                    </select>
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Description</label>
+                                                <textarea value={form.desc} onChange={e => setF("desc", e.target.value)} placeholder="Describe the purpose and scope of this job family…" rows={2}
+                                                    style={{ ...inpSt, resize: "vertical", lineHeight: 1.6 }} />
+                                            </div>
+                                        </div>
+                                    </div>
+
+                                    <div style={{ height: 1, background: bdrSm, margin: "0 24px" }} />
+
+                                    {/* § 2  Career Levels */}
+                                    <div style={{ padding: "18px 24px" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 14 }}>
+                                            <Lucide.Layers size={12} color={muted} strokeWidth={2} />
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Career Levels</span>
+                                        </div>
+                                        <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Levels <span style={{ fontSize: 11, fontWeight: 400 }}>(comma-separated)</span></label>
+                                        <input placeholder="e.g. Junior, Mid, Senior, Lead" value={form.levels} onChange={e => setF("levels", e.target.value)} style={inpSt} />
+                                        {form.levels.trim() && (
+                                            <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginTop: 10 }}>
+                                                {form.levels.split(",").map(l => l.trim()).filter(Boolean).map((l, li) => {
+                                                    const col = DEPT_COLORS[form.dept] || "#6366f1";
+                                                    return <span key={li} style={{ fontSize: 11.5, padding: "4px 11px", borderRadius: 20, background: col + "12", color: col, fontWeight: 600 }}>{l}</span>;
+                                                })}
                                             </div>
                                         )}
                                     </div>
-                                );
-                            })}
-                            {!form.levels.trim() && <div style={{ fontSize: 12, color: C.textMuted, fontStyle: "italic" }}>Enter career levels above to assign skills per role.</div>}
+
+                                    <div style={{ height: 1, background: bdrSm, margin: "0 24px" }} />
+
+                                    {/* § 3  Skills Per Role */}
+                                    <div style={{ padding: "18px 24px 22px" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                                            <Lucide.Zap size={12} color={muted} strokeWidth={2} />
+                                            <span style={{ fontSize: 11, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em" }}>Skills Per Role</span>
+                                        </div>
+                                        <p style={{ fontSize: 12.5, color: muted, margin: "0 0 14px", lineHeight: 1.55 }}>
+                                            Expand a level to assign required skills. You can edit this later.
+                                        </p>
+                                        <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                            {form.levels.split(",").map(l => l.trim()).filter(Boolean).map((lvl, li) => {
+                                                const lvlSkills = (modalRoleSkills || {})[lvl] || [];
+                                                const expKey = `modal__${lvl}`;
+                                                const isExp = modalExpandedRole[expKey];
+                                                const col = DEPT_COLORS[form.dept] || "#6366f1";
+                                                return (
+                                                    <div key={li} style={{ borderRadius: 10, border: `1px solid ${isExp ? col + "40" : bdrSm}`, background: isExp ? col + "04" : low, overflow: "hidden", transition: "all 0.15s" }}>
+                                                        <div onClick={() => setModalExpandedRole(prev => ({ ...prev, [expKey]: !prev[expKey] }))}
+                                                            style={{ padding: "10px 14px", display: "flex", alignItems: "center", gap: 10, cursor: "pointer", userSelect: "none" }}>
+                                                            <div style={{ width: 22, height: 22, borderRadius: 7, background: isExp ? col + "20" : bdrSm + "80", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, fontSize: 10, fontWeight: 800, color: isExp ? col : muted }}>{li + 1}</div>
+                                                            <span style={{ fontSize: 13, fontWeight: 600, color: txt, flex: 1 }}>{lvl}</span>
+                                                            <span style={{ fontSize: 11.5, color: isExp ? col : muted, fontWeight: 700, padding: "2px 8px", borderRadius: 10, background: isExp ? col + "15" : "transparent", transition: "all 0.15s" }}>
+                                                                {lvlSkills.length} {lvlSkills.length === 1 ? "skill" : "skills"}
+                                                            </span>
+                                                            <Lucide.ChevronDown size={13} color={muted} strokeWidth={2} style={{ transform: isExp ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.2s", flexShrink: 0 }} />
+                                                        </div>
+                                                        {isExp && (
+                                                            <div style={{ padding: "10px 14px 14px", borderTop: `1px solid ${col + "25"}` }}>
+                                                                <div style={{ display: "flex", flexWrap: "wrap", gap: 5, marginBottom: 10 }}>
+                                                                    {lvlSkills.map(sk => (
+                                                                        <span key={sk} style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "4px 10px", borderRadius: 20, background: col + "15", fontSize: 12, fontWeight: 600, color: col }}>
+                                                                            {sk}
+                                                                            <button onClick={() => setModalRoleSkills(prev => ({ ...prev, [lvl]: (prev[lvl] || []).filter(s => s !== sk) }))}
+                                                                                style={{ width: 14, height: 14, borderRadius: "50%", border: "none", background: col + "25", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: 0, marginLeft: 2 }}>
+                                                                                <Lucide.X size={8} color={col} strokeWidth={2.5} />
+                                                                            </button>
+                                                                        </span>
+                                                                    ))}
+                                                                    {lvlSkills.length === 0 && <span style={{ fontSize: 12, color: muted, fontStyle: "italic" }}>Type below to add skills</span>}
+                                                                </div>
+                                                                <div style={{ display: "flex", gap: 6 }}>
+                                                                    <input value={modalRoleInput[expKey] || ""} onChange={e => setModalRoleInput(prev => ({ ...prev, [expKey]: e.target.value }))}
+                                                                        onKeyDown={e => { if (e.key === "Enter") { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); }}}}
+                                                                        placeholder="Type skill and press Enter…"
+                                                                        style={{ flex: 1, padding: "8px 12px", border: `1px solid ${bdrSm}`, borderRadius: 8, fontSize: 12.5, outline: "none", background: surf, color: txt, fontFamily: "inherit" }} />
+                                                                    <button onClick={() => { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); }}}
+                                                                        style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: col, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Add</button>
+                                                                </div>
+                                                            </div>
+                                                        )}
+                                                    </div>
+                                                );
+                                            })}
+                                            {!form.levels.trim() && <div style={{ fontSize: 12.5, color: muted, fontStyle: "italic", padding: "4px 0" }}>Enter career levels above first.</div>}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                {/* Modal footer */}
+                                <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", justifyContent: "flex-end", alignItems: "center", gap: 10, background: low, flexShrink: 0 }}>
+                                    <button onClick={() => { setShowModal(false); setEditingFamily(null); }} style={{ padding: "9px 18px", borderRadius: 9, border: `1px solid ${T.outlineVar + "60"}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
+                                    <button onClick={handleSave} disabled={!form.name.trim()} style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640", opacity: !form.name.trim() ? 0.5 : 1 }}>
+                                        {editingFamily ? <Lucide.Save size={14} color="#fff" strokeWidth={2} /> : <Lucide.Plus size={14} color="#fff" strokeWidth={2.5} />}
+                                        {editingFamily ? "Save Changes" : "Create Job Family"}
+                                    </button>
+                                </div>
+                            </motion.div>
                         </div>
-                    </div>
-                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, borderTop: `1px solid ${C.borderLight}`, paddingTop: 16 }}>
-                        <Btn variant="outline" onClick={() => { setShowModal(false); setEditingFamily(null); }}>Cancel</Btn>
-                        <Btn variant="primary" onClick={handleSave} disabled={!form.name.trim()}>
-                            <Icon n={editingFamily ? "check" : "plus"} size={14} color="#fff" />{editingFamily ? "Save Changes" : "Create Job Family"}
-                        </Btn>
-                    </div>
-                </div>
-            </Modal>
+                    )}
+                </AnimatePresence>
+            </div>
         </div>
     );
 };
