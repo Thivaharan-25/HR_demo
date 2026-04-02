@@ -345,10 +345,10 @@ const Card = ({ children, style: sx, noPad, initial, animate }) => (
 );
 
 const CardHeader = ({ title, subtitle, action }) => (
-    <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+    <div style={{ padding: "20px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "20"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
         <div>
-            <div style={{ fontSize: 16, fontWeight: 800, color: C.text, letterSpacing: "-0.3px", fontFamily: "'Manrope', 'Inter', sans-serif" }}>{title}</div>
-            {subtitle && <div style={{ fontSize: 12, color: C.textMuted, marginTop: 3 }}>{subtitle}</div>}
+            <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-0.3px", fontFamily: "'Manrope', 'Inter', sans-serif" }}>{title}</div>
+            {subtitle && <div style={{ fontSize: 13, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginTop: 3 }}>{subtitle}</div>}
         </div>
         {action && <div>{action}</div>}
     </div>
@@ -416,12 +416,12 @@ const StatCard = ({ label, value, unit, sub, severity = "neutral", trend, trendV
         }}>
             {/* Label + sparkline row */}
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
-                <p style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1.3 }}>{label}</p>
+                <p style={{ fontSize: 11.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.08em", lineHeight: 1.3 }}>{label}</p>
                 {sparklineData && <Sparkline data={sparklineData} color={C.primary} />}
             </div>
             {/* Number + badge row */}
             <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between", gap: 8 }}>
-                <div style={{ fontSize: 36, fontWeight: 800, color: C.text, letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "'Manrope', 'Inter', sans-serif" }}>
+                <div style={{ fontSize: 36, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-1.5px", lineHeight: 1, fontFamily: "'Manrope', 'Inter', sans-serif" }}>
                     {prefix}{animCount.toLocaleString()}{unit || suffix}
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, marginBottom: 2 }}>
@@ -937,12 +937,6 @@ const THEME_SWATCHES = [
 // ── Contextual CTA button per module — shown in TopBar right side ─
 // Keyed by specific page — "New Leave" only on leave pages, not attendance
 const MODULE_ACTIONS = {
-    "leave":                    { label: "New Leave",    icon: "Plus"     },
-    "leave_My_Requests":        { label: "New Leave",    icon: "Plus"     },
-    "leave_All_Leave_Requests": { label: "New Leave",    icon: "Plus"     },
-    "leave_Leave_Types":        { label: "New Leave",    icon: "Plus"     },
-    "calendar":                 { label: "New Leave",    icon: "Plus"     },
-    "people":                   { label: "Add Employee", icon: "UserPlus" },
     "performance":              { label: "New Review",   icon: "Plus"     },
     "skills":                   { label: "Add Skill",    icon: "Plus"     },
 };
@@ -957,8 +951,7 @@ const MODULE_SUB_NAV = {
     ],
 
     people: [
-        { label: "Directory",    key: "people",               activeFor: ["people", "people_Profile", "people_Directory", "people_Lifecycle"] },
-        { label: "Onboarding",   key: "people_Onboarding",    activeFor: ["people_Onboarding"] },
+        { label: "Directory",    key: "people",               activeFor: ["people", "people_Profile", "people_Directory", "people_Lifecycle", "people_Onboarding"] },
         { label: "Teams",        key: "people_Teams",          activeFor: ["people_Teams"] },
         { label: "Job Families", key: "people_Job_Families",  activeFor: ["people_Job_Families"] },
         { label: "Offboarding",  key: "people_Offboarding",   activeFor: ["people_Offboarding"] },
@@ -1000,7 +993,7 @@ const getModuleFromPage = (pageKey) => {
 
 const TopBar = ({ onNav, onLogout, page, onAction }) => {
     const currentUser = React.useContext(UserCtx);
-    const { notifications, setNotifications } = React.useContext(DataCtx);
+    const { notifications, setNotifications, employees, attendance, leaveRequests } = React.useContext(DataCtx);
     const { isDark, toggleTheme } = React.useContext(ThemeCtx);
 
     const [notiOpen, setNotiOpen] = useState(false);
@@ -1033,6 +1026,16 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
     const moduleAction = MODULE_ACTIONS[page] || null;
     const isSubActive = (item) => item.activeFor ? item.activeFor.some(k => page === k) : page === item.key;
 
+    // Dashboard greeting — only shown on home screen
+    const isDashboard = currentModule === "dashboard";
+    const dashGreeting = React.useMemo(() => {
+        if (!isDashboard) return null;
+        const hr = new Date().getHours();
+        const greeting = hr < 12 ? "Good morning" : hr < 17 ? "Good afternoon" : "Good evening";
+        const dateStr = new Date("2026-03-13").toLocaleDateString("en-GB", { weekday: "long", day: "numeric", month: "long", year: "numeric" });
+        return { greeting, dateStr };
+    }, [isDashboard]);
+
     const iconBtnStyle = {
         width: 38, height: 38, display: "flex", alignItems: "center", justifyContent: "center",
         borderRadius: "50%", cursor: "pointer", transition: "background 0.15s", flexShrink: 0,
@@ -1048,9 +1051,22 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
             display: "flex", alignItems: "center", justifyContent: "space-between",
             padding: "0 28px", zIndex: 200,
         }}>
-            {/* Left: Search + contextual sub-nav */}
-            <div style={{ display: "flex", alignItems: "center", height: "100%", gap: 24 }}>
-                {/* Search */}
+            {/* Left: Greeting+Search (Dashboard) or Search+sub-nav (other pages) */}
+            <div style={{ display: "flex", alignItems: "center", height: "100%", gap: 16 }}>
+                {/* Dashboard: greeting then search */}
+                {isDashboard && dashGreeting && (
+                    <>
+                        <div>
+                            <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>
+                                {dashGreeting.greeting}, {firstName} 👋
+                            </div>
+                            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1 }}>{dashGreeting.dateStr}</div>
+                        </div>
+                        <div style={{ width: 1, height: 28, background: C.border, flexShrink: 0 }} />
+                    </>
+                )}
+
+                {/* Search bar (always shown) */}
                 <div style={{ position: "relative" }}>
                     <Lucide.Search size={14} color={C.textMuted} strokeWidth={2}
                         style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
@@ -1067,8 +1083,8 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                     />
                 </div>
 
-                {/* Contextual sub-nav tabs */}
-                {subNav.length > 0 && (
+                {/* Contextual sub-nav tabs (non-dashboard pages) */}
+                {!isDashboard && subNav.length > 0 && (
                     <nav style={{ display: "flex", alignItems: "stretch", height: "100%", gap: 0 }}>
                         {subNav.map(item => {
                             const active = isSubActive(item);
@@ -3102,11 +3118,11 @@ const DashboardPage = () => {
     const LeaveRow = ({ lr, compact }) => {
         const emp = employees.find(e => e.id === lr.empId);
         return (
-            <div style={{ padding: compact ? "10px 20px" : "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${C.borderLight}` }}>
+            <div style={{ padding: compact ? "10px 20px" : "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
                 <Avatar name={emp?.name || "?"} size={32} />
                 <div style={{ flex: 1 }}>
-                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{emp?.name}</div>
-                    <div style={{ fontSize: 11, color: C.textMuted }}>{lr.type} · {lr.days}d{!compact ? ` · ${lr.from}` : ""}</div>
+                    <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{emp?.name}</div>
+                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{lr.type} · {lr.days}d{!compact ? ` · ${lr.from}` : ""}</div>
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
                     <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={12} color="#fff" /></Btn>
@@ -3188,7 +3204,7 @@ const DashboardPage = () => {
     };
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
 
             {/* ── Dashboard customize slide-over ──────────────────── */}
             <AnimatePresence>
@@ -3198,30 +3214,30 @@ const DashboardPage = () => {
                         style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 500, display: "flex", justifyContent: "flex-end" }}>
                         <motion.div initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ duration: 0.22, ease: "easeOut" }}
                             onClick={e => e.stopPropagation()}
-                            style={{ width: 340, background: C.white, borderLeft: `1px solid ${C.border}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                            style={{ width: 340, background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                                <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Customize Dashboard</div>
-                                <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={C.textMuted} /></div>
+                                <div style={{ fontSize: 16, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Customize Dashboard</div>
+                                <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={_darkMode ? C.textMuted : T.outline} /></div>
                             </div>
-                            <p style={{ fontSize: 12.5, color: C.textMuted, marginBottom: 20 }}>Select which KPI cards appear on your dashboard.</p>
+                            <p style={{ fontSize: 12.5, color: _darkMode ? C.textMuted : T.outline, marginBottom: 20 }}>Select which KPI cards appear on your dashboard.</p>
 
                             {/* KPI picker */}
-                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>KPI Cards</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>KPI Cards</div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 24 }}>
                                 {KPI_POOL.map(kpi => {
                                     const KpiIcon = Lucide[kpi.icon] || Lucide.Circle;
                                     const on = dashPrefs.selectedKpis.includes(kpi.id);
                                     return (
                                         <div key={kpi.id} onClick={() => toggleKpi(kpi.id)}
-                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? C.primaryLight : "transparent", border: `1px solid ${on ? C.primaryMid : C.borderLight}`, transition: "all 0.15s" }}>
-                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: on ? C.primary : C.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}>
-                                                <KpiIcon size={14} color={on ? "#fff" : C.textMuted} strokeWidth={2} />
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", border: `1px solid ${on ? (_darkMode ? C.primaryMid : T.primary+"44") : (_darkMode ? C.borderLight : T.outlineVar+"22")}`, transition: "all 0.15s" }}>
+                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.bg : T.surfaceLow), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}>
+                                                <KpiIcon size={14} color={on ? "#fff" : (_darkMode ? C.textMuted : T.outline)} strokeWidth={2} />
                                             </div>
                                             <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{kpi.label}</div>
-                                                <div style={{ fontSize: 11, color: C.textMuted, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{kpi.sub}</div>
+                                                <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{kpi.label}</div>
+                                                <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{kpi.sub}</div>
                                             </div>
-                                            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? C.primary : C.border}`, background: on ? C.primary : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                                            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar+"50")}`, background: on ? (_darkMode ? C.primary : T.primary) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
                                                 {on && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
                                             </div>
                                         </div>
@@ -3230,18 +3246,18 @@ const DashboardPage = () => {
                             </div>
 
                             {/* Section toggles */}
-                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
                             {[
                                 { key: "charts",  label: "Charts & Analytics", desc: "Weekly attendance chart + donuts" },
                                 { key: "pending", label: "Pending Actions",    desc: "Leave approvals, recent activity" },
                             ].map(w => (
-                                <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                                <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
                                     <div>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{w.label}</div>
-                                        <div style={{ fontSize: 11.5, color: C.textMuted, marginTop: 2 }}>{w.desc}</div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{w.label}</div>
+                                        <div style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{w.desc}</div>
                                     </div>
                                     <div onClick={() => savePrefs({ ...dashPrefs, [w.key]: !dashPrefs[w.key] })}
-                                        style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? C.primary : C.border, position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                                        style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar+"50"), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
                                         <motion.div animate={{ x: dashPrefs[w.key] ? 18 : 2 }} transition={{ duration: 0.2 }}
                                             style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                                     </div>
@@ -3253,10 +3269,10 @@ const DashboardPage = () => {
             </AnimatePresence>
 
             {/* ── Page header row ──────────────────────────────────── */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28 }}>
                 <div>
-                    <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.3px" }}>Dashboard</h1>
-                    <p style={{ fontSize: 12.5, color: C.textMuted, margin: "3px 0 0" }}>Your workforce at a glance</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Dashboard</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Your workforce at a glance</p>
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <Btn variant="outline" size="sm" onClick={() => {
@@ -3264,10 +3280,10 @@ const DashboardPage = () => {
                         const csv = rows.map(r => r.join(",")).join("\n");
                         const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); a.download = "dashboard_kpis.csv"; a.click();
                     }}>
-                        <Lucide.Download size={13} color={C.textMid} style={{ marginRight: 4 }} />Export
+                        <Lucide.Download size={13} color={_darkMode ? C.textMid : T.onSurfaceVar} style={{ marginRight: 4 }} />Export
                     </Btn>
                     <Btn variant="outline" size="sm" onClick={() => setShowCustomize(true)}>
-                        <Lucide.SlidersHorizontal size={13} color={C.textMid} style={{ marginRight: 4 }} />Customize
+                        <Lucide.SlidersHorizontal size={13} color={_darkMode ? C.textMid : T.onSurfaceVar} style={{ marginRight: 4 }} />Customize
                     </Btn>
                 </div>
             </div>
@@ -3277,20 +3293,20 @@ const DashboardPage = () => {
                 const selected = KPI_POOL.filter(k => dashPrefs.selectedKpis.includes(k.id));
                 const cols = Math.min(selected.length, 6);
                 return (
-                    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, marginBottom: 18, overflow: "hidden" }}>
+                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, marginBottom: 18, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                         <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
                             {selected.map((s, i) => {
                                 const KIcon = Lucide[s.icon] || Lucide.Circle;
                                 return (
-                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${C.borderLight}` : "none" }}>
+                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                                            <KIcon size={13} color={C.textMuted} strokeWidth={2} />
-                                            <span style={{ fontSize: 11.5, color: C.textMuted, fontWeight: 500 }}>{s.label}</span>
+                                            <KIcon size={13} color={_darkMode ? C.textMuted : T.outline} strokeWidth={2} />
+                                            <span style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>{s.label}</span>
                                         </div>
-                                        <div style={{ fontSize: 26, fontWeight: 800, color: C.text, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.value}</div>
+                                        <div style={{ fontSize: 26, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.value}</div>
                                         <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 5 }}>
                                             {s.up ? <Lucide.TrendingUp size={11} color={C.success} /> : <Lucide.TrendingDown size={11} color={C.warning} />}
-                                            <span style={{ fontSize: 11, color: s.up ? C.success : C.textMuted, fontWeight: 500 }}>{s.sub}</span>
+                                            <span style={{ fontSize: 11, color: s.up ? C.success : (_darkMode ? C.textMuted : T.outline), fontWeight: 500 }}>{s.sub}</span>
                                         </div>
                                     </div>
                                 );
@@ -3334,20 +3350,21 @@ const DashboardPage = () => {
                 const attPct = Math.round(((present + late) / Math.max(empBase, 1)) * 100);
                 const donutStroke = (pct, r) => { const c = 2 * Math.PI * r; return `${(pct/100*c).toFixed(1)} ${c.toFixed(1)}`; };
 
+                const primaryColor = _darkMode ? C.primary : T.primary;
                 return (
                     <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16, marginBottom: 18 }}>
                         {/* Left: Line chart */}
-                        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: "20px 24px" }}>
+                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
                                 <div>
-                                    <div style={{ fontSize: 16, fontWeight: 700, color: C.text }}>Weekly Attendance</div>
-                                    <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>Employee attendance by day of week</div>
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Weekly Attendance</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Employee attendance by day of week</div>
                                 </div>
                                 <div style={{ display: "flex", gap: 16, alignItems: "center" }}>
-                                    {[{ label: "This week", color: C.primary }, { label: "Last week", color: "#06b6d4" }].map(l => (
+                                    {[{ label: "This week", color: primaryColor }, { label: "Last week", color: "#06b6d4" }].map(l => (
                                         <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                             <div style={{ width: 10, height: 10, borderRadius: "50%", background: l.color }} />
-                                            <span style={{ fontSize: 12, color: C.textMid }}>{l.label}</span>
+                                            <span style={{ fontSize: 12, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{l.label}</span>
                                         </div>
                                     ))}
                                 </div>
@@ -3355,8 +3372,8 @@ const DashboardPage = () => {
                             <svg width="100%" viewBox={`0 0 ${cW} ${cH}`} style={{ overflow: "visible" }}>
                                 <defs>
                                     <linearGradient id="grad1" x1="0" y1="0" x2="0" y2="1">
-                                        <stop offset="0%" stopColor={C.primary} stopOpacity="0.18" />
-                                        <stop offset="100%" stopColor={C.primary} stopOpacity="0" />
+                                        <stop offset="0%" stopColor={primaryColor} stopOpacity="0.18" />
+                                        <stop offset="100%" stopColor={primaryColor} stopOpacity="0" />
                                     </linearGradient>
                                     <linearGradient id="grad2" x1="0" y1="0" x2="0" y2="1">
                                         <stop offset="0%" stopColor="#06b6d4" stopOpacity="0.15" />
@@ -3370,20 +3387,20 @@ const DashboardPage = () => {
                                 ))}
                                 {/* Y axis labels */}
                                 {[0.25, 0.5, 0.75, 1].map(f => (
-                                    <text key={f} x={pL - 6} y={Y(maxV * f) + 4} textAnchor="end" fontSize="9" fill={_darkMode ? "#64748b" : "#94a3b8"}>{Math.round(maxV * f)}</text>
+                                    <text key={f} x={pL - 6} y={Y(maxV * f) + 4} textAnchor="end" fontSize="9" fill={_darkMode ? "#64748b" : T.outline}>{Math.round(maxV * f)}</text>
                                 ))}
                                 {/* Area fills */}
                                 <path d={area(lastWeek)} fill="url(#grad2)" />
                                 <path d={area(thisWeek)} fill="url(#grad1)" />
                                 {/* Lines */}
                                 <path d={bezier(lastWeek)} fill="none" stroke="#06b6d4" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
-                                <path d={bezier(thisWeek)} fill="none" stroke={C.primary} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
+                                <path d={bezier(thisWeek)} fill="none" stroke={primaryColor} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" />
                                 {/* Dots */}
-                                {lastWeek.map((v, i) => <circle key={i} cx={X(i)} cy={Y(v)} r="4" fill="#06b6d4" stroke={C.white} strokeWidth="2" />)}
-                                {thisWeek.map((v, i) => <circle key={i} cx={X(i)} cy={Y(v)} r="4.5" fill={C.primary} stroke={C.white} strokeWidth="2" />)}
+                                {lastWeek.map((v, i) => <circle key={i} cx={X(i)} cy={Y(v)} r="4" fill="#06b6d4" stroke={_darkMode ? C.white : T.surfaceCard} strokeWidth="2" />)}
+                                {thisWeek.map((v, i) => <circle key={i} cx={X(i)} cy={Y(v)} r="4.5" fill={primaryColor} stroke={_darkMode ? C.white : T.surfaceCard} strokeWidth="2" />)}
                                 {/* X axis labels */}
                                 {dayLbls.map((d, i) => (
-                                    <text key={d} x={X(i)} y={cH - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill={_darkMode ? "#64748b" : "#94a3b8"}>{d}</text>
+                                    <text key={d} x={X(i)} y={cH - 4} textAnchor="middle" fontSize="10" fontWeight="600" fill={_darkMode ? "#64748b" : T.outline}>{d}</text>
                                 ))}
                             </svg>
                         </div>
@@ -3391,7 +3408,7 @@ const DashboardPage = () => {
                         {/* Right column */}
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
                             {/* Status Summary — blue gradient card */}
-                            <div style={{ background: "linear-gradient(135deg, #3b82f6 0%, #2563eb 100%)", borderRadius: 14, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
+                            <div style={{ background: `linear-gradient(135deg, ${primaryColor} 0%, ${_darkMode ? "#2563eb" : "#0038a8"} 100%)`, borderRadius: 14, padding: "22px 24px", color: "#fff", position: "relative", overflow: "hidden" }}>
                                 <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
                                 <div style={{ fontSize: 16, fontWeight: 700, marginBottom: 12 }}>Status Summary</div>
                                 <div style={{ fontSize: 11, fontWeight: 600, opacity: 0.75, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 }}>Active Employees</div>
@@ -3411,10 +3428,10 @@ const DashboardPage = () => {
                             </div>
 
                             {/* Two donut stats */}
-                            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, padding: "18px 20px" }}>
+                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                                 <div style={{ display: "flex", gap: 16 }}>
                                     {[
-                                        { label: "Attendance Rate", sub: "Today", pct: attPct, color: C.primary },
+                                        { label: "Attendance Rate", sub: "Today", pct: attPct, color: primaryColor },
                                         { label: "Goals on Track", sub: "This quarter", pct: okrPct, color: "#10b981" },
                                     ].map(d => {
                                         const r = 24, circ = 2 * Math.PI * r;
@@ -3422,15 +3439,15 @@ const DashboardPage = () => {
                                         return (
                                             <div key={d.label} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12 }}>
                                                 <svg width="56" height="56" viewBox="0 0 56 56" style={{ flexShrink: 0 }}>
-                                                    <circle cx="28" cy="28" r={r} fill="none" stroke={_darkMode ? "rgba(255,255,255,0.08)" : "#f1f5f9"} strokeWidth="5" />
+                                                    <circle cx="28" cy="28" r={r} fill="none" stroke={_darkMode ? "rgba(255,255,255,0.08)" : T.outlineVar+"28"} strokeWidth="5" />
                                                     <circle cx="28" cy="28" r={r} fill="none" stroke={d.color} strokeWidth="5"
                                                         strokeDasharray={dash} strokeDashoffset={circ * 0.25} strokeLinecap="round"
                                                         style={{ transform: "rotate(-90deg)", transformOrigin: "28px 28px", transition: "stroke-dasharray 0.6s ease" }} />
                                                     <text x="28" y="32" textAnchor="middle" fontSize="10" fontWeight="800" fill={d.color}>{d.pct}%</text>
                                                 </svg>
                                                 <div>
-                                                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{d.label}</div>
-                                                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1 }}>{d.sub}</div>
+                                                    <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{d.label}</div>
+                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginTop: 1 }}>{d.sub}</div>
                                                 </div>
                                             </div>
                                         );
@@ -3446,27 +3463,28 @@ const DashboardPage = () => {
             {dashPrefs.pending && (() => {
                 const deptEntries = Object.entries(depts).sort((a, b) => b[1] - a[1]);
                 const maxDept = deptEntries[0]?.[1] || 1;
+                const primaryColor = _darkMode ? C.primary : T.primary;
                 return (
                     <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16 }}>
                         {/* Left: Market / Department overview */}
-                        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
-                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                <div style={{ fontSize: 15, fontWeight: 700, color: C.text }}>Department Overview</div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
-                                    <span style={{ fontSize: 12, color: C.textMid, fontWeight: 500 }}>This month</span>
-                                    <Lucide.ChevronDown size={12} color={C.textMuted} />
+                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Department Overview</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
+                                    <span style={{ fontSize: 12, color: _darkMode ? C.textMid : T.onSurfaceVar, fontWeight: 500 }}>This month</span>
+                                    <Lucide.ChevronDown size={12} color={_darkMode ? C.textMuted : T.outline} />
                                 </div>
                             </div>
                             <div style={{ padding: "14px 20px" }}>
                                 {deptEntries.slice(0, 6).map(([dept, count]) => (
                                     <div key={dept} style={{ marginBottom: 12 }}>
                                         <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                                            <span style={{ fontSize: 12.5, fontWeight: 600, color: C.text }}>{dept}</span>
-                                            <span style={{ fontSize: 12, fontWeight: 700, color: C.primary }}>{count}</span>
+                                            <span style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{dept}</span>
+                                            <span style={{ fontSize: 12, fontWeight: 700, color: primaryColor }}>{count}</span>
                                         </div>
-                                        <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
+                                        <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : T.surfaceLow, borderRadius: 4, overflow: "hidden" }}>
                                             <motion.div initial={{ width: 0 }} animate={{ width: `${(count / maxDept) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
-                                                style={{ height: "100%", background: `linear-gradient(90deg, ${C.primary}, ${C.primary}cc)`, borderRadius: 4 }} />
+                                                style={{ height: "100%", background: `linear-gradient(90deg, ${primaryColor}, ${primaryColor}cc)`, borderRadius: 4 }} />
                                         </div>
                                     </div>
                                 ))}
@@ -3475,22 +3493,22 @@ const DashboardPage = () => {
 
                         {/* Right: Todo / Pending list */}
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", flex: 1 }}>
-                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                    <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>Pending Leave</div>
+                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", flex: 1, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                    <div style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Pending Leave</div>
                                     {pendingLeaves > 0 && <span style={{ fontSize: 11, fontWeight: 600, background: C.warningBg, color: C.warning, border: `1px solid ${C.warningBorder}`, borderRadius: 20, padding: "2px 8px" }}>{pendingLeaves}</span>}
                                 </div>
                                 <div>
                                     {pendingLeaveList.length === 0
-                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No pending requests</div>
+                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>No pending requests</div>
                                         : pendingLeaveList.slice(0, 4).map(lr => {
                                             const emp = employees.find(e => e.id === lr.empId);
                                             return (
-                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${C.borderLight}` }}>
+                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
                                                     <Avatar name={emp?.name || "?"} size={28} />
                                                     <div style={{ flex: 1, minWidth: 0 }}>
-                                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name || "Employee"}</div>
-                                                        <div style={{ fontSize: 11, color: C.textMuted }}>{lr.type} · {lr.days}d</div>
+                                                        <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name || "Employee"}</div>
+                                                        <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{lr.type} · {lr.days}d</div>
                                                     </div>
                                                     <div style={{ display: "flex", gap: 4 }}>
                                                         <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
@@ -3502,25 +3520,25 @@ const DashboardPage = () => {
                                     }
                                 </div>
                                 {pendingLeaveList.length > 4 && (
-                                    <div style={{ padding: "10px 18px", textAlign: "center", borderTop: `1px solid ${C.borderLight}` }}>
-                                        <button onClick={() => navigate && navigate("time_leave")} style={{ fontSize: 12, fontWeight: 600, color: C.primary, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                    <div style={{ padding: "10px 18px", textAlign: "center", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                        <button onClick={() => navigate && navigate("time_leave")} style={{ fontSize: 12, fontWeight: 600, color: primaryColor, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                                             View all {pendingLeaveList.length} requests
                                         </button>
                                     </div>
                                 )}
                             </div>
                             {/* Recent activity */}
-                            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden" }}>
-                                <div style={{ padding: "12px 18px", borderBottom: `1px solid ${C.borderLight}` }}>
-                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text }}>Recent Activity</div>
+                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                <div style={{ padding: "12px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Recent Activity</div>
                                 </div>
                                 <div>
                                     {(notifications || []).slice(0, 3).map(n => (
-                                        <div key={n.id} style={{ padding: "9px 18px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
-                                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: n.read ? C.border : C.primary, marginTop: 5, flexShrink: 0 }} />
+                                        <div key={n.id} style={{ padding: "9px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                            <div style={{ width: 7, height: 7, borderRadius: "50%", background: n.read ? (_darkMode ? C.border : T.outlineVar) : primaryColor, marginTop: 5, flexShrink: 0 }} />
                                             <div>
-                                                <div style={{ fontSize: 12, color: C.text, fontWeight: n.read ? 400 : 600, lineHeight: 1.4 }}>{n.msg}</div>
-                                                <div style={{ fontSize: 10.5, color: C.textMuted, marginTop: 2 }}>{n.time}</div>
+                                                <div style={{ fontSize: 12, color: _darkMode ? C.text : T.onSurface, fontWeight: n.read ? 400 : 600, lineHeight: 1.4 }}>{n.msg}</div>
+                                                <div style={{ fontSize: 10.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{n.time}</div>
                                             </div>
                                         </div>
                                     ))}
@@ -3535,11 +3553,116 @@ const DashboardPage = () => {
 };
 
 
+const EMPLOYEE_PHOTOS = {
+    "EMP001": "https://randomuser.me/api/portraits/men/32.jpg",
+    "EMP002": "https://randomuser.me/api/portraits/women/44.jpg",
+    "EMP003": "https://randomuser.me/api/portraits/men/18.jpg",
+    "EMP004": "https://randomuser.me/api/portraits/women/26.jpg",
+    "EMP005": "https://randomuser.me/api/portraits/men/55.jpg",
+    "EMP006": "https://randomuser.me/api/portraits/women/12.jpg",
+    "EMP007": "https://randomuser.me/api/portraits/men/41.jpg",
+    "EMP008": "https://randomuser.me/api/portraits/women/33.jpg",
+    "EMP009": "https://randomuser.me/api/portraits/men/7.jpg",
+    "EMP010": "https://randomuser.me/api/portraits/women/57.jpg",
+    "EMP011": "https://randomuser.me/api/portraits/men/62.jpg",
+    "EMP012": "https://randomuser.me/api/portraits/women/8.jpg",
+    "EMP013": "https://randomuser.me/api/portraits/men/77.jpg",
+    "EMP014": "https://randomuser.me/api/portraits/women/65.jpg",
+    "EMP015": "https://randomuser.me/api/portraits/women/50.jpg",
+};
+
 const PeoplePage = ({ pageKey }) => {
-    const { employees, jobFamilies, navigate, teams } = React.useContext(DataCtx);
+    const { employees, setEmployees, jobFamilies, setNotifications, companyConfig, navigate, teams } = React.useContext(DataCtx);
     const [search, setSearch] = useState("");
     const [isAdding, setIsAdding] = useState(false);
+    const [isBulkImporting, setIsBulkImporting] = useState(false);
     const [selectedEmp, setSelectedEmp] = useState(null);
+    const primaryColor = _darkMode ? C.primary : T.primary;
+    const { showToast } = useToast();
+
+    // ── Add New Hire form state ──────────────────────────────────────
+    const EMPTY_FORM = { name: "", email: "", dept: "Engineering", familyId: "jf1", level: "", managerId: "", type: "Full-time", country: "LK", startDate: "", salary: "" };
+    const [formData, setFormData] = useState(EMPTY_FORM);
+    const configDeptNames = (companyConfig?.departments || []).map(d => d.name);
+    const liveDeptNames = [...new Set((employees || []).map(e => e.dept).filter(Boolean))];
+    const allDepts = [...new Set([...configDeptNames, ...liveDeptNames])];
+    const selectedFamily = (jobFamilies || []).find(f => f.id === formData.familyId);
+
+    const handleFamilyChange = (fId) => {
+        const fam = (jobFamilies || []).find(f => f.id === fId);
+        if (fam) setFormData(p => ({ ...p, familyId: fId, dept: fam.dept || p.dept, level: fam.levels?.[0] || "" }));
+    };
+
+    const [formErrors, setFormErrors] = useState({});
+    const [viewMode, setViewMode] = useState("grid"); // "grid" | "list"
+    const [addMode, setAddMode] = useState("single"); // "single" | "bulk"
+    const [bulkCsv, setBulkCsv] = useState("");
+    const [bulkParsed, setBulkParsed] = useState([]);
+    const [bulkDone, setBulkDone] = useState(false);
+
+    const parseBulkCsv = (raw) => {
+        const lines = raw.trim().split("\n").filter(l => l.trim());
+        const parsed = lines.map((line, i) => {
+            const [name, email, dept, level, type, country, startDate] = line.split(",").map(s => s?.trim());
+            return { id: i, name: name || "", email: email || "", dept: dept || "Engineering", level: level || "", type: type || "Full-time", country: country || "LK", startDate: startDate || "", familyId: "jf1", managerId: null, salary: 100000, valid: !!(name && email) };
+        });
+        setBulkParsed(parsed);
+    };
+
+    const handleBulkSubmit = () => {
+        const valid = bulkParsed.filter(r => r.valid);
+        if (!valid.length) return;
+        const base = employees?.length || 0;
+        const newEmps = valid.map((r, i) => ({
+            id: `EMP${String(base + i + 1).padStart(3, "0")}`,
+            name: r.name, email: r.email, dept: r.dept, level: r.level,
+            type: r.type, country: r.country, startDate: r.startDate,
+            familyId: r.familyId, managerId: r.managerId,
+            status: "Active", salary: r.salary,
+            leaveBalance: { annual: 14, medical: 7, emergency: 3 },
+            skills: [], rating: 0, onboardingStatus: "Invite Sent", bankDetails: null,
+            history: [{ date: r.startDate || new Date().toISOString().slice(0, 10), type: "Joined", details: `Joined as ${r.level || "Employee"}`, user: "Admin", salary: r.salary }],
+        }));
+        setEmployees(prev => [...prev, ...newEmps]);
+        setNotifications(prev => [{ id: Date.now(), type: "employee", msg: `${newEmps.length} new hires added via bulk import`, time: "Just now", read: false }, ...prev]);
+        showToast(`${newEmps.length} employees added`);
+        setBulkDone(true);
+    };
+
+    const handleAddSubmit = () => {
+        const errs = {};
+        if (!formData.name.trim()) errs.name = "Full name is required";
+        if (!formData.email.trim()) errs.email = "Work email is required";
+        else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Enter a valid email address";
+        if (Object.keys(errs).length) { setFormErrors(errs); return; }
+        const newId = `EMP${String((employees?.length || 0) + 1).padStart(3, "0")}`;
+        const newEmp = {
+            id: newId,
+            name: formData.name.trim(),
+            email: formData.email.trim(),
+            dept: formData.dept,
+            familyId: formData.familyId,
+            level: formData.level,
+            managerId: formData.managerId || null,
+            type: formData.type,
+            country: formData.country,
+            startDate: formData.startDate || new Date().toISOString().slice(0, 10),
+            status: "Active",
+            salary: Number(formData.salary) || 100000,
+            leaveBalance: { annual: 14, medical: 7, emergency: 3 },
+            skills: [],
+            rating: 0,
+            onboardingStatus: "Invite Sent",
+            bankDetails: null,
+            history: [{ date: formData.startDate || new Date().toISOString().slice(0, 10), type: "Joined", details: `Joined as ${formData.level || "Employee"}`, user: "Admin", salary: Number(formData.salary) || 100000 }],
+        };
+        setEmployees(prev => [...prev, newEmp]);
+        setNotifications(prev => [{ id: Date.now(), type: "employee", msg: `New hire ${newEmp.name} added to ${newEmp.dept}`, time: "Just now", read: false }, ...prev]);
+        showToast(`${newEmp.name} added — invite sent`);
+        setIsAdding(false);
+        setFormData(EMPTY_FORM);
+        setFormErrors({});
+    };
 
     // Determine active tab from pageKey
     const tabFromKey = (k) => {
@@ -3561,41 +3684,177 @@ const PeoplePage = ({ pageKey }) => {
     const activeCount = (employees || []).filter(e => e.status === "Active").length;
     const tabs = [
         { key: "directory", label: "Directory" },
-        { key: "onboarding", label: "Onboarding" },
         { key: "teams", label: "Teams" },
         { key: "families", label: "Job Families" },
         { key: "offboarding", label: "Offboarding" },
     ];
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", marginBottom: 20 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? "#0C1118" : T.surface }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: 0 }}>People</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>{employees?.length || 0} people · {activeCount} active</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>People</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Displaying {employees?.length || 0} members of your organization.</p>
                 </div>
                 {tab === "directory" && (
-                    <Btn variant="primary" onClick={() => setIsAdding(true)}><Icon n="plus" size={14} color="#fff" />Add</Btn>
+                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                        {[
+                            { label: "Filters", icon: Lucide.SlidersHorizontal },
+                            { label: "Sort",    icon: Lucide.ArrowUpDown },
+                        ].map(btn => (
+                            <motion.button key={btn.label} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                <btn.icon size={14} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
+                                {btn.label}
+                            </motion.button>
+                        ))}
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                            onClick={() => setIsBulkImporting(true)}
+                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            <Lucide.Upload size={14} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
+                            Import CSV
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                            onClick={() => setIsAdding(true)}
+                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: "none", background: C.primary, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 2px 10px ${C.primary}40` }}>
+                            <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />
+                            Add Employee
+                        </motion.button>
+                    </div>
                 )}
             </div>
 
-            {/* Tab bar */}
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
-                {tabs.map(t => (
-                    <div key={t.key} onClick={() => setTab(t.key)}
-                        style={{
-                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
-                            color: tab === t.key ? C.primary : C.textMid,
-                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
-                            cursor: "pointer", transition: "color 0.15s",
-                        }}>
-                        {t.label}
+            {/* ── Add Employee modal (single hire) ── */}
+            <Modal isOpen={isAdding} onClose={() => { setIsAdding(false); setFormData(EMPTY_FORM); setFormErrors({}); }} title="Add Employee">
+                <div style={{ padding: "8px 24px 28px", display: "flex", flexDirection: "column", gap: 14 }}>
+                    <p style={{ fontSize: 12.5, color: C.textMuted, margin: 0 }}>An invite will be sent to the new hire to complete their onboarding.</p>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        {[{ label: "Full Name", key: "name", placeholder: "James Perera", type: "text" }, { label: "Work Email", key: "email", placeholder: "james@company.com", type: "email" }].map(f => (
+                            <div key={f.key}>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: formErrors[f.key] ? C.danger : C.textMid, marginBottom: 5 }}>{f.label} <span style={{ color: C.danger }}>*</span></div>
+                                <Input type={f.type} placeholder={f.placeholder} value={formData[f.key]} onChange={e => { setFormData(p => ({ ...p, [f.key]: e.target.value })); setFormErrors(p => ({ ...p, [f.key]: "" })); }} style={formErrors[f.key] ? { borderColor: C.danger, background: C.dangerBg } : {}} />
+                                {formErrors[f.key] && <div style={{ fontSize: 11, color: C.danger, marginTop: 4 }}>{formErrors[f.key]}</div>}
+                            </div>
+                        ))}
                     </div>
-                ))}
-            </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Job Family</div>
+                            <Select options={(jobFamilies || []).map(f => ({ label: f.name, value: f.id }))} value={formData.familyId} onChange={e => handleFamilyChange(e.target.value)} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Role / Level</div>
+                            <Select options={selectedFamily?.levels?.length ? selectedFamily.levels : ["Junior", "Mid", "Senior", "Lead", "Manager"]} value={formData.level} onChange={e => setFormData(p => ({ ...p, level: e.target.value }))} />
+                        </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Department</div>
+                            <Select options={allDepts.length ? allDepts : ["Engineering", "HR & Admin", "Sales", "Product", "Finance", "Design", "DevOps"]} value={formData.dept} onChange={e => setFormData(p => ({ ...p, dept: e.target.value }))} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Employment Type</div>
+                            <Select options={["Full-time", "Part-time", "Contractor"]} value={formData.type} onChange={e => setFormData(p => ({ ...p, type: e.target.value }))} />
+                        </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Country</div>
+                            <Select options={[{ label: "Sri Lanka (LK)", value: "LK" }, { label: "United Kingdom (GB)", value: "GB" }, { label: "Singapore (SG)", value: "SG" }, { label: "United States (US)", value: "US" }, { label: "Australia (AU)", value: "AU" }, { label: "India (IN)", value: "IN" }, { label: "UAE (AE)", value: "AE" }, { label: "Germany (DE)", value: "DE" }, { label: "Canada (CA)", value: "CA" }]} value={formData.country} onChange={e => setFormData(p => ({ ...p, country: e.target.value }))} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Start Date</div>
+                            <Input type="date" value={formData.startDate} onChange={e => setFormData(p => ({ ...p, startDate: e.target.value }))} />
+                        </div>
+                    </div>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Starting Salary</div>
+                            <Input type="number" placeholder="100000" value={formData.salary} onChange={e => setFormData(p => ({ ...p, salary: e.target.value }))} />
+                        </div>
+                        <div>
+                            <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>Reporting Manager</div>
+                            <Select options={[{ label: "— None —", value: "" }, ...(employees || []).map(m => ({ label: m.name, value: m.id }))]} value={formData.managerId} onChange={e => setFormData(p => ({ ...p, managerId: e.target.value }))} />
+                        </div>
+                    </div>
+                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 8, borderTop: `1px solid ${C.borderLight}` }}>
+                        <Btn variant="outline" onClick={() => { setIsAdding(false); setFormData(EMPTY_FORM); setFormErrors({}); }}>Cancel</Btn>
+                        <Btn variant="primary" onClick={handleAddSubmit}>Add &amp; Send Invite</Btn>
+                    </div>
+                </div>
+            </Modal>
 
-            <Modal isOpen={isAdding} onClose={() => setIsAdding(false)} title="Add New Employee">
-                <OnboardingWizard onComplete={() => { setIsAdding(false); }} onCancel={() => setIsAdding(false)} />
+            {/* ── Import CSV modal (bulk) ── */}
+            <Modal isOpen={isBulkImporting} onClose={() => { setIsBulkImporting(false); setBulkCsv(""); setBulkParsed([]); setBulkDone(false); }} title="Import Employees via CSV">
+                <div style={{ padding: "8px 24px 28px", display: "flex", flexDirection: "column", gap: 16 }}>
+                    {bulkDone ? (
+                        <div style={{ textAlign: "center", padding: "32px 0" }}>
+                            <div style={{ width: 56, height: 56, borderRadius: "50%", background: C.successBg, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                                <Icon n="check" size={24} color={C.success} />
+                            </div>
+                            <div style={{ fontSize: 17, fontWeight: 700, color: C.text, marginBottom: 6 }}>{bulkParsed.filter(r => r.valid).length} employees imported</div>
+                            <div style={{ fontSize: 13, color: C.textMuted, marginBottom: 24 }}>Invite emails have been queued for all new hires.</div>
+                            <Btn variant="primary" onClick={() => { setIsBulkImporting(false); setBulkCsv(""); setBulkParsed([]); setBulkDone(false); }}>Done</Btn>
+                        </div>
+                    ) : (
+                        <>
+                            {/* Header row: format hint + download template */}
+                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 12, background: C.bg, borderRadius: 10, padding: "12px 14px", border: `1px solid ${C.borderLight}` }}>
+                                <div>
+                                    <div style={{ fontSize: 11.5, fontWeight: 700, color: C.textMid, marginBottom: 5 }}>CSV FORMAT — one row per employee:</div>
+                                    <code style={{ fontSize: 11, color: C.primary, lineHeight: 1.8, display: "block" }}>
+                                        Name, Email, Department, Level, Type, Country, StartDate
+                                    </code>
+                                </div>
+                                <button onClick={() => {
+                                    const csv = "Name,Email,Department,Level,Type,Country,StartDate\nJames Perera,james@company.com,Engineering,Senior Engineer,Full-time,LK,2026-04-01\n";
+                                    const blob = new Blob([csv], { type: "text/csv" });
+                                    const url = URL.createObjectURL(blob);
+                                    const a = document.createElement("a"); a.href = url; a.download = "employee_import_template.csv"; a.click(); URL.revokeObjectURL(url);
+                                }} style={{ display: "flex", alignItems: "center", gap: 6, padding: "7px 12px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.white, color: C.primary, fontSize: 12, fontWeight: 700, cursor: "pointer", whiteSpace: "nowrap", fontFamily: "inherit" }}>
+                                    <Icon n="export" size={12} color={C.primary} /> Download Template
+                                </button>
+                            </div>
+
+                            <div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: C.textMid, marginBottom: 6 }}>Paste CSV data</div>
+                                <textarea value={bulkCsv}
+                                    onChange={e => { setBulkCsv(e.target.value); if (e.target.value.trim()) parseBulkCsv(e.target.value); else setBulkParsed([]); }}
+                                    placeholder={"James Perera, james@co.com, Engineering, Senior Engineer, Full-time, LK, 2026-04-01\nNimali Silva, nimali@co.com, HR & Admin, HR Manager, Full-time, LK, 2026-04-01"}
+                                    rows={5}
+                                    style={{ width: "100%", borderRadius: 8, border: `1px solid ${C.border}`, padding: "10px 12px", fontSize: 12.5, fontFamily: "monospace", color: C.text, background: C.white, resize: "vertical", outline: "none", boxSizing: "border-box" }}
+                                />
+                            </div>
+
+                            {bulkParsed.length > 0 && (
+                                <div style={{ border: `1px solid ${C.borderLight}`, borderRadius: 10, overflow: "hidden" }}>
+                                    <div style={{ padding: "9px 14px", background: C.bg, fontSize: 11, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.6px" }}>
+                                        Preview — {bulkParsed.filter(r => r.valid).length} valid · {bulkParsed.filter(r => !r.valid).length} errors
+                                    </div>
+                                    <div style={{ maxHeight: 180, overflowY: "auto" }}>
+                                        {bulkParsed.map((r, i) => (
+                                            <div key={i} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 14px", borderTop: `1px solid ${C.borderLight}`, background: r.valid ? C.white : C.dangerBg }}>
+                                                <div style={{ width: 18, height: 18, borderRadius: "50%", background: r.valid ? C.successBg : C.dangerBg, border: `1px solid ${r.valid ? C.successBorder : C.dangerBorder}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                                    <Icon n={r.valid ? "check" : "close"} size={10} color={r.valid ? C.success : C.danger} />
+                                                </div>
+                                                <div style={{ fontSize: 12, color: C.text, fontWeight: 600, flex: 1 }}>{r.name || "—"}</div>
+                                                <div style={{ fontSize: 11.5, color: C.textMuted }}>{r.email || <span style={{ color: C.danger }}>missing email</span>}</div>
+                                                <div style={{ fontSize: 11.5, color: C.textMuted }}>{r.dept}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
+
+                            <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, paddingTop: 8, borderTop: `1px solid ${C.borderLight}` }}>
+                                <Btn variant="outline" onClick={() => { setIsBulkImporting(false); setBulkCsv(""); setBulkParsed([]); }}>Cancel</Btn>
+                                <Btn variant="primary" onClick={handleBulkSubmit} disabled={!bulkParsed.filter(r => r.valid).length}>
+                                    Import {bulkParsed.filter(r => r.valid).length > 0 ? `${bulkParsed.filter(r => r.valid).length} ` : ""}Employees
+                                </Btn>
+                            </div>
+                        </>
+                    )}
+                </div>
             </Modal>
 
             {/* Employee profile slide-over */}
@@ -3634,40 +3893,150 @@ const PeoplePage = ({ pageKey }) => {
                 )}
             </AnimatePresence>
 
-            {/* Directory tab */}
+            {/* Directory tab — card grid */}
             {tab === "directory" && (
-                <Card>
-                    <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px" }}>
-                            <Icon n="search" size={14} color={C.textMuted} />
-                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search people..." style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: C.text, width: "100%", fontFamily: "inherit" }} />
+                <>
+                    {/* Search bar + view toggle */}
+                    <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 12, padding: "9px 16px", flex: 1, maxWidth: 360, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                            <Lucide.Search size={15} color={_darkMode ? C.textMuted : T.outline} />
+                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search people..." style={{ border: "none", background: "transparent", outline: "none", fontSize: 13.5, color: _darkMode ? C.text : T.onSurface, flex: 1, fontFamily: "inherit" }} />
+                        </div>
+                        {/* Grid / List toggle */}
+                        <div style={{ display: "flex", background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 10, padding: 3, gap: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                            {[{ mode: "grid", Icon: Lucide.LayoutGrid }, { mode: "list", Icon: Lucide.List }].map(({ mode, Icon: Ic }) => (
+                                <button key={mode} onClick={() => setViewMode(mode)}
+                                    style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: viewMode === mode ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.15s" }}>
+                                    <Ic size={15} color={viewMode === mode ? primaryColor : (_darkMode ? C.textMuted : T.outline)} strokeWidth={2} />
+                                </button>
+                            ))}
                         </div>
                     </div>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <TableHead cols={["Name", "Department", "Role", "Status"]} />
-                        <tbody>
-                            {filtered.map((e, i) => (
-                                <tr key={e.id} onClick={() => navigate("people_Profile", { id: e.id })} style={{ background: i % 2 === 0 ? C.white : C.tableRow, cursor: "pointer" }}
-                                    onMouseEnter={ev => ev.currentTarget.style.background = C.navHover}
-                                    onMouseLeave={ev => ev.currentTarget.style.background = i % 2 === 0 ? C.white : C.tableRow}>
-                                    <Td>
+
+                    {/* Empty state */}
+                    {filtered.length === 0 && (
+                        <div style={{ textAlign: "center", padding: "60px 20px" }}>
+                            <div style={{ width: 56, height: 56, borderRadius: "50%", background: _darkMode ? C.bg : T.surfaceLow, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px" }}>
+                                <Lucide.Users size={24} color={_darkMode ? C.textMuted : T.outline} strokeWidth={1.5} />
+                            </div>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 6 }}>No employees found</div>
+                            <div style={{ fontSize: 13, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginBottom: 20 }}>
+                                {search ? `No results for "${search}" — try a different name or email` : "Add your first employee to get started"}
+                            </div>
+                            {search
+                                ? <button onClick={() => setSearch("")} style={{ padding: "8px 18px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", color: primaryColor, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>
+                                : <button onClick={() => setIsAdding(true)} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: C.primary, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Add Employee</button>
+                            }
+                        </div>
+                    )}
+
+                    {/* List view */}
+                    {viewMode === "list" && filtered.length > 0 && (
+                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", marginBottom: 24 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 120px", padding: "10px 20px", background: _darkMode ? C.bg : T.surfaceLow, borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>
+                                {["Employee", "Department", "Role", "Office", "Status"].map(h => (
+                                    <div key={h} style={{ fontSize: 10.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.7px" }}>{h}</div>
+                                ))}
+                            </div>
+                            {filtered.map((e, i) => {
+                                const statusCfg = { "Active": { bg: T.primaryFixed, color: T.primaryFixedText, label: "ACTIVE" }, "On Leave": { bg: T.tertiaryFixed, color: T.tertiary, label: "ON LEAVE" }, "Inactive": { bg: "#e2e2e2", color: "#5c5c5c", label: "INACTIVE" } }[e.status] || { bg: "#e2e2e2", color: "#5c5c5c", label: e.status };
+                                return (
+                                    <div key={e.id} onClick={() => navigate("people_Profile", { id: e.id })}
+                                        style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 120px", padding: "12px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"20"}` : "none", alignItems: "center", cursor: "pointer", transition: "background 0.12s" }}
+                                        onMouseEnter={ev => ev.currentTarget.style.background = _darkMode ? C.tableRow : T.surfaceLow + "60"}
+                                        onMouseLeave={ev => ev.currentTarget.style.background = "transparent"}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                                             <Avatar name={e.name} size={32} />
-                                            <span style={{ fontWeight: 600, fontSize: 13 }}>{e.name}</span>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{e.name}</div>
+                                                <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{e.email}</div>
+                                            </div>
                                         </div>
-                                    </Td>
-                                    <Td muted>{e.dept}</Td>
-                                    <Td muted>{e.level || e.role}</Td>
-                                    <Td><Badge label={e.status} variant={e.status === "Active" ? "success" : e.status === "On Leave" ? "info" : "default"} /></Td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </Card>
-            )}
+                                        <div style={{ fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{e.dept}</div>
+                                        <div style={{ fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{e.level}</div>
+                                        <div style={{ fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{e.country === "GB" ? "London" : "Colombo"}</div>
+                                        <div style={{ padding: "3px 10px", borderRadius: 999, background: statusCfg.bg, color: statusCfg.color, fontSize: 10, fontWeight: 800, letterSpacing: "0.5px", display: "inline-block" }}>{statusCfg.label}</div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
 
-            {/* Onboarding tab — delegate to existing component */}
-            {tab === "onboarding" && <AddEmployeePage />}
+                    {/* Card grid — auto-fill so cards stay compact */}
+                    {viewMode === "grid" && <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(175px, 1fr))", gap: 14 }}>
+
+                        {filtered.map((e, i) => {
+                            const office = e.country === "GB" ? "London" : "Colombo";
+                            const statusCfg = {
+                                "Active":   { bg: T.primaryFixed,  color: T.primaryFixedText, label: "ACTIVE"   },
+                                "On Leave": { bg: T.tertiaryFixed, color: T.tertiary,          label: "ON LEAVE" },
+                                "Inactive": { bg: "#e2e2e2",        color: "#5c5c5c",           label: "INACTIVE" },
+                            }[e.status] || { bg: "#e2e2e2", color: "#5c5c5c", label: e.status.toUpperCase() };
+
+                            return (
+                                <motion.div key={e.id}
+                                    initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03, duration: 0.2 }}
+                                    whileHover={{ y: -3, boxShadow: "0 10px 28px rgba(0,0,0,0.12)" }}
+                                    onClick={() => navigate("people_Profile", { id: e.id })}
+                                    style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 20, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"22"}`, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 10, cursor: "pointer" }}>
+
+                                    {/* Avatar area */}
+                                    <div style={{ position: "relative", borderRadius: 13, height: 140, background: _darkMode ? C.bg : T.surfaceLow, marginBottom: 10, overflow: "hidden" }}>
+                                        {EMPLOYEE_PHOTOS[e.id]
+                                            ? <img src={EMPLOYEE_PHOTOS[e.id]} alt={e.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%", display: "block" }} />
+                                            : <div style={{ width: "100%", height: "100%", display: "flex", alignItems: "center", justifyContent: "center" }}><Avatar name={e.name} size={62} /></div>
+                                        }
+                                        <div style={{ position: "absolute", top: 7, right: 7, padding: "3px 8px", borderRadius: 999, background: statusCfg.bg, color: statusCfg.color, fontSize: 9.5, fontWeight: 800, letterSpacing: "0.5px" }}>
+                                            {statusCfg.label}
+                                        </div>
+                                    </div>
+
+                                    {/* Name + role */}
+                                    <div style={{ fontSize: 13.5, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-0.15px", lineHeight: 1.25, marginBottom: 2 }}>{e.name}</div>
+                                    <div style={{ fontSize: 11.5, color: primaryColor, fontWeight: 600, marginBottom: 10 }}>{e.level}</div>
+
+                                    {/* Dept + Office */}
+                                    <div style={{ display: "flex", gap: 12, paddingTop: 8, borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"30"}` }}>
+                                        <div>
+                                            <div style={{ fontSize: 8.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 2 }}>DEPT</div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurface }}>{e.dept}</div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 8.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 2 }}>OFFICE</div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurface }}>{office}</div>
+                                        </div>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
+                    </div>}
+
+                    {/* Pagination */}
+                    <div style={{ display: "flex", justifyContent: "center", alignItems: "center", gap: 4, marginTop: 40 }}>
+                        {[
+                            { type: "prev" },
+                            { type: "page", n: 1, active: true },
+                            { type: "page", n: 2 },
+                            { type: "page", n: 3 },
+                            { type: "ellipsis" },
+                            { type: "page", n: 12 },
+                            { type: "next" },
+                        ].map((item, idx) => {
+                            if (item.type === "ellipsis") return <span key={idx} style={{ fontSize: 13, color: _darkMode ? C.textMuted : T.outline, padding: "0 6px" }}>...</span>;
+                            if (item.type === "prev" || item.type === "next") return (
+                                <button key={idx} style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                    {item.type === "prev" ? <Lucide.ChevronLeft size={15} color={_darkMode ? C.textMuted : T.onSurfaceVar} /> : <Lucide.ChevronRight size={15} color={_darkMode ? C.textMuted : T.onSurfaceVar} />}
+                                </button>
+                            );
+                            return (
+                                <button key={idx} style={{ width: 36, height: 36, borderRadius: "50%", border: "none", background: item.active ? primaryColor : "transparent", color: item.active ? "#fff" : (_darkMode ? C.textMid : T.onSurfaceVar), fontSize: 13, fontWeight: item.active ? 700 : 500, cursor: "pointer", fontFamily: "inherit" }}>
+                                    {item.n}
+                                </button>
+                            );
+                        })}
+                    </div>
+                </>
+            )}
 
             {/* Teams tab — delegate to existing component */}
             {tab === "teams" && <TeamsPage />}
@@ -6697,57 +7066,110 @@ const LeaveEntitlementsPage = () => {
         emergency: e.leaveBalance?.emergency || 3,
         carryOver: (e.name.charCodeAt(0) + e.name.length) % 5,
     }));
+    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ marginBottom: 20 }}>
-                <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Leave Balance</h1>
-                <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>How much time off each person has left this year</p>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                <div>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Leave Balance</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>How much time off each person has left this year</p>
+                </div>
+                <motion.button
+                    whileHover={{ backgroundColor: _darkMode ? C.bg : T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                >
+                    <Lucide.Download size={15} color={_darkMode ? C.textMid : T.onSurfaceVar} />
+                    Export
+                </motion.button>
             </div>
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
-                {[["balances", "Balances"], ["carryover", "Carry-Over Rules"]].map(([k, l]) => (
-                    <button key={k} onClick={() => setActiveTab(k)} style={{ padding: "9px 18px", background: "none", border: "none", borderBottom: activeTab === k ? `2px solid ${C.primary}` : "2px solid transparent", color: activeTab === k ? C.primary : C.textMuted, fontWeight: activeTab === k ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginBottom: -1 }}>{l}</button>
+
+            {/* ── Tab switcher ── */}
+            <div style={{ display: "flex", gap: 4, marginBottom: 24, background: _darkMode ? C.white : T.surfaceCard, padding: 4, borderRadius: 12, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, width: "fit-content", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                {[["balances", "Employee Balances"], ["carryover", "Carry-Over Rules"]].map(([k, l]) => (
+                    <button key={k} onClick={() => setActiveTab(k)}
+                        style={{ padding: "8px 18px", borderRadius: 9, border: "none", background: activeTab === k ? (_darkMode ? C.primary : T.primary) : "transparent", color: activeTab === k ? "#fff" : (_darkMode ? C.textMid : T.onSurfaceVar), fontWeight: activeTab === k ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}
+                    >{l}</button>
                 ))}
             </div>
+
+            {/* ── Balances Tab ── */}
             {activeTab === "balances" && (
-                <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
-                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <thead><tr style={{ background: C.tableHead }}>{["Employee", "Dept", "Annual", "Medical", "Emergency", "Carry-Over", "Total Remaining"].map(h => <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${C.border}` }}>{h}</th>)}</tr></thead>
-                        <tbody>
-                            {entitlements.map((emp, i) => (
-                                <tr key={emp.id} style={{ background: i % 2 === 0 ? C.white : C.tableHead }}>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 600, color: C.text }}>{emp.name}</td>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 12, color: C.textMuted }}>{emp.dept}</td>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 700, color: C.primary }}>{emp.annual}</td>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 700, color: C.info }}>{emp.medical}</td>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 700, color: C.warning }}>{emp.emergency}</td>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 700, color: C.success }}>{emp.carryOver}</td>
-                                    <td style={{ padding: "10px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 900, color: C.text }}>{emp.annual + emp.medical + emp.emergency + emp.carryOver}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            )}
-            {activeTab === "carryover" && (
-                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                    <div style={{ padding: "12px 16px", background: C.infoBg, border: `1px solid ${C.infoBorder}`, borderRadius: 10, fontSize: 13, color: C.info, display: "flex", gap: 8 }}>
-                        <Lucide.Info size={14} color={C.info} style={{ flexShrink: 0, marginTop: 1 }} />
-                        Carry-over rules apply at the end of each calendar year. Unused leave exceeding the maximum carry-over limit is forfeited.
+                <div style={{ ...cardStyle, overflow: "hidden" }}>
+                    {/* Table header */}
+                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr repeat(5, 1fr)", padding: "12px 20px", background: _darkMode ? C.bg : T.surfaceLow, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                        {["Employee", "Department", "Annual", "Medical", "Emergency", "Carry-Over", "Total Left"].map(h => (
+                            <div key={h} style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>{h}</div>
+                        ))}
                     </div>
-                    {CARRY_OVER_RULES.map(rule => (
-                        <div key={rule.type} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 13, padding: "16px 18px", boxShadow: C.shadow }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 8 }}>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{rule.type}</div>
-                                <span style={{ fontSize: 12, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: rule.maxCarryOver > 0 ? C.successBg : C.dangerBg, color: rule.maxCarryOver > 0 ? C.success : C.danger }}>
-                                    {rule.maxCarryOver > 0 ? `Max ${rule.maxCarryOver} days carry-over` : "No carry-over"}
-                                </span>
-                            </div>
-                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 8 }}>
-                                <div style={{ padding: "8px 12px", background: C.bg, borderRadius: 8, fontSize: 12 }}>
-                                    <span style={{ color: C.textMuted }}>Expiry: </span><span style={{ fontWeight: 600, color: C.text }}>{rule.expiry}</span>
+                    {/* Rows */}
+                    {entitlements.map((emp, i) => {
+                        const total = emp.annual + emp.medical + emp.emergency + emp.carryOver;
+                        return (
+                            <div key={emp.id}
+                                style={{ display: "grid", gridTemplateColumns: "2fr 1.2fr repeat(5, 1fr)", padding: "14px 20px", borderBottom: i < entitlements.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "18"}` : "none", transition: "background 0.12s" }}
+                                onMouseEnter={e => e.currentTarget.style.background = _darkMode ? C.bg : T.surfaceLow}
+                                onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                            >
+                                <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <Avatar name={emp.name} size={32} />
+                                    <div>
+                                        <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{emp.name}</div>
+                                        <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.onSurfaceVar }}>{emp.level}</div>
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 12.5, color: _darkMode ? C.textMid : T.onSurfaceVar, display: "flex", alignItems: "center" }}>{emp.dept}</div>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span style={{ fontSize: 13.5, fontWeight: 700, padding: "3px 10px", borderRadius: 8, background: T.primaryFixed, color: T.primaryFixedText }}>{emp.annual}</span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span style={{ fontSize: 13.5, fontWeight: 700, padding: "3px 10px", borderRadius: 8, background: "#d4f4e8", color: "#166534" }}>{emp.medical}</span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span style={{ fontSize: 13.5, fontWeight: 700, padding: "3px 10px", borderRadius: 8, background: T.tertiaryFixed, color: T.tertiary }}>{emp.emergency}</span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span style={{ fontSize: 13.5, fontWeight: 700, padding: "3px 10px", borderRadius: 8, background: _darkMode ? C.bg : T.surfaceHigh, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{emp.carryOver}</span>
+                                </div>
+                                <div style={{ display: "flex", alignItems: "center" }}>
+                                    <span style={{ fontSize: 14, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>{total}</span>
+                                    <span style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginLeft: 4 }}>days</span>
                                 </div>
                             </div>
-                            <div style={{ fontSize: 12, color: C.textMuted, lineHeight: 1.6 }}>{rule.notes}</div>
+                        );
+                    })}
+                </div>
+            )}
+
+            {/* ── Carry-Over Tab ── */}
+            {activeTab === "carryover" && (
+                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div style={{ padding: "14px 18px", background: _darkMode ? C.infoBg : T.primaryFixed + "60", border: `1px solid ${_darkMode ? C.infoBorder : T.outlineVar + "40"}`, borderRadius: 12, fontSize: 13, color: _darkMode ? C.info : T.primaryFixedText, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                        <Lucide.Info size={15} color={_darkMode ? C.info : T.primaryFixedText} style={{ flexShrink: 0, marginTop: 1 }} />
+                        <span>Carry-over rules apply at the end of each calendar year. Unused leave exceeding the maximum carry-over limit is forfeited.</span>
+                    </div>
+                    {CARRY_OVER_RULES.map(rule => (
+                        <div key={rule.type} style={cardStyle}>
+                            <div style={{ padding: "16px 20px 0" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+                                    <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>{rule.type}</div>
+                                    <span style={{ fontSize: 12, fontWeight: 700, padding: "4px 12px", borderRadius: 20, background: rule.maxCarryOver > 0 ? "#d4f4e8" : "#ffdad6", color: rule.maxCarryOver > 0 ? "#166534" : "#ba1a1a" }}>
+                                        {rule.maxCarryOver > 0 ? `Max ${rule.maxCarryOver} days carry-over` : "No carry-over"}
+                                    </span>
+                                </div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 14 }}>
+                                    <div style={{ padding: "10px 14px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 10, fontSize: 12.5 }}>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 4 }}>Expiry</div>
+                                        <div style={{ fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{rule.expiry}</div>
+                                    </div>
+                                    <div style={{ padding: "10px 14px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 10, fontSize: 12.5 }}>
+                                        <div style={{ fontSize: 10, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 4 }}>Max Days</div>
+                                        <div style={{ fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{rule.maxCarryOver > 0 ? `${rule.maxCarryOver} days` : "None"}</div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div style={{ padding: "12px 20px", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, fontSize: 12.5, color: _darkMode ? C.textMuted : T.onSurfaceVar, lineHeight: 1.6 }}>{rule.notes}</div>
                         </div>
                     ))}
                 </div>
@@ -7430,16 +7852,26 @@ const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
                         {isMyRequests ? "Track and manage your own leave applications" : "Review, approve, and track team leave requests"}
                     </p>
                 </div>
-                {!isMyRequests && (
+                <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+                    {!isMyRequests && (
+                        <motion.button
+                            whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                            onClick={() => setShowCalendar(v => !v)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: showCalendar ? T.primaryFixed : T.surfaceCard, color: showCalendar ? T.primaryFixedText : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                        >
+                            <Lucide.Calendar size={16} color={showCalendar ? T.primaryFixedText : T.onSurfaceVar} />
+                            {showCalendar ? "Hide Calendar" : "Calendar"}
+                        </motion.button>
+                    )}
                     <motion.button
-                        whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
-                        onClick={() => setShowCalendar(v => !v)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: showCalendar ? T.primaryFixed : T.surfaceCard, color: showCalendar ? T.primaryFixedText : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                        onClick={() => setShowApply(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.primary, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 12px ${C.primary}40` }}
                     >
-                        <Lucide.Calendar size={16} color={showCalendar ? T.primaryFixedText : T.onSurfaceVar} />
-                        {showCalendar ? "Hide Calendar" : "Calendar"}
+                        <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
+                        New Leave
                     </motion.button>
-                )}
+                </div>
             </div>
 
             {/* ── Metric Cards ── */}
@@ -8722,12 +9154,12 @@ const WorkSchedulePage = () => {
         <div style={{ display:"flex", flex:1, minHeight:0 }}>
 
             {/* ── Employee sidebar ── */}
-            <div style={{ width:240, background:C.white, borderRight:`1px solid ${C.border}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
-                <div style={{ padding:"10px 14px", borderBottom:`1px solid ${C.borderLight}`, flexShrink:0 }}>
+            <div style={{ width:240, background:_darkMode?C.white:T.surfaceCard, borderRight:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
+                <div style={{ padding:"10px 14px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, flexShrink:0 }}>
                     <div style={{ position:"relative" }}>
-                        <Icon n="search" size={13} color={C.textMuted} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)" }} />
+                        <Icon n="search" size={13} color={_darkMode?C.textMuted:T.outline} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)" }} />
                         <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…"
-                            style={{ width:"100%", padding:"7px 9px 7px 30px", border:`1px solid ${C.border}`, borderRadius:8, fontSize:12, outline:"none", background:C.bg, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                            style={{ width:"100%", padding:"7px 9px 7px 30px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:12, outline:"none", background:_darkMode?C.bg:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                     </div>
                 </div>
                 <div style={{ flex:1, overflowY:"auto" }}>
@@ -8738,15 +9170,15 @@ const WorkSchedulePage = () => {
                         const asnCount  = shiftAssignments.filter(a => a.empId===e.id).length;
                         return (
                             <div key={e.id} onClick={() => setSelectedId(e.id)}
-                                style={{ padding:"10px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:10, background:selectedId===e.id?C.primaryLight:"transparent", borderRight:selectedId===e.id?`3px solid ${C.primary}`:"3px solid transparent", transition:"all 0.15s" }}>
+                                style={{ padding:"10px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:10, background:selectedId===e.id?(_darkMode?C.primaryLight:T.primaryFixed):"transparent", borderRight:selectedId===e.id?`3px solid ${_darkMode?C.primary:T.primary}`:"3px solid transparent", transition:"all 0.15s" }}>
                                 <Avatar name={e.name} size={30} />
                                 <div style={{ flex:1, minWidth:0 }}>
-                                    <div style={{ fontSize:12.5, fontWeight:700, color:selectedId===e.id?C.primary:C.text, overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.name}</div>
-                                    <div style={{ fontSize:11, color:C.textMuted }}>{e.dept}</div>
+                                    <div style={{ fontSize:12.5, fontWeight:700, color:selectedId===e.id?(_darkMode?C.primary:T.primary):(_darkMode?C.text:T.onSurface), overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.name}</div>
+                                    <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{e.dept}</div>
                                 </div>
                                 <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:3 }}>
                                     <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10, background:mc.bg, color:mc.color, border:`1px solid ${mc.border}`, whiteSpace:"nowrap" }}>{monMode}</span>
-                                    {asnCount>0 && <span style={{ fontSize:9, color:C.primary, fontWeight:700 }}>{asnCount} shift{asnCount>1?"s":""}</span>}
+                                    {asnCount>0 && <span style={{ fontSize:9, color:_darkMode?C.primary:T.primary, fontWeight:700 }}>{asnCount} shift{asnCount>1?"s":""}</span>}
                                 </div>
                             </div>
                         );
@@ -8758,19 +9190,19 @@ const WorkSchedulePage = () => {
             <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, minHeight:0 }}>
 
                 {/* Header */}
-                <div style={{ padding:"14px 28px", borderBottom:`1px solid ${C.border}`, flexShrink:0, display:"flex", justifyContent:"space-between", alignItems:"center", background:C.white }}>
+                <div style={{ padding:"14px 28px", borderBottom:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, flexShrink:0, display:"flex", justifyContent:"space-between", alignItems:"center", background:_darkMode?C.white:T.surfaceCard }}>
                     <div style={{ display:"flex", alignItems:"center", gap:14 }}>
                         {emp && <Avatar name={emp.name} size={38} />}
                         <div>
-                            <h1 style={{ fontSize:17, fontWeight:800, color:C.text, margin:0 }}>{emp?.name || "Select an employee"}</h1>
-                            <p style={{ fontSize:12, color:C.textMuted, margin:"2px 0 0" }}>{emp?.dept} · {emp?.level}</p>
+                            <h1 style={{ fontSize:17, fontWeight:800, color:_darkMode?C.text:T.onSurface, margin:0 }}>{emp?.name || "Select an employee"}</h1>
+                            <p style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, margin:"2px 0 0" }}>{emp?.dept} · {emp?.level}</p>
                         </div>
                     </div>
                     <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                        <div style={{ display:"flex", border:`1px solid ${C.border}`, borderRadius:8, overflow:"hidden" }}>
+                        <div style={{ display:"flex", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, overflow:"hidden" }}>
                             {[{id:"schedule",label:"Weekly Schedule"},{id:"shifts",label:"Shift Management"}].map(t => (
                                 <button key={t.id} onClick={() => setActiveTab(t.id)}
-                                    style={{ padding:"7px 16px", fontSize:12, fontWeight:600, cursor:"pointer", background:activeTab===t.id?C.primary:C.white, color:activeTab===t.id?"#fff":C.textMid, border:"none", fontFamily:"inherit", transition:"all 0.15s" }}>
+                                    style={{ padding:"7px 16px", fontSize:12, fontWeight:600, cursor:"pointer", background:activeTab===t.id?(_darkMode?C.primary:T.primary):(_darkMode?C.white:T.surfaceCard), color:activeTab===t.id?"#fff":(_darkMode?C.textMid:T.onSurfaceVar), border:"none", fontFamily:"inherit", transition:"all 0.15s" }}>
                                     {t.label}
                                 </button>
                             ))}
@@ -8794,7 +9226,7 @@ const WorkSchedulePage = () => {
                 </div>
 
                 {activeTab === "schedule" ? (
-                    <div style={{ flex:1, overflowY:"auto", padding:"22px 28px", display:"flex", flexDirection:"column", gap:22 }}>
+                    <div style={{ flex:1, overflowY:"auto", padding:"22px 28px", display:"flex", flexDirection:"column", gap:22, background:_darkMode?C.bg:T.surface }}>
 
                         {/* Mode summary pills */}
                         <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center" }}>
@@ -8807,22 +9239,22 @@ const WorkSchedulePage = () => {
                                     </div>
                                 );
                             })}
-                            <span style={{ marginLeft:"auto", fontSize:12, color:C.textMuted }}>Permanent — repeats every week</span>
+                            <span style={{ marginLeft:"auto", fontSize:12, color:_darkMode?C.textMuted:T.outline }}>Permanent — repeats every week</span>
                         </div>
 
                         {/* ── Schedule Templates ── */}
-                        <Card noPad style={{ flexShrink:0 }}>
-                            <div style={{ padding:"12px 24px", borderBottom:`1px solid ${C.borderLight}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                        <div style={{ flexShrink:0, background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                            <div style={{ padding:"12px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                                 <div>
-                                    <div style={{ fontSize:13, fontWeight:800, color:C.text }}>Schedule Templates</div>
-                                    <div style={{ fontSize:12, color:C.textMuted, marginTop:1 }}>
+                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Schedule Templates</div>
+                                    <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:1 }}>
                                         Click to apply to current employee · ⋯ applies to multiple · custom templates can be deleted
                                     </div>
                                 </div>
                                 <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:0.97 }}
                                     onClick={() => { setTplForm(blankTplForm); setShowCreateTpl(true); }}
-                                    style={{ padding:"7px 14px", borderRadius:8, border:`1px solid ${C.primary}`, background:C.primaryLight, color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                                    <Icon n="plus" size={13} color={C.primary} />Create Template
+                                    style={{ padding:"7px 14px", borderRadius:8, border:`1px solid ${_darkMode?C.primary:T.primary}`, background:_darkMode?C.primaryLight:T.primaryFixed, color:_darkMode?C.primary:T.primary, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
+                                    <Icon n="plus" size={13} color={_darkMode?C.primary:T.primary} />Create Template
                                 </motion.button>
                             </div>
 
@@ -8840,8 +9272,8 @@ const WorkSchedulePage = () => {
                                                         : <span style={{ fontSize:14 }}>📅</span>
                                                     }
                                                 </div>
-                                                <span style={{ fontWeight:800, color:C.text, fontSize:12.5 }}>{t.name}</span>
-                                                <span style={{ fontSize:11, color:C.textMuted, lineHeight:1.3 }}>{t.desc}</span>
+                                                <span style={{ fontWeight:800, color:_darkMode?C.text:T.onSurface, fontSize:12.5 }}>{t.name}</span>
+                                                <span style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline, lineHeight:1.3 }}>{t.desc}</span>
                                                 {t.isCustom && (
                                                     <span style={{ fontSize:9, fontWeight:700, padding:"1px 6px", borderRadius:10, background:`${t.color}20`, color:t.color, width:"fit-content" }}>Custom</span>
                                                 )}
@@ -8849,8 +9281,8 @@ const WorkSchedulePage = () => {
                                             {/* Bulk-apply button */}
                                             <button onClick={() => { setTemplateToApply(t); setBulkEmpIds([selectedId]); }}
                                                 title="Apply to multiple employees"
-                                                style={{ position:"absolute", top:7, right:t.isCustom ? 30 : 7, width:22, height:22, borderRadius:6, border:`1px solid ${C.border}`, background:C.white, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                                <Lucide.Users size={11} color={C.textMid} />
+                                                style={{ position:"absolute", top:7, right:t.isCustom ? 30 : 7, width:22, height:22, borderRadius:6, border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, background:_darkMode?C.white:T.surfaceCard, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
+                                                <Lucide.Users size={11} color={_darkMode?C.textMid:T.onSurfaceVar} />
                                             </button>
                                             {/* Delete button — custom templates only */}
                                             {t.isCustom && (
@@ -8864,23 +9296,23 @@ const WorkSchedulePage = () => {
                                     );
                                 })}
                             </div>
-                        </Card>
+                        </div>
 
                         {/* ── Weekly Work Schedule ── */}
-                        <Card noPad style={{ flexShrink:0 }}>
-                            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${C.borderLight}` }}>
-                                <div style={{ fontSize:13, fontWeight:800, color:C.text }}>Weekly Work Schedule</div>
-                                <div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>Click a mode to set the recurring work arrangement for each day</div>
+                        <div style={{ flexShrink:0, background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
+                                <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Weekly Work Schedule</div>
+                                <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>Click a mode to set the recurring work arrangement for each day</div>
                             </div>
                             <div>
                                 {DAYS.map((day, i) => {
                                     const mode      = empSched[day] || "Onsite";
                                     const isWeekend = i >= 5;
                                     return (
-                                        <div key={day} style={{ display:"flex", alignItems:"center", borderBottom:i<6?`1px solid ${C.borderLight}`:"none", background:isWeekend?C.bg:C.white }}>
+                                        <div key={day} style={{ display:"flex", alignItems:"center", borderBottom:i<6?`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`:"none", background:isWeekend?(_darkMode?C.bg:T.surfaceLow):(_darkMode?C.white:T.surfaceCard) }}>
                                             <div style={{ width:150, flexShrink:0, padding:"13px 24px" }}>
-                                                <div style={{ fontSize:13.5, fontWeight:700, color:isWeekend?C.textMuted:C.text }}>{DAY_LABELS[day]}</div>
-                                                <div style={{ fontSize:11, color:C.textMuted, marginTop:1 }}>{isWeekend?"Weekend":"Weekday"}</div>
+                                                <div style={{ fontSize:13.5, fontWeight:700, color:isWeekend?(_darkMode?C.textMuted:T.outline):(_darkMode?C.text:T.onSurface) }}>{DAY_LABELS[day]}</div>
+                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline, marginTop:1 }}>{isWeekend?"Weekend":"Weekday"}</div>
                                             </div>
                                             <div style={{ display:"flex", gap:8, padding:"13px 24px 13px 0", flexWrap:"wrap" }}>
                                                 {MODES.map(m => {
@@ -8888,7 +9320,7 @@ const WorkSchedulePage = () => {
                                                     const isActive = mode === m;
                                                     return (
                                                         <button key={m} onClick={() => setDayMode(day, m)}
-                                                            style={{ padding:"7px 20px", borderRadius:8, border:`1.5px solid ${isActive?mmc.border:C.border}`, background:isActive?mmc.bg:C.white, color:isActive?mmc.color:C.textMuted, fontSize:13, fontWeight:isActive?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.12s", boxShadow:isActive?`0 2px 8px ${mmc.border}`:"none" }}>
+                                                            style={{ padding:"7px 20px", borderRadius:8, border:`1.5px solid ${isActive?mmc.border:(_darkMode?C.border:T.outlineVar+"50")}`, background:isActive?mmc.bg:(_darkMode?C.white:T.surfaceCard), color:isActive?mmc.color:(_darkMode?C.textMuted:T.outline), fontSize:13, fontWeight:isActive?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.12s", boxShadow:isActive?`0 2px 8px ${mmc.border}`:"none" }}>
                                                             {m}
                                                         </button>
                                                     );
@@ -8898,20 +9330,20 @@ const WorkSchedulePage = () => {
                                     );
                                 })}
                             </div>
-                        </Card>
+                        </div>
 
                         {/* ── Team Schedule Overview ── */}
-                        <Card noPad style={{ flexShrink:0 }}>
-                            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${C.borderLight}` }}>
-                                <div style={{ fontSize:13, fontWeight:800, color:C.text }}>Team Schedule Overview</div>
-                                <div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>All {employees.length} team members — click a row to edit</div>
+                        <div style={{ flexShrink:0, background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
+                                <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Team Schedule Overview</div>
+                                <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>All {employees.length} team members — click a row to edit</div>
                             </div>
                             <div style={{ overflowX:"auto" }}>
                                 <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12.5, minWidth:700 }}>
                                     <thead>
-                                        <tr style={{ background:C.tableHead }}>
-                                            <th style={{ padding:"9px 20px", textAlign:"left", fontSize:11, fontWeight:700, color:C.textMid, textTransform:"uppercase", letterSpacing:"0.06em", borderBottom:`1px solid ${C.border}` }}>Employee</th>
-                                            {DAYS.map(d => <th key={d} style={{ padding:"9px 14px", textAlign:"center", fontSize:11, fontWeight:700, color:C.textMid, textTransform:"uppercase", letterSpacing:"0.06em", borderBottom:`1px solid ${C.border}` }}>{d}</th>)}
+                                        <tr style={{ background:_darkMode?C.tableHead:T.surfaceLow }}>
+                                            <th style={{ padding:"9px 20px", textAlign:"left", fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, textTransform:"uppercase", letterSpacing:"0.06em", borderBottom:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}` }}>Employee</th>
+                                            {DAYS.map(d => <th key={d} style={{ padding:"9px 14px", textAlign:"center", fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, textTransform:"uppercase", letterSpacing:"0.06em", borderBottom:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}` }}>{d}</th>)}
                                         </tr>
                                     </thead>
                                     <tbody>
@@ -8919,13 +9351,13 @@ const WorkSchedulePage = () => {
                                             const s = (schedules||{})[e.id] || {};
                                             return (
                                                 <tr key={e.id} onClick={() => setSelectedId(e.id)}
-                                                    style={{ background:selectedId===e.id?C.primaryLight:i%2===0?C.white:C.tableRow, cursor:"pointer", borderBottom:`1px solid ${C.borderLight}`, transition:"background 0.12s" }}>
+                                                    style={{ background:selectedId===e.id?(_darkMode?C.primaryLight:T.primaryFixed):(_darkMode?i%2===0?C.white:C.tableRow:T.surfaceCard), cursor:"pointer", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, transition:"background 0.12s" }}>
                                                     <td style={{ padding:"9px 20px", whiteSpace:"nowrap" }}>
                                                         <div style={{ display:"flex", alignItems:"center", gap:10 }}>
                                                             <Avatar name={e.name} size={28} />
                                                             <div>
-                                                                <div style={{ fontWeight:700, fontSize:13, color:selectedId===e.id?C.primary:C.text }}>{e.name}</div>
-                                                                <div style={{ fontSize:11, color:C.textMuted }}>{e.dept}</div>
+                                                                <div style={{ fontWeight:700, fontSize:13, color:selectedId===e.id?(_darkMode?C.primary:T.primary):(_darkMode?C.text:T.onSurface) }}>{e.name}</div>
+                                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{e.dept}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -8933,7 +9365,7 @@ const WorkSchedulePage = () => {
                                                         const mode = s[day] || "Onsite";
                                                         const mc   = MODE_CFG[mode] || MODE_CFG["Onsite"];
                                                         return (
-                                                            <td key={day} style={{ padding:"9px 14px", textAlign:"center", background:di>=5?(i%2===0?C.bg:"#F1F3F9"):"transparent" }}>
+                                                            <td key={day} style={{ padding:"9px 14px", textAlign:"center", background:di>=5?(_darkMode?C.bg:T.surfaceLow):"transparent" }}>
                                                                 <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:10, background:mc.bg, color:mc.color, border:`1px solid ${mc.border}` }}>{mode}</span>
                                                             </td>
                                                         );
@@ -8944,46 +9376,46 @@ const WorkSchedulePage = () => {
                                     </tbody>
                                 </table>
                             </div>
-                        </Card>
+                        </div>
 
                     </div>
                 ) : (
                     /* ── Shifts tab ── */
-                    <div style={{ flex:1, overflowY:"auto", padding:"22px 28px", display:"flex", gap:20, alignItems:"flex-start" }}>
+                    <div style={{ flex:1, overflowY:"auto", padding:"22px 28px", display:"flex", gap:20, alignItems:"flex-start", background:_darkMode?C.bg:T.surface }}>
                         <div style={{ width:300, flexShrink:0 }}>
-                            <Card noPad>
-                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${C.borderLight}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                                    <div style={{ fontSize:13, fontWeight:800, color:C.text }}>Shift Types</div>
+                            <div style={{ background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Shift Types</div>
                                     <button onClick={() => setShowShiftForm(v => !v)}
-                                        style={{ padding:"5px 12px", borderRadius:7, border:`1px solid ${C.primary}`, background:"transparent", color:C.primary, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
+                                        style={{ padding:"5px 12px", borderRadius:7, border:`1px solid ${_darkMode?C.primary:T.primary}`, background:"transparent", color:_darkMode?C.primary:T.primary, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
                                         {showShiftForm?"Cancel":"+ New"}
                                     </button>
                                 </div>
                                 {showShiftForm && (
-                                    <div style={{ padding:"16px 20px", borderBottom:`1px solid ${C.borderLight}`, background:C.bg, display:"flex", flexDirection:"column", gap:12 }}>
+                                    <div style={{ padding:"16px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, background:_darkMode?C.bg:T.surfaceLow, display:"flex", flexDirection:"column", gap:12 }}>
                                         <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:4 }}>Shift Name</div>
+                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:4 }}>Shift Name</div>
                                             <input value={shiftForm.name} onChange={e=>setSF("name",e.target.value)} placeholder="e.g. Morning Shift"
-                                                style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.border}`, borderRadius:7, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                                                style={{ width:"100%", padding:"8px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:7, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceCard, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                                         </div>
                                         <div style={{ display:"flex", gap:10 }}>
                                             <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:4 }}>Start</div>
+                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:4 }}>Start</div>
                                                 <input type="time" value={shiftForm.startTime} onChange={e=>setSF("startTime",e.target.value)}
-                                                    style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.border}`, borderRadius:7, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                                                    style={{ width:"100%", padding:"8px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:7, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceCard, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                                             </div>
                                             <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:4 }}>End</div>
+                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:4 }}>End</div>
                                                 <input type="time" value={shiftForm.endTime} onChange={e=>setSF("endTime",e.target.value)}
-                                                    style={{ width:"100%", padding:"8px 10px", border:`1px solid ${C.border}`, borderRadius:7, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                                                    style={{ width:"100%", padding:"8px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:7, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceCard, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                                             </div>
                                         </div>
                                         <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:6 }}>Color</div>
+                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:6 }}>Color</div>
                                             <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
                                                 {TPL_COLORS.map(col => (
                                                     <button key={col} onClick={() => setSF("color",col)}
-                                                        style={{ width:24, height:24, borderRadius:"50%", background:col, border:shiftForm.color===col?`3px solid ${C.text}`:"3px solid transparent", cursor:"pointer" }} />
+                                                        style={{ width:24, height:24, borderRadius:"50%", background:col, border:shiftForm.color===col?`3px solid ${_darkMode?C.text:T.onSurface}`:"3px solid transparent", cursor:"pointer" }} />
                                                 ))}
                                             </div>
                                         </div>
@@ -8993,68 +9425,68 @@ const WorkSchedulePage = () => {
                                 <div>
                                     {shifts.length===0 && <EmptyState icon="clock" title="No shifts defined" subtitle="Create shift templates to start scheduling" />}
                                     {shifts.map((sh,i) => (
-                                        <div key={sh.id} style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:12, borderBottom:i<shifts.length-1?`1px solid ${C.borderLight}`:"none" }}>
+                                        <div key={sh.id} style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:12, borderBottom:i<shifts.length-1?`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`:"none" }}>
                                             <div style={{ width:10, height:10, borderRadius:"50%", background:sh.color, flexShrink:0 }} />
                                             <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:13, fontWeight:700, color:C.text }}>{sh.name}</div>
-                                                <div style={{ fontSize:11, color:C.textMuted }}>{sh.startTime} – {sh.endTime}</div>
+                                                <div style={{ fontSize:13, fontWeight:700, color:_darkMode?C.text:T.onSurface }}>{sh.name}</div>
+                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{sh.startTime} – {sh.endTime}</div>
                                             </div>
                                             <button onClick={() => setShifts(prev => prev.filter(s => s.id!==sh.id))}
-                                                style={{ background:"none", border:"none", cursor:"pointer", color:C.textMuted, padding:"4px", fontSize:15, lineHeight:1 }}>✕</button>
+                                                style={{ background:"none", border:"none", cursor:"pointer", color:_darkMode?C.textMuted:T.outline, padding:"4px", fontSize:15, lineHeight:1 }}>✕</button>
                                         </div>
                                     ))}
                                 </div>
-                            </Card>
+                            </div>
                         </div>
 
                         <div style={{ flex:1, display:"flex", flexDirection:"column", gap:16 }}>
-                            <Card noPad>
-                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${C.borderLight}` }}>
-                                    <div style={{ fontSize:13, fontWeight:800, color:C.text }}>Assign Shift to Employee</div>
-                                    <div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>Assigned shifts appear automatically in Timesheet → Calendar</div>
+                            <div style={{ background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
+                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Assign Shift to Employee</div>
+                                    <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>Assigned shifts appear automatically in Timesheet → Calendar</div>
                                 </div>
                                 <div style={{ padding:"20px", display:"flex", flexDirection:"column", gap:14 }}>
                                     <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
                                         <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:5 }}>Employee</div>
+                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Employee</div>
                                             <select value={assignForm.empId} onChange={e=>setAF("empId",e.target.value)}
-                                                style={{ width:"100%", padding:"9px 10px", border:`1px solid ${C.border}`, borderRadius:8, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit" }}>
+                                                style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit" }}>
                                                 {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
                                             </select>
                                         </div>
                                         <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:5 }}>Shift</div>
+                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Shift</div>
                                             <select value={assignForm.shiftId} onChange={e=>setAF("shiftId",e.target.value)}
-                                                style={{ width:"100%", padding:"9px 10px", border:`1px solid ${C.border}`, borderRadius:8, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit" }}>
+                                                style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit" }}>
                                                 <option value="">Select a shift…</option>
                                                 {shifts.map(s => <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>)}
                                             </select>
                                         </div>
                                     </div>
                                     <div>
-                                        <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:6 }}>Schedule Type</div>
-                                        <div style={{ display:"flex", border:`1px solid ${C.border}`, borderRadius:9, overflow:"hidden", width:"fit-content" }}>
+                                        <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:6 }}>Schedule Type</div>
+                                        <div style={{ display:"flex", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:9, overflow:"hidden", width:"fit-content" }}>
                                             {[["permanent","Permanent"],["fixed","Fixed Period"]].map(([val,label]) => (
                                                 <button key={val} onClick={() => setAF("scheduleType",val)}
-                                                    style={{ padding:"8px 20px", border:"none", background:assignForm.scheduleType===val?C.primary:C.white, color:assignForm.scheduleType===val?"#fff":C.textMid, fontSize:12.5, fontWeight:assignForm.scheduleType===val?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
+                                                    style={{ padding:"8px 20px", border:"none", background:assignForm.scheduleType===val?(_darkMode?C.primary:T.primary):(_darkMode?C.white:T.surfaceCard), color:assignForm.scheduleType===val?"#fff":(_darkMode?C.textMid:T.onSurfaceVar), fontSize:12.5, fontWeight:assignForm.scheduleType===val?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
                                                     {label}
                                                 </button>
                                             ))}
                                         </div>
                                         {assignForm.scheduleType==="permanent" && (
-                                            <div style={{ marginTop:8, fontSize:12, color:C.textMuted, display:"flex", alignItems:"center", gap:6 }}>
-                                                <Lucide.Repeat size={12} color={C.textMuted} />Repeats every week with no end date
+                                            <div style={{ marginTop:8, fontSize:12, color:_darkMode?C.textMuted:T.outline, display:"flex", alignItems:"center", gap:6 }}>
+                                                <Lucide.Repeat size={12} color={_darkMode?C.textMuted:T.outline} />Repeats every week with no end date
                                             </div>
                                         )}
                                     </div>
                                     <div>
-                                        <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:6 }}>Active Days</div>
+                                        <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:6 }}>Active Days</div>
                                         <div style={{ display:"flex", gap:6 }}>
                                             {DAYS.map(d => {
                                                 const active = (assignForm.days||[]).includes(d);
                                                 return (
                                                     <button key={d} onClick={() => { const cur=assignForm.days||[]; setAF("days",active?cur.filter(x=>x!==d):[...cur,d]); }}
-                                                        style={{ width:40, height:34, borderRadius:7, border:`1.5px solid ${active?C.primary:C.border}`, background:active?C.primaryLight:C.white, color:active?C.primary:C.textMuted, fontSize:11.5, fontWeight:active?800:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.12s" }}>
+                                                        style={{ width:40, height:34, borderRadius:7, border:`1.5px solid ${active?(_darkMode?C.primary:T.primary):(_darkMode?C.border:T.outlineVar+"50")}`, background:active?(_darkMode?C.primaryLight:T.primaryFixed):(_darkMode?C.white:T.surfaceCard), color:active?(_darkMode?C.primary:T.primary):(_darkMode?C.textMuted:T.outline), fontSize:11.5, fontWeight:active?800:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.12s" }}>
                                                         {d}
                                                     </button>
                                                 );
@@ -9064,14 +9496,14 @@ const WorkSchedulePage = () => {
                                     {assignForm.scheduleType==="fixed" && (
                                         <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
                                             <div>
-                                                <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:5 }}>Start Date</div>
+                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Start Date</div>
                                                 <input type="date" value={assignForm.startDate} onChange={e=>setAF("startDate",e.target.value)}
-                                                    style={{ width:"100%", padding:"9px 10px", border:`1px solid ${C.border}`, borderRadius:8, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                                                    style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                                             </div>
                                             <div>
-                                                <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:5 }}>End Date</div>
+                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>End Date</div>
                                                 <input type="date" value={assignForm.endDate} onChange={e=>setAF("endDate",e.target.value)}
-                                                    style={{ width:"100%", padding:"9px 10px", border:`1px solid ${C.border}`, borderRadius:8, fontSize:13, outline:"none", background:C.white, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                                                    style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                                             </div>
                                         </div>
                                     )}
@@ -9079,12 +9511,12 @@ const WorkSchedulePage = () => {
                                         <Icon n="plus" size={13} color="#fff" />Assign Shift
                                     </Btn>
                                 </div>
-                            </Card>
+                            </div>
 
-                            <Card noPad>
-                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${C.borderLight}` }}>
-                                    <div style={{ fontSize:13, fontWeight:800, color:C.text }}>Current Assignments</div>
-                                    <div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>{shiftAssignments.length} active — visible in Timesheet → Calendar</div>
+                            <div style={{ background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
+                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
+                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Current Assignments</div>
+                                    <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>{shiftAssignments.length} active — visible in Timesheet → Calendar</div>
                                 </div>
                                 <div>
                                     {shiftAssignments.length===0 && <EmptyState icon="calendar" title="No shifts assigned" subtitle="Drag employees to shift slots to start scheduling" />}
@@ -9094,33 +9526,33 @@ const WorkSchedulePage = () => {
                                         if (!sh||!empItem) return null;
                                         const isPerm  = a.scheduleType==="permanent"||!a.scheduleType;
                                         return (
-                                            <div key={a.id} style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:14, borderBottom:i<shiftAssignments.length-1?`1px solid ${C.borderLight}`:"none" }}>
+                                            <div key={a.id} style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:14, borderBottom:i<shiftAssignments.length-1?`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`:"none" }}>
                                                 <div style={{ width:10, height:10, borderRadius:"50%", background:sh.color, flexShrink:0 }} />
                                                 <Avatar name={empItem.name} size={28} />
                                                 <div style={{ flex:1 }}>
-                                                    <div style={{ fontSize:13, fontWeight:700, color:C.text, display:"flex", alignItems:"center", gap:8 }}>
-                                                        {empItem.name} <span style={{ fontWeight:400, color:C.textMuted }}>·</span> <span style={{ color:sh.color, fontWeight:700 }}>{sh.name}</span>
+                                                    <div style={{ fontSize:13, fontWeight:700, color:_darkMode?C.text:T.onSurface, display:"flex", alignItems:"center", gap:8 }}>
+                                                        {empItem.name} <span style={{ fontWeight:400, color:_darkMode?C.textMuted:T.outline }}>·</span> <span style={{ color:sh.color, fontWeight:700 }}>{sh.name}</span>
                                                         {isPerm
-                                                            ? <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background:C.primaryLight, color:C.primary, display:"flex", alignItems:"center", gap:4 }}><Lucide.Repeat size={9} />Permanent</span>
+                                                            ? <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background:_darkMode?C.primaryLight:T.primaryFixed, color:_darkMode?C.primary:T.primary, display:"flex", alignItems:"center", gap:4 }}><Lucide.Repeat size={9} />Permanent</span>
                                                             : <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background:C.warningBg, color:C.warning }}>Fixed Period</span>
                                                         }
                                                     </div>
                                                     <div style={{ display:"flex", alignItems:"center", gap:4, flexWrap:"wrap", marginTop:3 }}>
-                                                        <span style={{ fontSize:11, color:C.textMuted }}>{sh.startTime}–{sh.endTime}</span>
-                                                        <span style={{ color:C.borderLight }}>·</span>
+                                                        <span style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{sh.startTime}–{sh.endTime}</span>
+                                                        <span style={{ color:_darkMode?C.borderLight:T.outlineVar+"44" }}>·</span>
                                                         {(a.days||["Mon","Tue","Wed","Thu","Fri"]).map(d => (
-                                                            <span key={d} style={{ fontSize:10, fontWeight:700, padding:"1px 5px", borderRadius:4, background:C.primaryLight, color:C.primary }}>{d}</span>
+                                                            <span key={d} style={{ fontSize:10, fontWeight:700, padding:"1px 5px", borderRadius:4, background:_darkMode?C.primaryLight:T.primaryFixed, color:_darkMode?C.primary:T.primary }}>{d}</span>
                                                         ))}
-                                                        {!isPerm && <span style={{ fontSize:11, color:C.textMuted }}>· {a.startDate} → {a.endDate}</span>}
+                                                        {!isPerm && <span style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>· {a.startDate} → {a.endDate}</span>}
                                                     </div>
                                                 </div>
                                                 <button onClick={() => setShiftAssignments(prev => prev.filter(x => x.id!==a.id))}
-                                                    style={{ background:"none", border:"none", cursor:"pointer", color:C.textMuted, padding:"4px", fontSize:15, lineHeight:1 }}>✕</button>
+                                                    style={{ background:"none", border:"none", cursor:"pointer", color:_darkMode?C.textMuted:T.outline, padding:"4px", fontSize:15, lineHeight:1 }}>✕</button>
                                             </div>
                                         );
                                     })}
                                 </div>
-                            </Card>
+                            </div>
                         </div>
                     </div>
                 )}
@@ -9135,32 +9567,32 @@ const WorkSchedulePage = () => {
                     <motion.div onClick={() => setTemplateToApply(null)} style={{ position:"absolute", inset:0, background:"rgba(15,23,42,0.45)", backdropFilter:"blur(6px)" }} />
                     <motion.div initial={{ opacity:0, scale:0.97, y:12 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0 }}
                         transition={{ type:"spring", damping:28, stiffness:300 }}
-                        style={{ position:"relative", width:"100%", maxWidth:480, background:C.white, borderRadius:18, boxShadow:"0 20px 56px rgba(0,0,0,0.18)", overflow:"hidden" }}>
-                        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${C.borderLight}` }}>
-                            <div style={{ fontSize:16, fontWeight:800, color:C.text }}>Apply Template — {templateToApply.name}</div>
-                            <div style={{ fontSize:12, color:C.textMuted, marginTop:3 }}>{templateToApply.desc}</div>
+                        style={{ position:"relative", width:"100%", maxWidth:480, background:_darkMode?C.white:T.surfaceCard, borderRadius:18, boxShadow:"0 20px 56px rgba(0,0,0,0.18)", overflow:"hidden" }}>
+                        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
+                            <div style={{ fontSize:16, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Apply Template — {templateToApply.name}</div>
+                            <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:3 }}>{templateToApply.desc}</div>
                         </div>
                         <div style={{ padding:"16px 24px", maxHeight:320, overflowY:"auto" }}>
-                            <div style={{ fontSize:11, fontWeight:700, color:C.textMuted, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:10 }}>Select employees</div>
+                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMuted:T.outline, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:10 }}>Select employees</div>
                             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                                 {employees.map(e => {
                                     const checked = bulkEmpIds.includes(e.id);
                                     return (
                                         <label key={e.id} onClick={() => toggleBulkEmp(e.id)}
-                                            style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", borderRadius:9, border:`1px solid ${checked?C.primary:C.border}`, background:checked?C.primaryLight:C.white, cursor:"pointer", transition:"all 0.12s" }}>
-                                            <input type="checkbox" checked={checked} onChange={() => toggleBulkEmp(e.id)} style={{ accentColor:C.primary, width:14, height:14, cursor:"pointer" }} />
+                                            style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", borderRadius:9, border:`1px solid ${checked?(_darkMode?C.primary:T.primary):(_darkMode?C.border:T.outlineVar+"50")}`, background:checked?(_darkMode?C.primaryLight:T.primaryFixed):(_darkMode?C.white:T.surfaceCard), cursor:"pointer", transition:"all 0.12s" }}>
+                                            <input type="checkbox" checked={checked} onChange={() => toggleBulkEmp(e.id)} style={{ accentColor:_darkMode?C.primary:T.primary, width:14, height:14, cursor:"pointer" }} />
                                             <Avatar name={e.name} size={26} />
                                             <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:13, fontWeight:700, color:checked?C.primary:C.text }}>{e.name}</div>
-                                                <div style={{ fontSize:11, color:C.textMuted }}>{e.dept}</div>
+                                                <div style={{ fontSize:13, fontWeight:700, color:checked?(_darkMode?C.primary:T.primary):(_darkMode?C.text:T.onSurface) }}>{e.name}</div>
+                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{e.dept}</div>
                                             </div>
                                         </label>
                                     );
                                 })}
                             </div>
                         </div>
-                        <div style={{ padding:"14px 24px", borderTop:`1px solid ${C.borderLight}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                            <span style={{ fontSize:12, color:C.textMuted }}>{bulkEmpIds.length} selected</span>
+                        <div style={{ padding:"14px 24px", borderTop:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                            <span style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline }}>{bulkEmpIds.length} selected</span>
                             <div style={{ display:"flex", gap:10 }}>
                                 <Btn variant="outline" onClick={() => setTemplateToApply(null)}>Cancel</Btn>
                                 <Btn variant="primary" onClick={() => { applyTemplate(templateToApply, bulkEmpIds); handleSave(); }} disabled={bulkEmpIds.length===0}>
@@ -9181,31 +9613,31 @@ const WorkSchedulePage = () => {
                     <motion.div onClick={() => setShowCreateTpl(false)} style={{ position:"absolute", inset:0, background:"rgba(15,23,42,0.45)", backdropFilter:"blur(6px)" }} />
                     <motion.div initial={{ opacity:0, scale:0.97, y:14 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0 }}
                         transition={{ type:"spring", damping:26, stiffness:280 }}
-                        style={{ position:"relative", width:"100%", maxWidth:560, background:C.white, borderRadius:20, boxShadow:"0 24px 60px rgba(0,0,0,0.2)", overflow:"hidden" }}>
+                        style={{ position:"relative", width:"100%", maxWidth:560, background:_darkMode?C.white:T.surfaceCard, borderRadius:20, boxShadow:"0 24px 60px rgba(0,0,0,0.2)", overflow:"hidden" }}>
 
                         {/* Modal header */}
-                        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${C.borderLight}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
+                        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
                             <div>
-                                <div style={{ fontSize:16, fontWeight:800, color:C.text }}>Create Schedule Template</div>
-                                <div style={{ fontSize:12, color:C.textMuted, marginTop:2 }}>Define a reusable weekly pattern for your company</div>
+                                <div style={{ fontSize:16, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Create Schedule Template</div>
+                                <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>Define a reusable weekly pattern for your company</div>
                             </div>
-                            <button onClick={() => setShowCreateTpl(false)} style={{ background:"none", border:"none", cursor:"pointer", color:C.textMuted, fontSize:18, lineHeight:1 }}>✕</button>
+                            <button onClick={() => setShowCreateTpl(false)} style={{ background:"none", border:"none", cursor:"pointer", color:_darkMode?C.textMuted:T.outline, fontSize:18, lineHeight:1 }}>✕</button>
                         </div>
 
                         {/* Name + color */}
                         <div style={{ padding:"18px 24px 0", display:"flex", gap:14, alignItems:"flex-end" }}>
                             <div style={{ flex:1 }}>
-                                <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:5 }}>Template Name</div>
+                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Template Name</div>
                                 <input value={tplForm.name} onChange={e => setTplForm(p => ({...p, name:e.target.value}))}
                                     placeholder="e.g. Core Hours Flex, 4-Day Week…"
-                                    style={{ width:"100%", padding:"9px 12px", border:`1px solid ${C.border}`, borderRadius:8, fontSize:13, outline:"none", background:C.bg, color:C.text, fontFamily:"inherit", boxSizing:"border-box" }} />
+                                    style={{ width:"100%", padding:"9px 12px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.bg:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
                             </div>
                             <div>
-                                <div style={{ fontSize:11, fontWeight:700, color:C.textMid, marginBottom:5 }}>Colour</div>
+                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Colour</div>
                                 <div style={{ display:"flex", gap:6 }}>
                                     {TPL_COLORS.map(col => (
                                         <button key={col} onClick={() => setTplForm(p => ({...p, color:col}))}
-                                            style={{ width:26, height:26, borderRadius:"50%", background:col, border:tplForm.color===col?`3px solid ${C.text}`:"3px solid transparent", cursor:"pointer", flexShrink:0 }} />
+                                            style={{ width:26, height:26, borderRadius:"50%", background:col, border:tplForm.color===col?`3px solid ${_darkMode?C.text:T.onSurface}`:"3px solid transparent", cursor:"pointer", flexShrink:0 }} />
                                     ))}
                                 </div>
                             </div>
@@ -9213,16 +9645,16 @@ const WorkSchedulePage = () => {
 
                         {/* Day-by-day builder */}
                         <div style={{ padding:"16px 24px" }}>
-                            <div style={{ fontSize:11, fontWeight:700, color:C.textMuted, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:12 }}>Weekly Pattern</div>
+                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMuted:T.outline, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:12 }}>Weekly Pattern</div>
                             <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
                                 {DAYS.map((day, i) => {
                                     const current   = tplForm.schedule[day] || "Onsite";
                                     const isWeekend = i >= 5;
                                     return (
-                                        <div key={day} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 12px", borderRadius:9, background:isWeekend?C.bg:C.white, border:`1px solid ${C.borderLight}` }}>
+                                        <div key={day} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 12px", borderRadius:9, background:isWeekend?(_darkMode?C.bg:T.surfaceLow):(_darkMode?C.white:T.surfaceCard), border:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
                                             <div style={{ width:90, flexShrink:0 }}>
-                                                <div style={{ fontSize:13, fontWeight:700, color:isWeekend?C.textMuted:C.text }}>{DAY_LABELS[day]}</div>
-                                                <div style={{ fontSize:10, color:C.textMuted }}>{isWeekend?"Weekend":"Weekday"}</div>
+                                                <div style={{ fontSize:13, fontWeight:700, color:isWeekend?(_darkMode?C.textMuted:T.outline):(_darkMode?C.text:T.onSurface) }}>{DAY_LABELS[day]}</div>
+                                                <div style={{ fontSize:10, color:_darkMode?C.textMuted:T.outline }}>{isWeekend?"Weekend":"Weekday"}</div>
                                             </div>
                                             <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
                                                 {MODES.map(m => {
@@ -9230,7 +9662,7 @@ const WorkSchedulePage = () => {
                                                     const isActive = current === m;
                                                     return (
                                                         <button key={m} onClick={() => setTD(day, m)}
-                                                            style={{ padding:"5px 14px", borderRadius:7, border:`1.5px solid ${isActive?mc.border:C.border}`, background:isActive?mc.bg:C.white, color:isActive?mc.color:C.textMuted, fontSize:12, fontWeight:isActive?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.1s" }}>
+                                                            style={{ padding:"5px 14px", borderRadius:7, border:`1.5px solid ${isActive?mc.border:(_darkMode?C.border:T.outlineVar+"50")}`, background:isActive?mc.bg:(_darkMode?C.white:T.surfaceCard), color:isActive?mc.color:(_darkMode?C.textMuted:T.outline), fontSize:12, fontWeight:isActive?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.1s" }}>
                                                             {m}
                                                         </button>
                                                     );
@@ -9257,7 +9689,7 @@ const WorkSchedulePage = () => {
                         </div>
 
                         {/* Footer */}
-                        <div style={{ padding:"14px 24px", borderTop:`1px solid ${C.borderLight}`, display:"flex", justifyContent:"flex-end", gap:10 }}>
+                        <div style={{ padding:"14px 24px", borderTop:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"flex-end", gap:10 }}>
                             <Btn variant="outline" onClick={() => setShowCreateTpl(false)}>Cancel</Btn>
                             <Btn variant="primary" onClick={saveCustomTemplate} disabled={!tplForm.name.trim()}>
                                 <Icon n="check" size={13} color="#fff" />Save Template
@@ -11283,6 +11715,9 @@ const CalendarPage = () => {
     const [selectedEvent, setSelectedEvent] = React.useState(null); // view/edit
     const [selectedDay, setSelectedDay] = React.useState(null);  // pre-fill date on click
     const [filterScope, setFilterScope] = React.useState("All");
+    const [calFilterDept, setCalFilterDept] = React.useState("All");
+    const [calFilterTeam, setCalFilterTeam] = React.useState("All");
+    const [calFilterEmp, setCalFilterEmp] = React.useState("All");
 
     // ── form state ──
     const blankForm = { title: "", date: "", time: "09:00", type: "meeting", scope: "org", target: "", desc: "", color: "#6366F1" };
@@ -11292,6 +11727,11 @@ const CalendarPage = () => {
     const openNew = (date = "") => {
         setSelectedEvent(null);
         setForm({ ...blankForm, date });
+        setShowModal(true);
+    };
+    const openNewHoliday = () => {
+        setSelectedEvent(null);
+        setForm({ ...blankForm, title: "", date: "", type: "holiday", scope: "org", color: "#EF4444" });
         setShowModal(true);
     };
     const openEdit = (ev) => {
@@ -11319,9 +11759,19 @@ const CalendarPage = () => {
     // ── events for current month ──
     const monthStr = `${calYear}-${String(calMonth + 1).padStart(2, "0")}`;
     const monthEvents = events.filter(e => e.date && e.date.startsWith(monthStr));
+    const hasCalFilter = calFilterDept !== "All" || calFilterTeam !== "All" || calFilterEmp !== "All";
     const eventsOnDay = (dateStr) => {
-        const calEvs = events.filter(e => e.date === dateStr);
-        const shiftEvs = allShiftAssignments
+        let calEvs = events.filter(e => e.date === dateStr);
+        if (hasCalFilter) {
+            calEvs = calEvs.filter(e => {
+                if (e.type === "holiday" || e.scope === "org") return true;
+                if (calFilterDept !== "All" && e.scope === "dept" && e.target === calFilterDept) return true;
+                if (calFilterTeam !== "All" && e.scope === "team" && e.target === calFilterTeam) return true;
+                if (calFilterEmp !== "All" && e.scope === "employee" && e.target === calFilterEmp) return true;
+                return false;
+            });
+        }
+        let shiftEvs = allShiftAssignments
             .filter(a => a.startDate <= dateStr && a.endDate >= dateStr)
             .map(a => {
                 const sh = allShifts.find(s => s.id === a.shiftId);
@@ -11330,6 +11780,7 @@ const CalendarPage = () => {
                 return { id: `shift_${a.id}_${dateStr}`, title: `${sh.name} · ${emp.name}`, date: dateStr, time: sh.startTime, type: "shift", color: sh.color, scope: "employee", target: emp.name };
             })
             .filter(Boolean);
+        if (calFilterEmp !== "All") shiftEvs = shiftEvs.filter(ev => ev.target === calFilterEmp);
         return [...calEvs, ...shiftEvs];
     };
 
@@ -11358,38 +11809,131 @@ const CalendarPage = () => {
     const typeColor = (t) => (CAL_EVENT_TYPES.find(x => x.id === t) || { color: "#6366F1" }).color;
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Team Calendar</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Schedule events for employees, teams, departments or the whole organisation</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Team Calendar</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Schedule events for employees, teams, departments or the whole organisation</p>
                 </div>
-                <div style={{ display: "flex", gap: 8 }}>
-                    <div style={{ display: "flex", border: `1px solid ${C.border}`, borderRadius: 8, overflow: "hidden" }}>
+                <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    <div style={{ display: "flex", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 10, overflow: "hidden", background: _darkMode ? C.white : T.surfaceCard, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                         {["month", "week"].map(m => (
-                            <div key={m} onClick={() => setViewMode(m)} style={{ padding: "7px 14px", fontSize: 12, fontWeight: 600, cursor: "pointer", background: viewMode === m ? C.primary : C.white, color: viewMode === m ? "#fff" : C.textMid, transition: "all 0.15s", textTransform: "capitalize" }}>{m}</div>
+                            <div key={m} onClick={() => setViewMode(m)} style={{ padding: "9px 18px", fontSize: 12.5, fontWeight: 600, cursor: "pointer", background: viewMode === m ? (_darkMode ? C.primary : T.primary) : "transparent", color: viewMode === m ? "#fff" : (_darkMode ? C.textMid : T.onSurfaceVar), transition: "all 0.15s", textTransform: "capitalize" }}>{m}</div>
                         ))}
                     </div>
-                    <Btn variant="primary" onClick={() => openNew()}><Icon n="plus" size={13} color="#fff" />New Event</Btn>
+                    <motion.button
+                        whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                        onClick={() => openNew()}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 22px", borderRadius: 12, border: "none", background: _darkMode ? C.primary : T.primary, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 4px rgba(0,0,0,0.14)" }}
+                    >
+                        <Lucide.Plus size={16} color="#fff" />
+                        New Event
+                    </motion.button>
                 </div>
+            </div>
+
+            {/* ── Metric Cards ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: _darkMode ? C.textMuted : T.outline, marginBottom: 16, margin: "0 0 16px" }}>Events This Month</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{String(monthEvents.length).padStart(2, "0")}</span>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Lucide.Calendar size={16} color={T.primaryFixedText} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.06 }} style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: _darkMode ? C.textMuted : T.outline, marginBottom: 16, margin: "0 0 16px" }}>Upcoming (30 Days)</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.primary, lineHeight: 1 }}>{String(upcoming.length).padStart(2, "0")}</span>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Lucide.CalendarDays size={16} color={T.primaryFixedText} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.12 }} style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: _darkMode ? C.textMuted : T.outline, marginBottom: 16, margin: "0 0 16px" }}>Holidays This Year</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{String(CAL_HOLIDAYS_2026.length).padStart(2, "0")}</span>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#ffdad6", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Lucide.MapPin size={16} color="#ba1a1a" />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+                <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.18 }} style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ padding: "24px" }}>
+                        <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: _darkMode ? C.textMuted : T.outline, marginBottom: 16, margin: "0 0 16px" }}>Org-Wide Events</p>
+                        <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                            <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{String(events.filter(e => e.scope === "org" || e.type === "holiday").length).padStart(2, "0")}</span>
+                            <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.tertiaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                <Lucide.Globe size={16} color={T.tertiary} />
+                            </div>
+                        </div>
+                    </div>
+                </motion.div>
+            </div>
+
+            {/* ── Calendar Filter Bar ── */}
+            <div style={{ display: "flex", gap: 10, marginBottom: 18, flexWrap: "wrap", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, fontWeight: 600, color: _darkMode ? C.textMuted : T.outline }}>
+                    <Lucide.SlidersHorizontal size={14} />
+                    Filter by:
+                </div>
+                <select value={calFilterDept} onChange={e => { setCalFilterDept(e.target.value); if (e.target.value !== "All") { setCalFilterTeam("All"); setCalFilterEmp("All"); } }}
+                    style={{ padding: "7px 12px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: calFilterDept !== "All" ? T.primaryFixed : (_darkMode ? C.white : T.surfaceCard), color: calFilterDept !== "All" ? T.primaryFixedText : (_darkMode ? C.textMid : T.onSurfaceVar), fontSize: 12, fontWeight: 600, outline: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    <option value="All">All Departments</option>
+                    {CAL_DEPTS.map(d => <option key={d}>{d}</option>)}
+                </select>
+                <select value={calFilterTeam} onChange={e => { setCalFilterTeam(e.target.value); if (e.target.value !== "All") { setCalFilterDept("All"); setCalFilterEmp("All"); } }}
+                    style={{ padding: "7px 12px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: calFilterTeam !== "All" ? T.primaryFixed : (_darkMode ? C.white : T.surfaceCard), color: calFilterTeam !== "All" ? T.primaryFixedText : (_darkMode ? C.textMid : T.onSurfaceVar), fontSize: 12, fontWeight: 600, outline: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    <option value="All">All Teams</option>
+                    {CAL_TEAMS.map(t => <option key={t}>{t}</option>)}
+                </select>
+                <select value={calFilterEmp} onChange={e => { setCalFilterEmp(e.target.value); if (e.target.value !== "All") { setCalFilterDept("All"); setCalFilterTeam("All"); } }}
+                    style={{ padding: "7px 12px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: calFilterEmp !== "All" ? T.primaryFixed : (_darkMode ? C.white : T.surfaceCard), color: calFilterEmp !== "All" ? T.primaryFixedText : (_darkMode ? C.textMid : T.onSurfaceVar), fontSize: 12, fontWeight: 600, outline: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                    <option value="All">All Employees</option>
+                    {CAL_EMPLOYEES.map(em => <option key={em}>{em}</option>)}
+                </select>
+                {hasCalFilter && (
+                    <motion.button
+                        whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                        onClick={() => { setCalFilterDept("All"); setCalFilterTeam("All"); setCalFilterEmp("All"); }}
+                        style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 12px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: "#ffdad6", color: "#ba1a1a", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                    >
+                        <Lucide.X size={12} color="#ba1a1a" />
+                        Clear Filters
+                    </motion.button>
+                )}
+                {hasCalFilter && (
+                    <span style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginLeft: 4 }}>
+                        Showing filtered events · Holidays &amp; org-wide events always visible
+                    </span>
+                )}
             </div>
 
             <div style={{ display: "flex", gap: 18, alignItems: "flex-start" }}>
                 {/* ── Left: Calendar ── */}
                 <div style={{ flex: 1, minWidth: 0 }}>
-                    <Card style={{ overflow: "hidden" }}>
+                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
                         {/* Month header */}
-                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}` }}>
-                            <button onClick={prevMonth} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMid, padding: "4px 8px", borderRadius: 6, fontSize: 16 }}>‹</button>
-                            <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{calMonthNames[calMonth]} {calYear}</div>
-                            <button onClick={nextMonth} style={{ background: "none", border: "none", cursor: "pointer", color: C.textMid, padding: "4px 8px", borderRadius: 6, fontSize: 16 }}>›</button>
+                        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "14px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                            <button onClick={prevMonth} style={{ background: "none", border: "none", cursor: "pointer", color: _darkMode ? C.textMid : T.onSurfaceVar, padding: "4px 8px", borderRadius: 6, fontSize: 16 }}>‹</button>
+                            <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>{calMonthNames[calMonth]} {calYear}</div>
+                            <button onClick={nextMonth} style={{ background: "none", border: "none", cursor: "pointer", color: _darkMode ? C.textMid : T.onSurfaceVar, padding: "4px 8px", borderRadius: 6, fontSize: 16 }}>›</button>
                         </div>
 
                         {/* Day-of-week headers */}
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: `1px solid ${C.borderLight}` }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "repeat(7,1fr)", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, background: _darkMode ? C.bg : T.surfaceLow }}>
                             {calDayNames.map(d => (
-                                <div key={d} style={{ textAlign: "center", padding: "8px 0", fontSize: 11, fontWeight: 700, color: C.textMuted }}>{d}</div>
+                                <div key={d} style={{ textAlign: "center", padding: "8px 0", fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.5px" }}>{d}</div>
                             ))}
                         </div>
 
@@ -11410,29 +11954,29 @@ const CalendarPage = () => {
                                         style={{
                                             minHeight: 90,
                                             padding: "6px 6px 4px",
-                                            borderRight: (i % 7 < 6) ? `1px solid ${C.borderLight}` : "none",
-                                            borderBottom: (i < totalCells - 7) ? `1px solid ${C.borderLight}` : "none",
-                                            background: !isValid ? C.bg : isToday ? C.primaryLight : "transparent",
+                                            borderRight: (i % 7 < 6) ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none",
+                                            borderBottom: (i < totalCells - 7) ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none",
+                                            background: !isValid ? (_darkMode ? C.bg : T.surfaceLow) : isToday ? T.primaryFixed : "transparent",
                                             cursor: isValid ? "pointer" : "default",
                                             transition: "background 0.12s",
                                         }}
-                                        onMouseEnter={e => { if (isValid && !isToday) e.currentTarget.style.background = C.bg; }}
+                                        onMouseEnter={e => { if (isValid && !isToday) e.currentTarget.style.background = _darkMode ? C.bg : T.surfaceLow; }}
                                         onMouseLeave={e => { if (isValid && !isToday) e.currentTarget.style.background = "transparent"; }}
                                     >
                                         {isValid && (
                                             <>
                                                 <div style={{
                                                     fontSize: 12, fontWeight: isToday ? 800 : 500,
-                                                    color: isToday ? C.primary : isSun || isSat ? C.textMuted : C.text,
+                                                    color: isToday ? T.primaryFixedText : isSun || isSat ? (_darkMode ? C.textMuted : T.outline) : (_darkMode ? C.text : T.onSurface),
                                                     marginBottom: 4,
                                                     display: "flex", alignItems: "center", justifyContent: "space-between",
                                                 }}>
-                                                    <span style={isToday ? { background: C.primary, color: "#fff", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 } : {}}>{dayNum}</span>
-                                                    {dayEvents.length > 0 && <span style={{ fontSize: 9, color: C.textMuted }}></span>}
+                                                    <span style={isToday ? { background: _darkMode ? C.primary : T.primary, color: "#fff", borderRadius: "50%", width: 20, height: 20, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11 } : {}}>{dayNum}</span>
+                                                    {dayEvents.length > 0 && <span style={{ fontSize: 9, color: _darkMode ? C.textMuted : T.onSurfaceVar }}></span>}
                                                 </div>
                                                 <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
                                                     {dayEvents.slice(0, 3).map(ev => <CalEventPill key={ev.id} ev={ev} onClick={openEdit} />)}
-                                                    {dayEvents.length > 3 && <div style={{ fontSize: 9, color: C.textMuted, fontWeight: 600 }}>+{dayEvents.length - 3} more</div>}
+                                                    {dayEvents.length > 3 && <div style={{ fontSize: 9, color: _darkMode ? C.textMuted : T.onSurfaceVar, fontWeight: 600 }}>+{dayEvents.length - 3} more</div>}
                                                 </div>
                                             </>
                                         )}
@@ -11440,12 +11984,12 @@ const CalendarPage = () => {
                                 );
                             })}
                         </div>
-                    </Card>
+                    </div>
 
                     {/* Legend */}
                     <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 8 }}>
                         {CAL_EVENT_TYPES.map(t => (
-                            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: C.textMid }}>
+                            <div key={t.id} style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: _darkMode ? C.textMid : T.onSurfaceVar }}>
                                 <div style={{ width: 8, height: 8, borderRadius: "50%", background: t.color }} />
                                 {t.label}
                             </div>
@@ -11455,13 +11999,13 @@ const CalendarPage = () => {
 
                 {/* ── Right: Upcoming events sidebar ── */}
                 <div style={{ width: 260, flexShrink: 0 }}>
-                    <Card style={{ padding: 0, overflow: "hidden" }}>
-                        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>Upcoming</div>
+                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Upcoming</div>
                             <select
                                 value={filterScope}
                                 onChange={e => setFilterScope(e.target.value)}
-                                style={{ fontSize: 11, border: `1px solid ${C.border}`, borderRadius: 6, padding: "3px 7px", background: C.white, color: C.textMid, outline: "none" }}
+                                style={{ fontSize: 11, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 6, padding: "3px 7px", background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.textMid : T.onSurfaceVar, outline: "none" }}
                             >
                                 {["All", "Employee", "Team", "Department", "Org", "Holiday"].map(o => <option key={o}>{o}</option>)}
                             </select>
@@ -11486,17 +12030,17 @@ const CalendarPage = () => {
                                             onClick={() => openEdit(ev)}
                                             style={{
                                                 padding: "10px 14px",
-                                                borderBottom: i < arr.length - 1 ? `1px solid ${C.borderLight}` : "none",
+                                                borderBottom: i < arr.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none",
                                                 cursor: "pointer",
                                                 display: "flex", gap: 10, alignItems: "flex-start",
                                             }}
-                                            onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                                            onMouseEnter={e => e.currentTarget.style.background = _darkMode ? C.bg : T.surfaceLow}
                                             onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                                         >
                                             <div style={{ width: 3, alignSelf: "stretch", borderRadius: 2, background: ev.color, flexShrink: 0 }} />
                                             <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</div>
-                                                <div style={{ fontSize: 10, color: C.textMuted }}>{ev.date}{ev.time ? " · " + ev.time : ""}</div>
+                                                <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 2, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{ev.title}</div>
+                                                <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.onSurfaceVar }}>{ev.date}{ev.time ? " · " + ev.time : ""}</div>
                                                 <div style={{ display: "flex", gap: 4, marginTop: 4, flexWrap: "wrap" }}>
                                                     <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: evType.color + "22", color: evType.color }}>{evType.label}</span>
                                                     <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: sl.color + "22", color: sl.color }}>{sl.text}</span>
@@ -11505,33 +12049,64 @@ const CalendarPage = () => {
                                         </div>
                                     );
                                 })}
-                            {upcoming.length === 0 && <div style={{ padding: "20px 14px", fontSize: 12, color: C.textMuted, textAlign: "center" }}>No upcoming events</div>}
+                            {upcoming.length === 0 && <div style={{ padding: "20px 14px", fontSize: 12, color: _darkMode ? C.textMuted : T.onSurfaceVar, textAlign: "center" }}>No upcoming events</div>}
                         </div>
-                        <div style={{ padding: "10px 14px", borderTop: `1px solid ${C.borderLight}` }}>
+                        <div style={{ padding: "10px 14px", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                             <Btn variant="outline" style={{ width: "100%" }} onClick={() => openNew()}><Icon n="plus" size={12} />Add Event</Btn>
                         </div>
-                    </Card>
+                    </div>
 
-                    {/* Holidays card */}
-                    <Card style={{ marginTop: 14, padding: 0, overflow: "hidden" }}>
-                        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 14, fontWeight: 700, color: C.text, display: "flex", alignItems: "center", gap: 7 }}>
-                            <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#EF4444" }} />
-                            Company Holidays {calYear}
-                        </div>
-                        <div style={{ maxHeight: 240, overflowY: "auto" }}>
-                            {CAL_HOLIDAYS_2026.map((h, i) => (
-                                <div key={h.id} style={{ padding: "8px 14px", borderBottom: i < CAL_HOLIDAYS_2026.length - 1 ? `1px solid ${C.borderLight}` : "none", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                    <div>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.text }}>{h.title}</div>
-                                        <div style={{ fontSize: 10, color: C.textMuted }}>{h.date}</div>
-                                    </div>
-                                    <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#EF4444" }} />
-                                </div>
-                            ))}
-                        </div>
-                    </Card>
                 </div>
             </div>
+
+            {/* ── Company Holidays — full-width below calendar ── */}
+            {(() => {
+                const holidayEvents = events.filter(e => e.type === "holiday").sort((a, b) => a.date.localeCompare(b.date));
+                return (
+                    <div style={{ marginTop: 20, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                        <div style={{ padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#ba1a1a" }} />
+                                <span style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>Company Holidays {calYear}</span>
+                                <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: "#ffdad6", color: "#ba1a1a" }}>{holidayEvents.length}</span>
+                            </div>
+                            <motion.button
+                                whileHover={{ scale: 1.03 }} whileTap={{ scale: 0.97 }}
+                                onClick={openNewHoliday}
+                                style={{ display: "flex", alignItems: "center", gap: 5, padding: "7px 14px", borderRadius: 9, border: `1px solid ${"#ba1a1a40"}`, background: "#ffdad6", color: "#ba1a1a", fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}
+                            >
+                                <Lucide.Plus size={13} color="#ba1a1a" />
+                                Add Holiday
+                            </motion.button>
+                        </div>
+                        {holidayEvents.length === 0 ? (
+                            <div style={{ padding: "24px", textAlign: "center", fontSize: 13, color: _darkMode ? C.textMuted : T.onSurfaceVar }}>No holidays added yet — click "Add Holiday" to create one.</div>
+                        ) : (
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))" }}>
+                                {holidayEvents.map((h, i) => (
+                                    <div
+                                        key={h.id}
+                                        onClick={() => openEdit(h)}
+                                        style={{ padding: "14px 18px", borderRight: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "18"}`, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "18"}`, cursor: "pointer", display: "flex", alignItems: "flex-start", gap: 12 }}
+                                        onMouseEnter={e => e.currentTarget.style.background = _darkMode ? C.bg : T.surfaceLow}
+                                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                    >
+                                        <div style={{ width: 36, height: 36, borderRadius: 10, background: "#ffdad6", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <span style={{ fontSize: 13, fontWeight: 800, color: "#ba1a1a", lineHeight: 1 }}>{new Date(h.date).getDate()}</span>
+                                            <span style={{ fontSize: 8, fontWeight: 700, color: "#ba1a1a", textTransform: "uppercase" }}>{new Date(h.date).toLocaleDateString("en-GB", { month: "short" })}</span>
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 2 }}>{h.title}</div>
+                                            <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.onSurfaceVar }}>{new Date(h.date).toLocaleDateString("en-GB", { weekday: "short", day: "numeric", month: "short", year: "numeric" })}</div>
+                                            {h.desc && <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline, marginTop: 2, fontStyle: "italic" }}>{h.desc}</div>}
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                );
+            })()}
 
             {/* ── Create / Edit Event Modal ── */}
             <AnimatePresence>
@@ -11546,17 +12121,17 @@ const CalendarPage = () => {
                             initial={{ scale: 0.92, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} exit={{ scale: 0.92, opacity: 0 }}
                             transition={{ duration: 0.18 }}
                             onClick={e => e.stopPropagation()}
-                            style={{ background: C.white, borderRadius: 16, padding: 28, width: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.22)" }}
+                            style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, padding: 28, width: 520, maxHeight: "90vh", overflowY: "auto", boxShadow: "0 24px 64px rgba(0,0,0,0.22)" }}
                         >
                             {/* Modal header */}
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-                                <div style={{ fontSize: 16, fontWeight: 800, color: C.text }}>{selectedEvent ? "Edit Event" : "New Event"}</div>
-                                <div onClick={closeModal} style={{ cursor: "pointer", color: C.textMuted, fontSize: 18 }}>×</div>
+                                <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>{selectedEvent ? "Edit Event" : "New Event"}</div>
+                                <div onClick={closeModal} style={{ cursor: "pointer", color: _darkMode ? C.textMuted : T.onSurfaceVar, fontSize: 18 }}>×</div>
                             </div>
 
                             {/* Event type picker */}
                             <div style={{ marginBottom: 18 }}>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 8 }}>Event Type</div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 8 }}>Event Type</div>
                                 <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 6 }}>
                                     {CAL_EVENT_TYPES.map(t => (
                                         <div
@@ -11564,9 +12139,9 @@ const CalendarPage = () => {
                                             onClick={() => { setF("type", t.id); setF("color", t.color); }}
                                             style={{
                                                 padding: "7px 4px", borderRadius: 8, textAlign: "center", cursor: "pointer",
-                                                background: form.type === t.id ? t.color + "22" : C.bg,
-                                                border: `1.5px solid ${form.type === t.id ? t.color : C.border}`,
-                                                fontSize: 9, fontWeight: 700, color: form.type === t.id ? t.color : C.textMid,
+                                                background: form.type === t.id ? t.color + "22" : (_darkMode ? C.bg : T.surfaceLow),
+                                                border: `1.5px solid ${form.type === t.id ? t.color : (_darkMode ? C.border : T.outlineVar + "50")}`,
+                                                fontSize: 9, fontWeight: 700, color: form.type === t.id ? t.color : (_darkMode ? C.textMid : T.onSurfaceVar),
                                                 transition: "all 0.12s",
                                                 lineHeight: 1.3,
                                             }}
@@ -11577,34 +12152,34 @@ const CalendarPage = () => {
 
                             {/* Title */}
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Event Title</div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 6 }}>Event Title</div>
                                 <input
                                     value={form.title}
                                     onChange={e => setF("title", e.target.value)}
                                     placeholder="e.g. Q2 Planning Meeting"
-                                    style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit", boxSizing: "border-box" }}
+                                    style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 9, fontSize: 13, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }}
                                 />
                             </div>
 
                             {/* Date + Time */}
                             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 14 }}>
                                 <div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Date</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 6 }}>Date</div>
                                     <input type="date" value={form.date} onChange={e => setF("date", e.target.value)}
-                                        style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit", colorScheme: _darkMode ? "dark" : "light", boxSizing: "border-box" }}
+                                        style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 9, fontSize: 13, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", colorScheme: _darkMode ? "dark" : "light", boxSizing: "border-box" }}
                                     />
                                 </div>
                                 <div>
-                                    <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Time</div>
+                                    <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 6 }}>Time</div>
                                     <input type="time" value={form.time} onChange={e => setF("time", e.target.value)}
-                                        style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit", colorScheme: _darkMode ? "dark" : "light", boxSizing: "border-box" }}
+                                        style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 9, fontSize: 13, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", colorScheme: _darkMode ? "dark" : "light", boxSizing: "border-box" }}
                                     />
                                 </div>
                             </div>
 
                             {/* Assign to */}
                             <div style={{ marginBottom: 14 }}>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 8 }}>Assign To</div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 8 }}>Assign To</div>
                                 <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 10 }}>
                                     {[
                                         { val: "org", label: "All Organisation", color: "#8B5CF6" },
@@ -11617,9 +12192,9 @@ const CalendarPage = () => {
                                             onClick={() => { setF("scope", s.val); setF("target", ""); }}
                                             style={{
                                                 padding: "6px 12px", borderRadius: 20, fontSize: 11, fontWeight: 700, cursor: "pointer",
-                                                background: form.scope === s.val ? s.color + "22" : C.bg,
-                                                border: `1.5px solid ${form.scope === s.val ? s.color : C.border}`,
-                                                color: form.scope === s.val ? s.color : C.textMid,
+                                                background: form.scope === s.val ? s.color + "22" : (_darkMode ? C.bg : T.surfaceLow),
+                                                border: `1.5px solid ${form.scope === s.val ? s.color : (_darkMode ? C.border : T.outlineVar + "50")}`,
+                                                color: form.scope === s.val ? s.color : (_darkMode ? C.textMid : T.onSurfaceVar),
                                                 transition: "all 0.12s",
                                             }}
                                         >{s.label}</div>
@@ -11631,7 +12206,7 @@ const CalendarPage = () => {
                                     <select
                                         value={form.target}
                                         onChange={e => setF("target", e.target.value)}
-                                        style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit" }}
+                                        style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 9, fontSize: 13, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit" }}
                                     >
                                         <option value="">— select {form.scope === "dept" ? "department" : form.scope === "team" ? "team" : "employee"} —</option>
                                         {form.scope === "dept" && CAL_DEPTS.map(d => <option key={d}>{d}</option>)}
@@ -11640,19 +12215,19 @@ const CalendarPage = () => {
                                     </select>
                                 )}
                                 {form.scope === "org" && (
-                                    <div style={{ padding: "9px 12px", background: C.bg, borderRadius: 9, fontSize: 12, color: C.textMuted, border: `1px solid ${C.border}` }}>Visible to all 248 employees</div>
+                                    <div style={{ padding: "9px 12px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 9, fontSize: 12, color: _darkMode ? C.textMuted : T.onSurfaceVar, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}` }}>Visible to all 248 employees</div>
                                 )}
                             </div>
 
                             {/* Description */}
                             <div style={{ marginBottom: 20 }}>
-                                <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Description <span style={{ fontWeight: 400, color: C.textMuted }}>(optional)</span></div>
+                                <div style={{ fontSize: 12, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, marginBottom: 6 }}>Description <span style={{ fontWeight: 400, color: _darkMode ? C.textMuted : T.onSurfaceVar }}>(optional)</span></div>
                                 <textarea
                                     value={form.desc}
                                     onChange={e => setF("desc", e.target.value)}
                                     placeholder="Add details about this event…"
                                     rows={2}
-                                    style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }}
+                                    style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 9, fontSize: 13, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }}
                                 />
                             </div>
 
@@ -17022,6 +17597,8 @@ const FullEmployeeProfile = () => {
 
     const [tab, setTab] = useState("overview");
     const [showActions, setShowActions] = useState(false);
+    const [showOffboardConfirm, setShowOffboardConfirm] = useState(false);
+    const { setEmployees: setEmps } = React.useContext(DataCtx);
 
     const myLeaves = (leaveRequests || []).filter(l => l.empId === emp.id);
     const myReviews = (reviews || []).filter(r => r.empId === emp.id);
@@ -17032,52 +17609,70 @@ const FullEmployeeProfile = () => {
         { key: "overview", label: "Overview", icon: "user" },
         { key: "history", label: "History", icon: "clock" },
         { key: "leave", label: "Leave", icon: "calendar" },
-        { key: "performance", label: "Performance", icon: "trending-up" },
-        { key: "skills", label: "Skills", icon: "award" },
-        { key: "documents", label: "Documents", icon: "file-text" },
+        { key: "performance", label: "Performance", icon: "trending" },
+        { key: "skills", label: "Skills", icon: "star" },
+        { key: "documents", label: "Documents", icon: "invoices" },
     ];
 
+    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
+    const cardHeaderStyle = { padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface };
+    const fieldLabel = { fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 };
+    const fieldValue = { fontSize: 14, fontWeight: 600, color: _darkMode ? C.text : T.onSurface };
+    const primaryColor = _darkMode ? C.primary : T.primary;
+
     return (
-        <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1, position: "relative" }}>
-            {/* Nav breadcrumb-style back */}
-            <div onClick={() => navigate("people_Directory")} style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 13, color: C.textMid, cursor: "pointer", marginBottom: 16, width: "fit-content" }}>
-                <Icon n="arrow-left" size={14} color={C.textMuted} />Back to Directory
+        <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+            {/* Back breadcrumb */}
+            <div onClick={() => navigate("people_Directory")}
+                style={{ display: "inline-flex", alignItems: "center", gap: 6, fontSize: 13, fontWeight: 500, color: _darkMode ? C.textMid : T.onSurfaceVar, cursor: "pointer", marginBottom: 20, padding: "5px 10px 5px 6px", borderRadius: 8, transition: "background 0.15s" }}
+                onMouseEnter={e => e.currentTarget.style.background = _darkMode ? C.bg : T.surfaceLow}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <Lucide.ArrowLeft size={15} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
+                Back to Directory
             </div>
 
-            {/* Header section with Actions */}
-            <div style={{ marginBottom: 24, background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden", boxShadow: C.shadow }}>
-                <div style={{ height: 72, background: `linear-gradient(135deg, ${C.primary}20 0%, ${C.primary}06 100%)` }} />
-                <div style={{ padding: "0 28px 22px", marginTop: -40 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
-                        <div style={{ display: "flex", alignItems: "flex-end", gap: 18 }}>
-                            <div style={{ border: `3px solid ${C.white}`, borderRadius: "50%", boxShadow: C.shadowMd, flexShrink: 0 }}>
-                                <Avatar name={emp.name} size={72} />
+            {/* ── Profile header card ── */}
+            <div style={{ ...cardStyle, marginBottom: 20 }}>
+                {/* Banner */}
+                <div style={{ height: 68, background: `linear-gradient(135deg, ${primaryColor}18 0%, ${primaryColor}06 100%)` }} />
+                {/* Content row */}
+                <div style={{ padding: "0 28px 24px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginTop: -36 }}>
+                        {/* Avatar + name */}
+                        <div style={{ display: "flex", alignItems: "flex-end", gap: 16 }}>
+                            <div style={{ border: `3px solid ${_darkMode ? C.white : T.surfaceCard}`, borderRadius: "50%", flexShrink: 0, lineHeight: 0, overflow: "hidden", width: 82, height: 82 }}>
+                                {EMPLOYEE_PHOTOS[emp.id]
+                                    ? <img src={EMPLOYEE_PHOTOS[emp.id]} alt={emp.name} style={{ width: "100%", height: "100%", objectFit: "cover", objectPosition: "center 20%", display: "block" }} />
+                                    : <Avatar name={emp.name} size={76} />
+                                }
                             </div>
                             <div style={{ paddingBottom: 4 }}>
-                                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
-                                    <h1 style={{ fontSize: 22, fontWeight: 900, color: C.text, margin: 0 }}>{emp.name}</h1>
+                                <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap", marginTop: 8 }}>
+                                    <h1 style={{ fontSize: 22, fontWeight: 900, color: _darkMode ? C.text : T.onSurface, margin: 0, fontFamily: "Manrope, sans-serif", letterSpacing: "-0.3px" }}>{emp.name}</h1>
                                     <Badge label={emp.status} variant={emp.status === "Active" ? "success" : emp.status === "On Leave" ? "info" : "default"} />
                                 </div>
-                                <div style={{ fontSize: 14, color: C.textMuted, marginTop: 3 }}>{emp.level} · {emp.dept}</div>
-                                <div style={{ fontSize: 12.5, color: C.textMid, marginTop: 2 }}>{emp.id} · {emp.email} · {emp.type || "Full-time"}</div>
+                                <div style={{ fontSize: 13.5, color: _darkMode ? C.textMuted : T.onSurfaceVar, marginTop: 3 }}>{emp.level} · {emp.dept}</div>
+                                <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{emp.id} · {emp.email} · {emp.type || "Full-time"}</div>
                             </div>
                         </div>
-                        <div style={{ position: "relative", paddingBottom: 4 }}>
-                            <Btn variant="primary" onClick={() => setShowActions(!showActions)}>
-                                Manage <Icon n="chevron-down" size={12} color="#fff" />
-                            </Btn>
+                        {/* Manage button */}
+                        <div style={{ position: "relative", paddingTop: 44 }}>
+                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowActions(!showActions)}
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 9, border: "none", background: primaryColor, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 2px 10px ${primaryColor}40` }}>
+                                Manage <Lucide.ChevronDown size={13} color="#fff" strokeWidth={2.5} />
+                            </motion.button>
                             <AnimatePresence>
                                 {showActions && (
                                     <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                                        style={{ position: "absolute", top: "110%", right: 0, width: 180, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.1)", zIndex: 100, padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
+                                        style={{ position: "absolute", top: "110%", right: 0, width: 180, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.12)", zIndex: 100, padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
                                         {[
-                                            { l: "Promote", i: "trending-up", c: C.primary },
-                                            { l: "Edit Profile", i: "edit", c: C.text },
-                                            { l: "Offboard", i: "log-out", c: C.danger },
+                                            { l: "Promote",     i: "trending", c: primaryColor,                    onClick: () => setShowActions(false) },
+                                            { l: "Edit Profile",i: "edit",     c: _darkMode ? C.text : T.onSurface, onClick: () => setShowActions(false) },
+                                            { l: "Offboard",    i: "sign",     c: C.danger,                        onClick: () => { setShowActions(false); setShowOffboardConfirm(true); } },
                                         ].map(a => (
-                                            <div key={a.l} onClick={() => setShowActions(false)}
-                                                style={{ padding: "8px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: a.c, cursor: "pointer", display: "flex", alignItems: "center", gap: 10 }}
-                                                onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                                            <div key={a.l} onClick={a.onClick}
+                                                style={{ padding: "8px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: a.c, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, transition: "background 0.12s" }}
+                                                onMouseEnter={e => e.currentTarget.style.background = _darkMode ? C.bg : T.surfaceLow}
                                                 onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                                                 <Icon n={a.i} size={14} color={a.c} /> {a.l}
                                             </div>
@@ -17087,140 +17682,162 @@ const FullEmployeeProfile = () => {
                             </AnimatePresence>
                         </div>
                     </div>
-                    {/* Quick stats bar */}
-                    <div style={{ display: "flex", gap: 20, marginTop: 20, paddingTop: 20, borderTop: `1px solid ${C.borderLight}` }}>
+
+                    {/* Quick stats strip */}
+                    <div style={{ display: "flex", gap: 32, marginTop: 22, paddingTop: 20, borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
                         {[
                             { label: "Tenure", value: (() => { const start = new Date(emp.startDate); const now = new Date(); const months = (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth(); return months >= 12 ? `${Math.floor(months / 12)}y ${months % 12}m` : `${months}m`; })() },
-                            { label: "Salary", value: emp.salary ? `${(emp.salary).toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "—" },
+                            { label: "Salary", value: emp.salary ? `${emp.salary.toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "—" },
                             { label: "Rating", value: emp.rating ? `${emp.rating} / 5` : "—" },
                             { label: "Leave Balance", value: `${Object.values(emp.leaveBalance || {}).reduce((s, v) => s + v, 0)} days` },
                             { label: "Role Changes", value: String((emp.history || []).filter(h => h.type === "Promotion" || h.type === "Role Change").length) },
                         ].map(s => (
                             <div key={s.label}>
-                                <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>{s.label}</div>
-                                <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{s.value}</div>
+                                <div style={{ fontSize: 10.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 4 }}>{s.label}</div>
+                                <div style={{ fontSize: 15, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>{s.value}</div>
                             </div>
                         ))}
                     </div>
                 </div>
             </div>
 
-            {/* Tab bar */}
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 24, padding: "0 4px" }}>
+            {/* ── Tab bar ── */}
+            <div style={{ display: "flex", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, marginBottom: 24 }}>
                 {TABS.map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 20px", background: "none", border: "none", borderBottom: tab === t.key ? `3px solid ${C.primary}` : "3px solid transparent", color: tab === t.key ? C.primary : C.textMuted, fontWeight: tab === t.key ? 800 : 500, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", transition: "all 0.2s" }}>
-                        <Icon n={t.icon} size={14} color={tab === t.key ? C.primary : C.textMuted} />
+                        style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 18px", background: "none", border: "none", borderBottom: tab === t.key ? `2px solid ${primaryColor}` : "2px solid transparent", color: tab === t.key ? primaryColor : (_darkMode ? C.textMuted : T.outline), fontWeight: tab === t.key ? 700 : 500, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s", whiteSpace: "nowrap" }}>
+                        <Icon n={t.icon} size={14} color={tab === t.key ? primaryColor : (_darkMode ? C.textMuted : T.outline)} />
                         {t.label}
                     </button>
                 ))}
             </div>
 
-            {/* Tab Content */}
-            <motion.div key={tab} initial={{ opacity: 0, x: 10 }} animate={{ opacity: 1, x: 0 }} transition={{ duration: 0.2 }}>
+            {/* ── Tab content ── */}
+            <motion.div key={tab} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.18 }}>
+
                 {tab === "overview" && (
-                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 20 }}>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                            <Card title="Employment Details">
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, padding: 6 }}>
+                    <div style={{ display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 18 }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                            {/* Employment Details */}
+                            <div style={cardStyle}>
+                                <div style={cardHeaderStyle}>Employment Details</div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
                                     {[
                                         ["Start Date", emp.startDate],
-                                        ["Employment Type", emp.type],
+                                        ["Employment Type", emp.type || "Full-time"],
                                         ["Department", emp.dept],
                                         ["Job Level", emp.level],
                                         ["Current Salary", emp.salary ? `${emp.salary.toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "Confidential"],
                                         ["Reporting Manager", employees.find(m => m.id === emp.managerId)?.name || "—"],
-                                    ].map(([l, v]) => (
-                                        <div key={l}>
-                                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>{l}</div>
-                                            <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{v}</div>
+                                    ].map(([l, v], i) => (
+                                        <div key={l} style={{ padding: "16px 20px", borderBottom: i < 4 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none", borderRight: i % 2 === 0 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                            <div style={fieldLabel}>{l}</div>
+                                            <div style={fieldValue}>{v}</div>
                                         </div>
                                     ))}
                                 </div>
-                            </Card>
-                            <Card title="Contact Information">
-                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18, padding: 6 }}>
+                            </div>
+                            {/* Contact */}
+                            <div style={cardStyle}>
+                                <div style={cardHeaderStyle}>Contact Information</div>
+                                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 0 }}>
                                     {[
                                         ["Personal Email", emp.email],
                                         ["Phone Number", emp.phone],
                                         ["Work Location", emp.country === "LK" ? "Colombo, Sri Lanka" : "United Kingdom"],
                                         ["Emergency Contact", "Priya Perera (Spouse)"],
-                                    ].map(([l, v]) => (
-                                        <div key={l}>
-                                            <div style={{ fontSize: 11, fontWeight: 700, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 3 }}>{l}</div>
-                                            <div style={{ fontSize: 14, fontWeight: 600, color: C.text }}>{v}</div>
+                                    ].map(([l, v], i) => (
+                                        <div key={l} style={{ padding: "16px 20px", borderBottom: i < 2 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none", borderRight: i % 2 === 0 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                            <div style={fieldLabel}>{l}</div>
+                                            <div style={fieldValue}>{v}</div>
                                         </div>
                                     ))}
                                 </div>
-                            </Card>
+                            </div>
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                            <Card title="Leave Balance">
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
-                                    {Object.entries(emp.leaveBalance || {}).map(([type, days]) => (
-                                        <div key={type} style={{ padding: "14px 10px", background: C.bg, borderRadius: 12, border: `1px solid ${C.border}`, textAlign: "center" }}>
-                                            <div style={{ fontSize: 22, fontWeight: 900, color: C.text }}>{days}</div>
-                                            <div style={{ fontSize: 10, color: C.textMuted, marginTop: 2, textTransform: "uppercase", fontWeight: 700 }}>{type}</div>
-                                        </div>
-                                    ))}
+                        <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                            {/* Leave Balance */}
+                            <div style={cardStyle}>
+                                <div style={cardHeaderStyle}>Leave Balance</div>
+                                <div style={{ padding: "16px 20px" }}>
+                                    <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
+                                        {Object.entries(emp.leaveBalance || {}).map(([type, days]) => (
+                                            <div key={type} style={{ padding: "16px 10px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 12, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, textAlign: "center" }}>
+                                                <div style={{ fontSize: 26, fontWeight: 900, color: _darkMode ? C.text : T.onSurface }}>{days}</div>
+                                                <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline, marginTop: 3, textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.4px" }}>{type}</div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                    <button style={{ width: "100%", padding: "8px 0", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit" }}>
+                                        View Full Calculator
+                                    </button>
                                 </div>
-                                <Btn variant="ghost" size="sm" style={{ width: "100%", marginTop: 14 }}>View Full Calculator</Btn>
-                            </Card>
-                            <Card title="Skills Overview">
-                                <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
-                                    {(emp.skills || []).map(s => (
-                                        <span key={s} style={{ padding: "5px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: C.primaryLight, color: C.primary, border: `1px solid ${C.primaryMid}` }}>{s}</span>
-                                    ))}
+                            </div>
+                            {/* Skills */}
+                            <div style={cardStyle}>
+                                <div style={cardHeaderStyle}>Skills Overview</div>
+                                <div style={{ padding: "16px 20px" }}>
+                                    <div style={{ display: "flex", flexWrap: "wrap", gap: 7, marginBottom: 14 }}>
+                                        {(emp.skills || []).map(s => (
+                                            <span key={s} style={{ padding: "5px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: _darkMode ? C.primaryLight : T.primaryFixed, color: primaryColor, border: `1px solid ${primaryColor}22` }}>{s}</span>
+                                        ))}
+                                    </div>
+                                    <button style={{ width: "100%", padding: "8px 0", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit" }}>
+                                        Endorse Skills
+                                    </button>
                                 </div>
-                                <Btn variant="ghost" size="sm" style={{ width: "100%", marginTop: 14 }}>Endorse Skills</Btn>
-                            </Card>
+                            </div>
                         </div>
                     </div>
                 )}
 
                 {tab === "history" && (
-                    <Card title="Timeline of Changes">
-                        <div style={{ display: "flex", flexDirection: "column", borderLeft: `2px solid ${C.border}`, marginLeft: 20, paddingLeft: 30, gap: 32, marginTop: 10, paddingBottom: 10 }}>
-                            {(emp.history || []).sort((a, b) => b.date.localeCompare(a.date)).map((h, i) => (
-                                <div key={i} style={{ position: "relative" }}>
-                                    <div style={{ position: "absolute", left: -40, top: 2, width: 16, height: 16, borderRadius: "50%", background: C.white, border: `3px solid ${i === 0 ? C.primary : C.border}` }} />
-                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline" }}>
-                                        <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{h.type}: {h.details}</div>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid }}>{h.date}</div>
-                                    </div>
-                                    <div style={{ fontSize: 13, color: C.textMuted, marginTop: 4 }}>Changed by: {h.user}</div>
-                                    {h.salary && (
-                                        <div style={{ display: "inline-block", marginTop: 8, padding: "4px 10px", background: C.successBg, color: C.success, borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
-                                            Salary adjusted to: {h.salary.toLocaleString()}
+                    <div style={cardStyle}>
+                        <div style={cardHeaderStyle}>Timeline of Changes</div>
+                        <div style={{ padding: "20px 28px" }}>
+                            {(emp.history || []).length === 0 && <div style={{ textAlign: "center", padding: "32px 0", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>No history recorded.</div>}
+                            <div style={{ display: "flex", flexDirection: "column", borderLeft: `2px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, marginLeft: 8, paddingLeft: 28, gap: 28 }}>
+                                {(emp.history || []).sort((a, b) => b.date.localeCompare(a.date)).map((h, i) => (
+                                    <div key={i} style={{ position: "relative" }}>
+                                        <div style={{ position: "absolute", left: -37, top: 3, width: 16, height: 16, borderRadius: "50%", background: _darkMode ? C.white : T.surfaceCard, border: `3px solid ${i === 0 ? primaryColor : (_darkMode ? C.border : T.outlineVar)}` }} />
+                                        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "baseline", gap: 12 }}>
+                                            <div style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{h.type}: {h.details}</div>
+                                            <div style={{ fontSize: 12, fontWeight: 600, color: _darkMode ? C.textMid : T.onSurfaceVar, whiteSpace: "nowrap" }}>{h.date}</div>
                                         </div>
-                                    )}
-                                </div>
-                            ))}
+                                        <div style={{ fontSize: 12.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 3 }}>Changed by: {h.user}</div>
+                                        {h.salary && (
+                                            <div style={{ display: "inline-block", marginTop: 8, padding: "4px 12px", background: C.successBg, color: C.success, borderRadius: 8, fontSize: 12, fontWeight: 700 }}>
+                                                Salary: {h.salary.toLocaleString()}
+                                            </div>
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
                         </div>
-                    </Card>
+                    </div>
                 )}
 
                 {tab === "leave" && (
-                    <Card title="Leave History">
+                    <div style={cardStyle}>
+                        <div style={cardHeaderStyle}>Leave History</div>
                         {myLeaves.length === 0 ? (
-                            <div style={{ textAlign: "center", padding: "40px 0", color: C.textMuted }}>No leave records found.</div>
+                            <div style={{ textAlign: "center", padding: "48px 0", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>No leave records found.</div>
                         ) : (
                             <table style={{ width: "100%", borderCollapse: "collapse" }}>
                                 <thead>
-                                    <tr style={{ textAlign: "left", borderBottom: `1px solid ${C.borderLight}` }}>
-                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Type</th>
-                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Days</th>
-                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Period</th>
-                                        <th style={{ padding: "12px", fontSize: 12, color: C.textMuted }}>Status</th>
+                                    <tr style={{ background: _darkMode ? C.tableHead : T.surfaceLow }}>
+                                        {["Type", "Days", "Period", "Status"].map(h => (
+                                            <th key={h} style={{ padding: "10px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>{h}</th>
+                                        ))}
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {myLeaves.map(l => (
-                                        <tr key={l.id} style={{ borderBottom: `1px solid ${C.borderLight}` }}>
-                                            <td style={{ padding: "12px", fontSize: 13, fontWeight: 600 }}>{l.type}</td>
-                                            <td style={{ padding: "12px", fontSize: 13 }}>{l.days} days</td>
-                                            <td style={{ padding: "12px", fontSize: 13 }}>{l.start} — {l.end}</td>
-                                            <td style={{ padding: "12px" }}>
+                                    {myLeaves.map((l, i) => (
+                                        <tr key={l.id} style={{ borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                            <td style={{ padding: "13px 20px", fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{l.type}</td>
+                                            <td style={{ padding: "13px 20px", fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{l.days} days</td>
+                                            <td style={{ padding: "13px 20px", fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{l.from || l.start} → {l.to || l.end}</td>
+                                            <td style={{ padding: "13px 20px" }}>
                                                 <Badge label={l.status} variant={l.status === "Approved" ? "success" : l.status === "Pending" ? "warning" : "default"} />
                                             </td>
                                         </tr>
@@ -17228,77 +17845,83 @@ const FullEmployeeProfile = () => {
                                 </tbody>
                             </table>
                         )}
-                    </Card>
+                    </div>
                 )}
 
                 {tab === "performance" && (
-                    <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 20 }}>
-                            <Card title="Q1 2026 Goals">
-                                <div style={{ display: "flex", flexDirection: "column", gap: 14 }}>
+                    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+                            <div style={cardStyle}>
+                                <div style={cardHeaderStyle}>Q1 2026 Goals</div>
+                                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 16 }}>
                                     {myGoals.map(g => (
                                         <div key={g.id}>
-                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
-                                                <div style={{ fontSize: 13, fontWeight: 700 }}>{g.title}</div>
-                                                <div style={{ fontSize: 12, fontWeight: 800, color: C.primary }}>{g.progress}%</div>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 7 }}>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{g.title}</div>
+                                                <div style={{ fontSize: 12, fontWeight: 800, color: primaryColor }}>{g.progress}%</div>
                                             </div>
-                                            <div style={{ height: 6, background: C.bg, borderRadius: 3, overflow: "hidden" }}>
-                                                <div style={{ height: "100%", background: C.primary, width: `${g.progress}%` }} />
+                                            <div style={{ height: 6, background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 3, overflow: "hidden" }}>
+                                                <div style={{ height: "100%", background: primaryColor, width: `${g.progress}%`, borderRadius: 3 }} />
                                             </div>
                                         </div>
                                     ))}
-                                    {myGoals.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No active goals.</div>}
+                                    {myGoals.length === 0 && <div style={{ fontSize: 13, color: _darkMode ? C.textMuted : T.outline }}>No active goals.</div>}
                                 </div>
-                            </Card>
-                            <Card title="Latest Peer Recognitions">
-                                <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                            </div>
+                            <div style={cardStyle}>
+                                <div style={cardHeaderStyle}>Peer Recognitions</div>
+                                <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                                     {myRecognitions.map(r => (
-                                        <div key={r.id} style={{ display: "flex", gap: 12, background: C.bg, padding: 12, borderRadius: 12, border: `1px solid ${C.border}` }}>
-                                            <div style={{ fontSize: 24 }}>{r.badge}</div>
+                                        <div key={r.id} style={{ display: "flex", gap: 12, background: _darkMode ? C.bg : T.surfaceLow, padding: "12px 14px", borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>
+                                            <div style={{ fontSize: 22 }}>{r.badge}</div>
                                             <div>
-                                                <div style={{ fontSize: 14, fontWeight: 700 }}>{r.title}</div>
-                                                <div style={{ fontSize: 11, color: C.textMid }}>Awarded by {r.awardedBy} · {r.date}</div>
+                                                <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{r.title}</div>
+                                                <div style={{ fontSize: 11, color: _darkMode ? C.textMid : T.onSurfaceVar, marginTop: 2 }}>By {r.awardedBy} · {r.date}</div>
                                             </div>
                                         </div>
                                     ))}
-                                    {myRecognitions.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No recognitions yet.</div>}
+                                    {myRecognitions.length === 0 && <div style={{ fontSize: 13, color: _darkMode ? C.textMuted : T.outline }}>No recognitions yet.</div>}
                                 </div>
-                            </Card>
+                            </div>
                         </div>
-                        <Card title="Performance Review History">
-                            {myReviews.map(r => (
-                                <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "14px 0", borderBottom: `1px solid ${C.borderLight}` }}>
-                                    <div>
-                                        <div style={{ fontSize: 14, fontWeight: 700 }}>{r.cycle} cycle</div>
-                                        <div style={{ fontSize: 12, color: C.textMuted }}>Reviewer: {r.reviewer}</div>
+                        <div style={cardStyle}>
+                            <div style={cardHeaderStyle}>Performance Review History</div>
+                            <div style={{ padding: "0 20px" }}>
+                                {myReviews.map((r, i) => (
+                                    <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", borderBottom: i < myReviews.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                        <div>
+                                            <div style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{r.cycle} cycle</div>
+                                            <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Reviewer: {r.reviewer}</div>
+                                        </div>
+                                        <div style={{ textAlign: "right" }}>
+                                            <div style={{ fontSize: 22, fontWeight: 900, color: C.success }}>{r.finalScore}/5</div>
+                                            <Badge label="Complete" variant="success" />
+                                        </div>
                                     </div>
-                                    <div style={{ textAlign: "right" }}>
-                                        <div style={{ fontSize: 20, fontWeight: 900, color: C.success }}>{r.finalScore}/5</div>
-                                        <Badge label="Complete" variant="success" />
-                                    </div>
-                                </div>
-                            ))}
-                            {myReviews.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No past reviews.</div>}
-                        </Card>
+                                ))}
+                                {myReviews.length === 0 && <div style={{ padding: "24px 0", fontSize: 13, color: _darkMode ? C.textMuted : T.outline }}>No past reviews.</div>}
+                            </div>
+                        </div>
                     </div>
                 )}
 
                 {tab === "skills" && (
-                    <Card title="Skill Matrix">
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+                    <div style={cardStyle}>
+                        <div style={cardHeaderStyle}>Skill Matrix</div>
+                        <div style={{ padding: "20px", display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
                             {[
                                 { cat: "Technical Skills", items: emp.skills || [] },
                                 { cat: "Soft Skills", items: ["Leadership", "Communication", "Problem Solving"] },
                             ].map(cat => (
                                 <div key={cat.cat}>
-                                    <div style={{ fontSize: 12, fontWeight: 800, color: C.textMuted, textTransform: "uppercase", marginBottom: 12 }}>{cat.cat}</div>
-                                    <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>{cat.cat}</div>
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                         {cat.items.map(s => (
-                                            <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: C.bg, borderRadius: 10, border: `1px solid ${C.border}` }}>
-                                                <span style={{ fontSize: 13, fontWeight: 600 }}>{s}</span>
-                                                <div style={{ display: "flex", gap: 3 }}>
+                                            <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>
+                                                <span style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{s}</span>
+                                                <div style={{ display: "flex", gap: 4 }}>
                                                     {[1, 2, 3, 4, 5].map(v => (
-                                                        <div key={v} style={{ width: 8, height: 8, borderRadius: "50%", background: v <= 4 ? C.primary : C.border }} />
+                                                        <div key={v} style={{ width: 8, height: 8, borderRadius: "50%", background: v <= 4 ? primaryColor : (_darkMode ? C.border : T.outlineVar+"60") }} />
                                                     ))}
                                                 </div>
                                             </div>
@@ -17307,36 +17930,75 @@ const FullEmployeeProfile = () => {
                                 </div>
                             ))}
                         </div>
-                    </Card>
+                    </div>
                 )}
 
                 {tab === "documents" && (
-                    <Card title="Personnel Documents">
-                        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 14 }}>
-                            {[
-                                { name: "Identity Proof", type: "PDF", size: "2.4 MB" },
-                                { name: "Educational Certificates", type: "PDF", size: "5.1 MB" },
-                                { name: "Background Check", type: "PDF", size: "1.8 MB" },
-                                { name: "Signed Contract", type: "PDF", size: "1.2 MB" },
-                            ].map(d => (
-                                <div key={d.name} style={{ padding: 16, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, display: "flex", gap: 12, alignItems: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
-                                    <div style={{ width: 36, height: 36, borderRadius: 8, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                                        <Icon n="file-text" size={18} color={C.primary} />
+                    <div style={cardStyle}>
+                        <div style={cardHeaderStyle}>Personnel Documents</div>
+                        <div style={{ padding: "20px" }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 20 }}>
+                                {[
+                                    { name: "Identity Proof", type: "PDF", size: "2.4 MB" },
+                                    { name: "Educational Certificates", type: "PDF", size: "5.1 MB" },
+                                    { name: "Background Check", type: "PDF", size: "1.8 MB" },
+                                    { name: "Signed Contract", type: "PDF", size: "1.2 MB" },
+                                ].map(d => (
+                                    <div key={d.name} style={{ padding: "14px 16px", background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 12, display: "flex", gap: 12, alignItems: "center" }}>
+                                        <div style={{ width: 36, height: 36, borderRadius: 9, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <Icon n="invoices" size={17} color={primaryColor} />
+                                        </div>
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{d.name}</div>
+                                            <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginTop: 1 }}>{d.type} · {d.size}</div>
+                                        </div>
+                                        <Lucide.Download size={14} color={_darkMode ? C.textMuted : T.outline} style={{ cursor: "pointer", flexShrink: 0 }} />
                                     </div>
-                                    <div style={{ flex: 1 }}>
-                                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{d.name}</div>
-                                        <div style={{ fontSize: 11, color: C.textMuted }}>{d.type} · {d.size}</div>
-                                    </div>
-                                    <Btn variant="ghost" size="sm" style={{ padding: 4 }}><Icon n="export" size={14} /></Btn>
-                                </div>
-                            ))}
+                                ))}
+                            </div>
+                            <div style={{ textAlign: "center" }}>
+                                <button style={{ padding: "9px 20px", borderRadius: 9, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 7 }}>
+                                    <Lucide.Plus size={14} color={primaryColor} strokeWidth={2.5} />Request New Document
+                                </button>
+                            </div>
                         </div>
-                        <div style={{ marginTop: 24, textAlign: "center" }}>
-                            <Btn variant="outline"><Icon n="plus" size={14} />Request New Document</Btn>
-                        </div>
-                    </Card>
+                    </div>
                 )}
+
             </motion.div>
+
+            {/* ── Offboard confirmation modal ── */}
+            <AnimatePresence>
+                {showOffboardConfirm && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(6px)", zIndex: 600, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <motion.div initial={{ scale: 0.95, y: 16 }} animate={{ scale: 1, y: 0 }} exit={{ scale: 0.95, y: 16 }} transition={{ type: "spring", damping: 25, stiffness: 300 }}
+                            style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 20, padding: "32px 32px 28px", maxWidth: 420, width: "90%", boxShadow: "0 24px 60px rgba(0,0,0,0.22)" }}>
+                            <div style={{ width: 52, height: 52, borderRadius: "50%", background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, display: "flex", alignItems: "center", justifyContent: "center", marginBottom: 20 }}>
+                                <Lucide.AlertTriangle size={22} color={C.danger} strokeWidth={2} />
+                            </div>
+                            <div style={{ fontSize: 18, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, marginBottom: 10, letterSpacing: "-0.3px" }}>Offboard {emp.name}?</div>
+                            <div style={{ fontSize: 13.5, color: _darkMode ? C.textMuted : T.onSurfaceVar, lineHeight: 1.6, marginBottom: 28 }}>
+                                This will mark <strong>{emp.name}</strong> as Inactive and revoke their system access. This action should only be taken when the employee has officially left the organisation.
+                            </div>
+                            <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
+                                <button onClick={() => setShowOffboardConfirm(false)}
+                                    style={{ padding: "10px 20px", borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"60"}`, background: "transparent", fontSize: 13.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, cursor: "pointer", fontFamily: "inherit" }}>
+                                    Cancel
+                                </button>
+                                <button onClick={() => {
+                                    setEmps(prev => prev.map(em => em.id === emp.id ? { ...em, status: "Inactive" } : em));
+                                    setShowOffboardConfirm(false);
+                                    navigate("people_Directory");
+                                }}
+                                    style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: C.danger, fontSize: 13.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "inherit", boxShadow: `0 2px 10px ${C.danger}40` }}>
+                                    Confirm Offboard
+                                </button>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
         </div>
     );
 };
@@ -18069,7 +18731,7 @@ export default function App() {
         // ── Legacy people routes ──
         "people_Directory": PeoplePage,
         "people_Profile": FullEmployeeProfile,
-        "people_Onboarding": AddEmployeePage,
+
         "people_Offboarding": OffboardingPage,
         "people_Lifecycle": LifecyclePage,
         "people_Teams": TeamsPage,
