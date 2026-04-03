@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import ReactDOM from "react-dom";
 import { motion, AnimatePresence, useMotionValue, useTransform } from "framer-motion";
 import * as Lucide from "lucide-react";
 // ── CHANGE: import industry configs ── located near top-level imports ──
@@ -84,7 +85,7 @@ const DARK_C = {
 
 // Global dark-mode + theme flags — mutated during App render, read by Proxy on every access
 let _darkMode = false;
-let _themeKey = "teal";
+let _themeKey = "blue";
 
 // Per-theme primary color tokens (overlaid on top of LIGHT_C / DARK_C)
 const THEME_ACCENTS = {
@@ -108,10 +109,24 @@ const THEME_ACCENTS = {
         light: { primary: "#f43f5e", primaryHover: "#e11d48", primaryLight: "#fff1f2", primaryMid: "#fecdd3", navActive: "#fff1f2" },
         dark: { primary: "#fb7185", primaryLight: "rgba(251,113,133,0.10)", primaryMid: "rgba(251,113,133,0.25)", navActive: "rgba(251,113,133,0.08)" }
     },
+    green: {
+        light: { primary: "#10B981", primaryHover: "#059669", primaryLight: "#ecfdf5", primaryMid: "#a7f3d0", navActive: "#ecfdf5", mainGradient: "linear-gradient(135deg, #10B981, #059669)" },
+        dark: { primary: "#34D399", primaryLight: "rgba(52,211,153,0.15)", primaryMid: "rgba(52,211,153,0.30)", navActive: "rgba(52,211,153,0.12)", mainGradient: "linear-gradient(135deg, #34D399, #10B981)" }
+    }
+};
+
+const THEME_GRADIENTS = {
+    teal: "linear-gradient(to right, #0d9488, #14b8a6)",
+    indigo: "linear-gradient(to right, #6366f1, #4f46e5)",
+    blue: "linear-gradient(to right, #004ac6, #2563eb)",
+    purple: "linear-gradient(to right, #8b5cf6, #7c3aed)",
+    rose: "linear-gradient(to right, #f43f5e, #e11d48)",
+    green: "linear-gradient(135deg, #10B981, #059669)",
 };
 
 const C = new Proxy({}, {
     get: (_, k) => {
+        if (k === "mainGradient") return THEME_GRADIENTS[_themeKey] || THEME_GRADIENTS.blue;
         const base = (_darkMode ? DARK_C : LIGHT_C)[k];
         const accent = THEME_ACCENTS[_themeKey]?.[_darkMode ? "dark" : "light"];
         return (accent && k in accent) ? accent[k] : base;
@@ -195,37 +210,30 @@ const Icon = ({ n, size = 16, color = "currentColor", strokeWidth = 1.75, style 
    Circular turbine / swirl design with dark-green + teal blades
    and a white building/arrow centre icon.
    ─────────────────────────────────────────────────────────────── */
-const SelfvoraLogo = ({ size = 34 }) => {
+const SelfvoraLogo = ({ size = 34, color }) => {
     const blades = [
-        { angle: 0, fill: "#0f4c3a" },
-        { angle: 60, fill: "#0d9488" },
-        { angle: 120, fill: "#0f4c3a" },
-        { angle: 180, fill: "#0d9488" },
-        { angle: 240, fill: "#0f4c3a" },
-        { angle: 300, fill: "#0d9488" },
+        { angle: 0, fill: color || "#4c1d95" },
+        { angle: 60, fill: color || "#7c3aed" },
+        { angle: 120, fill: color || "#4c1d95" },
+        { angle: 180, fill: color || "#7c3aed" },
+        { angle: 240, fill: color || "#4c1d95" },
+        { angle: 300, fill: color || "#7c3aed" },
     ];
     return (
         <svg width={size} height={size} viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" style={{ flexShrink: 0, display: "block" }}>
             {blades.map(({ angle, fill }) => (
                 <g key={angle} transform={`rotate(${angle}, 50, 50)`}>
-                    {/* Curved fan blade pointing upward before rotation */}
                     <path
                         d="M50,50 C44,40 37,23 33,14 C41,7 55,9 61,18 C63,30 58,44 50,50 Z"
                         fill={fill}
                     />
-                    {/* Circuit-node dot at blade tip */}
                     <circle cx="47" cy="10" r="2.8" fill={fill} />
                 </g>
             ))}
-            {/* White centre circle */}
             <circle cx="50" cy="50" r="19" fill="white" />
-            {/* Centre icon — house / building / upward-arrow motif */}
-            {/* Roof chevron */}
-            <polygon points="50,34 38,46 62,46" fill="#0f4c3a" />
-            {/* Left pillar */}
-            <rect x="38" y="47" width="10" height="16" rx="1" fill="#0f4c3a" />
-            {/* Right pillar */}
-            <rect x="52" y="47" width="10" height="16" rx="1" fill="#0f4c3a" />
+            <polygon points="50,34 38,46 62,46" fill={color || "#4c1d95"} />
+            <rect x="38" y="47" width="10" height="16" rx="1" fill={color || "#4c1d95"} />
+            <rect x="52" y="47" width="10" height="16" rx="1" fill={color || "#4c1d95"} />
         </svg>
     );
 };
@@ -329,8 +337,8 @@ const Btn = ({ children, variant = "ghost", size = "md", onClick, style: sx, dis
     const base = { display: "inline-flex", alignItems: "center", gap: 6, fontWeight: 600, cursor: "pointer", borderRadius: 12, border: "none", fontFamily: "inherit", transition: "all 0.2s ease-out" };
     const sizes = { sm: { padding: "6px 14px", fontSize: 13 }, md: { padding: "10px 18px", fontSize: 13.5 }, lg: { padding: "12px 24px", fontSize: 15 } };
     const variants = {
-        primary: { background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "1px solid transparent", boxShadow: "0 4px 14px #004ac650" },
-        secondary: { background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "1px solid transparent", boxShadow: "0 4px 14px #004ac650" },
+        primary: { background: C.mainGradient, color: "#fff", border: "1px solid transparent", boxShadow: `0 4px 14px ${C.primary}50` },
+        secondary: { background: C.mainGradient, color: "#fff", border: "1px solid transparent", boxShadow: `0 4px 14px ${C.primary}50` },
         outline: { background: C.white, color: C.textMid, border: `1px solid ${C.border}` },
         ghost: { background: "transparent", color: C.textMid, border: "1px solid transparent" },
         danger: { background: C.dangerBg, color: C.danger, border: `1px solid ${C.dangerBorder}` },
@@ -636,9 +644,46 @@ const USERS = {
     "admin@company.com": {
         password: "admin123",
         role: "hr_admin",
-        name: "Sarah Admin",
+        name: "Sarah Mitchell",
         title: "HR Administrator",
         dept: "Human Resources",
+    },
+    "owner@company.com": {
+        password: "owner123",
+        role: "super_admin",
+        name: "Alexandra Chen",
+        title: "Chief Executive Officer",
+        dept: "Executive",
+    },
+    "hrhod@company.com": {
+        password: "hrhod123",
+        role: "head_of_hr",
+        name: "Priya Sharma",
+        title: "Head of People & Culture",
+        dept: "Human Resources",
+    },
+    "hrm@company.com": {
+        password: "hrm123",
+        role: "hr_manager",
+        name: "David Park",
+        title: "HR Operations Manager",
+        dept: "Human Resources",
+    },
+    "manager@company.com": {
+        password: "manager123",
+        role: "dept_manager",
+        name: "Arjun Mehta",
+        title: "Engineering Manager",
+        dept: "Engineering",
+        managedDept: "Engineering",
+    },
+    "teamlead@company.com": {
+        password: "lead123",
+        role: "team_lead",
+        name: "Kasun Fernando",
+        title: "Senior Team Lead",
+        dept: "Engineering",
+        teamId: "team1",
     },
     "john@company.com": {
         password: "employee123",
@@ -647,9 +692,122 @@ const USERS = {
         title: "Staff Engineer",
         dept: "Engineering",
         email: "james@company.com",
-        manager: "Sarah Admin",
+        manager: "Arjun Mehta",
         onboardingComplete: false,
     },
+};
+
+/* Role-based access control — permissions + display metadata for every role */
+const ROLE_PERMISSIONS = {
+    super_admin: {
+        label: "Super Admin",
+        badge: "Strategic Overview",
+        color: "#7C3AED",
+        focus: "Company-wide financial health, payroll costs, attrition risk, and growth KPIs.",
+        allowedNav: ["dashboard", "people", "time_leave", "performance", "skills", "payroll", "reports", "settings", "nexis_ai"],
+        defaultKpis: ["headcount", "absent_cost", "at_risk", "payroll_pend"],
+        caps: { viewPayrollFull: true, connectPayrollProvider: true, manageCompanySettings: true, viewSuccession: true, manageRBAC: false, runPayroll: false },
+    },
+    head_of_hr: {
+        label: "Head of HR",
+        badge: "Compliance & Strategy",
+        color: "#0891B2",
+        focus: "HR operational efficiency, policy management, performance cycles, and workforce trends.",
+        allowedNav: ["dashboard", "people", "time_leave", "performance", "skills", "payroll", "reports", "settings", "nexis_ai"],
+        defaultKpis: ["pending_leave", "goals", "skill_reviews", "headcount"],
+        caps: { viewPayrollFull: false, connectPayrollProvider: false, manageCompanySettings: false, viewSuccession: false, manageRBAC: true, runPayroll: false, managePolicies: true, createReviewCycles: true },
+    },
+    hr_manager: {
+        label: "HR Manager",
+        badge: "Operations",
+        color: "#0D9488",
+        focus: "Day-to-day HR operations — onboarding, offboarding, payroll execution, and employee records.",
+        allowedNav: ["dashboard", "people", "time_leave", "performance", "skills", "payroll", "reports", "nexis_ai"],
+        defaultKpis: ["payroll_pend", "here_today", "on_leave", "pending_leave"],
+        caps: { viewPayrollFull: false, connectPayrollProvider: false, manageCompanySettings: false, viewSuccession: false, manageRBAC: false, runPayroll: true, manageOffboarding: true },
+    },
+    hr_admin: {
+        label: "HR Admin",
+        badge: "Administrator",
+        color: "#6366F1",
+        focus: "Full HR system administration and workforce management.",
+        allowedNav: ["dashboard", "people", "time_leave", "performance", "skills", "payroll", "reports", "settings", "nexis_ai"],
+        defaultKpis: null,
+        caps: { viewPayrollFull: true, connectPayrollProvider: true, manageCompanySettings: true, viewSuccession: true, manageRBAC: true, runPayroll: true, manageOffboarding: true },
+    },
+    dept_manager: {
+        label: "Dept Manager",
+        badge: "Team Performance",
+        color: "#D97706",
+        focus: "Departmental attendance, goal completion, team chemistry scores, and skill gap analysis.",
+        allowedNav: ["dashboard", "people", "time_leave", "performance", "skills", "nexis_ai"],
+        defaultKpis: ["here_today", "attendance", "goals", "chemistry"],
+        caps: { viewPayrollFull: false, connectPayrollProvider: false, manageCompanySettings: false, viewSuccession: false, manageRBAC: false, runPayroll: false, viewDeptOnly: true },
+    },
+    team_lead: {
+        label: "Team Lead",
+        badge: "Direct Supervisor",
+        color: "#059669",
+        focus: "Daily team output — who's on leave today, individual goal progress, and pending approvals.",
+        allowedNav: ["dashboard", "people", "time_leave", "performance", "skills", "nexis_ai"],
+        defaultKpis: ["on_leave", "goals", "here_today", "skill_reviews"],
+        caps: { viewPayrollFull: false, connectPayrollProvider: false, manageCompanySettings: false, viewSuccession: false, manageRBAC: false, runPayroll: false, approveTeamOnly: true },
+    },
+    employee: {
+        label: "Employee",
+        badge: "Self-Service",
+        color: "#475569",
+        focus: "Personal attendance, leave requests, skill upgrades, and goal progress.",
+        allowedNav: [],
+        defaultKpis: [],
+        caps: {},
+    },
+};
+
+/* ── RBAC utility functions ──────────────────────────────────────
+   Call these inside components instead of duplicating role checks.   ──────────────────────────────────────────────────────────────── */
+
+/**
+ * Returns the subset of `employees` that `currentUser` is allowed to see.
+ *  - super_admin / head_of_hr / hr_manager / hr_admin → everyone
+ *  - dept_manager → only their managed/assigned department
+ *  - team_lead    → only their direct reports (employees whose managerId matches)
+ *  - employee     → only themselves
+ */
+const getScopedEmployees = (currentUser, employees) => {
+    if (!currentUser || !employees) return employees || [];
+    const role = currentUser.role;
+    if (["super_admin", "head_of_hr", "hr_manager", "hr_admin"].includes(role)) return employees;
+    if (role === "dept_manager") {
+        const dept = currentUser.managedDept || currentUser.dept;
+        return employees.filter(e => e.dept === dept);
+    }
+    if (role === "team_lead") {
+        const leadEmp = employees.find(e => e.name === currentUser.name);
+        if (leadEmp) return employees.filter(e => e.managerId === leadEmp.id || e.id === leadEmp.id);
+        // fallback: show same-dept employees
+        return employees.filter(e => e.dept === currentUser.dept);
+    }
+    if (role === "employee") {
+        return employees.filter(e => e.name === currentUser.name || e.email === currentUser.email);
+    }
+    return employees;
+};
+
+/**
+ * Returns true if `currentUser` has a specific named capability.
+ * Usage: hasCapability(currentUser, "runPayroll")
+ */
+const hasCapability = (currentUser, cap) => {
+    const perms = ROLE_PERMISSIONS[currentUser?.role];
+    return perms?.caps?.[cap] === true;
+};
+
+/**
+ * Returns true if the role has global (unrestricted) employee visibility.
+ */
+const hasGlobalScope = (currentUser) => {
+    return ["super_admin", "head_of_hr", "hr_manager", "hr_admin"].includes(currentUser?.role);
 };
 
 /* User context — carries logged-in user to all components */
@@ -961,10 +1119,7 @@ const THEME_SWATCHES = [
 // ── Contextual sub-nav per module — shown in the TopBar ──────────────
 // ── Contextual CTA button per module — shown in TopBar right side ─
 // Keyed by specific page — "New Leave" only on leave pages, not attendance
-const MODULE_ACTIONS = {
-    "performance": { label: "New Review", icon: "Plus" },
-    "skills": { label: "Add Skill", icon: "Plus" },
-};
+const MODULE_ACTIONS = {};
 
 const MODULE_SUB_NAV = {
     time_leave: [
@@ -1022,13 +1177,33 @@ const getModuleFromPage = (pageKey) => {
 
 const TopBar = ({ onNav, onLogout, page, onAction }) => {
     const currentUser = React.useContext(UserCtx);
-    const { notifications, setNotifications, employees, attendance, leaveRequests } = React.useContext(DataCtx);
+    const { notifications, setNotifications, employees, attendance, leaveRequests, skillRequests } = React.useContext(DataCtx);
     const { isDark, toggleTheme } = React.useContext(ThemeCtx);
 
     const [notiOpen, setNotiOpen] = useState(false);
     const [avatarOpen, setAvatarOpen] = useState(false);
+    const [searchQ, setSearchQ] = useState("");
+    const [searchFocused, setSearchFocused] = useState(false);
     const notiRef = React.useRef(null);
     const avatarRef = React.useRef(null);
+    const searchRef = React.useRef(null);
+
+    // Scoped employee search — team_lead/dept_manager can't find employees outside their scope
+    const scopedForSearch = React.useMemo(() => getScopedEmployees(currentUser, employees), [currentUser, employees]);
+    const searchResults = React.useMemo(() => {
+        if (!searchQ.trim() || searchQ.length < 2) return [];
+        const q = searchQ.toLowerCase();
+        return scopedForSearch.filter(e =>
+            e.name.toLowerCase().includes(q) || (e.dept || "").toLowerCase().includes(q) || (e.id || "").toLowerCase().includes(q)
+        ).slice(0, 6);
+    }, [searchQ, scopedForSearch]);
+
+    React.useEffect(() => {
+        if (!searchFocused) return;
+        const h = (e) => { if (searchRef.current && !searchRef.current.contains(e.target)) setSearchFocused(false); };
+        document.addEventListener("mousedown", h);
+        return () => document.removeEventListener("mousedown", h);
+    }, [searchFocused]);
 
     React.useEffect(() => {
         if (!notiOpen && !avatarOpen) return;
@@ -1095,21 +1270,46 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                     </>
                 )}
 
-                {/* Search bar (always shown) */}
-                <div style={{ position: "relative" }}>
+                {/* Search bar (scoped by role) */}
+                <div ref={searchRef} style={{ position: "relative" }}>
                     <Lucide.Search size={14} color={C.textMuted} strokeWidth={2}
                         style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                     <input
-                        placeholder="Search employees or logs…"
+                        placeholder="Search employees…"
+                        value={searchQ}
+                        onChange={e => setSearchQ(e.target.value)}
                         style={{
                             paddingLeft: 34, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
-                            background: C.bg, border: `1px solid ${C.border}`, borderRadius: 8,
+                            background: C.bg, border: `1px solid ${searchFocused ? C.primary : C.border}`, borderRadius: 8,
                             fontSize: 13, color: C.text, width: 230, outline: "none",
-                            fontFamily: "inherit",
+                            fontFamily: "inherit", boxShadow: searchFocused ? `0 0 0 2px ${C.primaryLight}` : "none",
+                            transition: "border-color 0.15s, box-shadow 0.15s",
                         }}
-                        onFocus={e => { e.target.style.borderColor = C.primary; e.target.style.boxShadow = `0 0 0 2px ${C.primaryLight}`; }}
-                        onBlur={e => { e.target.style.borderColor = C.border; e.target.style.boxShadow = "none"; }}
+                        onFocus={() => setSearchFocused(true)}
                     />
+                    {/* Search results dropdown */}
+                    {searchFocused && searchQ.length >= 2 && (
+                        <div style={{ position: "absolute", top: "calc(100% + 6px)", left: 0, width: 280, background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: C.shadowLg, zIndex: 500, overflow: "hidden" }}>
+                            {searchResults.length === 0
+                                ? <div style={{ padding: "14px 16px", fontSize: 13, color: C.textMuted, textAlign: "center" }}>
+                                    No results found{!hasGlobalScope(currentUser) ? " within your team" : ""}
+                                </div>
+                                : searchResults.map((emp, i) => (
+                                    <div key={emp.id} onClick={() => { setSearchQ(""); setSearchFocused(false); onNav("people_Profile"); }}
+                                        style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 14px", cursor: "pointer", borderBottom: i < searchResults.length - 1 ? `1px solid ${C.borderLight}` : "none", transition: "background 0.12s" }}
+                                        onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                                        onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                                        <Avatar name={emp.name} size={28} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp.name}</div>
+                                            <div style={{ fontSize: 11, color: C.textMuted }}>{emp.dept} · {emp.level || emp.type}</div>
+                                        </div>
+                                        <Badge label={emp.status} variant={emp.status === "Active" ? "success" : emp.status === "On Leave" ? "info" : "default"} />
+                                    </div>
+                                ))
+                            }
+                        </div>
+                    )}
                 </div>
 
                 {/* Contextual sub-nav tabs (non-dashboard pages) */}
@@ -1117,6 +1317,11 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                     <nav style={{ display: "flex", alignItems: "stretch", height: "100%", gap: 0 }}>
                         {subNav.map(item => {
                             const active = isSubActive(item);
+                            let label = item.label;
+                            if (currentModule === "skills" && item.key === "skills_Skill_Development") {
+                                const pendingCount = (skillRequests || []).filter(r => r.status === "pending").length;
+                                if (pendingCount > 0) label += ` (${pendingCount})`;
+                            }
                             return (
                                 <button
                                     key={item.key}
@@ -1133,7 +1338,7 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                                     onMouseEnter={e => { if (!active) e.currentTarget.style.color = C.text; }}
                                     onMouseLeave={e => { if (!active) e.currentTarget.style.color = C.textMid; }}
                                 >
-                                    {item.label}
+                                    {label}
                                 </button>
                             );
                         })}
@@ -1144,26 +1349,7 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
             {/* Right: icon actions */}
             <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
 
-                {/* Contextual CTA button */}
-                {moduleAction && (
-                    <>
-                        <motion.button
-                            whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                            onClick={() => onAction?.()}
-                            style={{
-                                display: "flex", alignItems: "center", gap: 6,
-                                padding: "8px 16px", borderRadius: 9, border: "none",
-                                background: C.primary, color: "#fff",
-                                fontSize: 13, fontWeight: 700, cursor: "pointer",
-                                fontFamily: "inherit", marginRight: 8,
-                                boxShadow: `0 2px 10px ${C.primary}40`,
-                            }}>
-                            <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />
-                            {moduleAction.label}
-                        </motion.button>
-                        <div style={{ width: 1, height: 24, background: C.border, marginRight: 6 }} />
-                    </>
-                )}
+                {/* Contextual CTA button — removed as requested */}
 
                 {/* Dark mode */}
                 <div onClick={toggleTheme} style={iconBtnStyle}
@@ -1216,6 +1402,85 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                     onMouseEnter={e => e.currentTarget.style.background = C.bg}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <Lucide.HelpCircle size={18} color={C.textMid} strokeWidth={1.75} />
+                </div>
+
+                {/* User profile avatar + dropdown */}
+                <div ref={avatarRef} style={{ position: "relative", marginLeft: 4 }}>
+                    <div
+                        role="button"
+                        aria-label="User profile"
+                        onClick={() => setAvatarOpen(o => !o)}
+                        style={{
+                            display: "flex", alignItems: "center", gap: 8, padding: "4px 6px 4px 4px",
+                            borderRadius: 10, cursor: "pointer", transition: "background 0.15s",
+                            background: avatarOpen ? C.bg : "transparent",
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                        onMouseLeave={e => { if (!avatarOpen) e.currentTarget.style.background = "transparent"; }}
+                    >
+                        <div style={{
+                            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+                            background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
+                            display: "flex", alignItems: "center", justifyContent: "center",
+                            fontSize: 11, fontWeight: 800, color: "#fff", position: "relative",
+                        }}>
+                            {userInitials}
+                            <div style={{ position: "absolute", bottom: -1, right: -1, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: `2px solid ${isDark ? "#101423" : "#fff"}` }} />
+                        </div>
+                        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+                            <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>{firstName}</span>
+                            <span style={{ fontSize: 10.5, color: C.textMuted, whiteSpace: "nowrap" }}>{userTitle}</span>
+                        </div>
+                        <Lucide.ChevronDown size={13} color={C.textMuted} strokeWidth={2} style={{ transform: avatarOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.18s" }} />
+                    </div>
+                    <AnimatePresence>
+                        {avatarOpen && (
+                            <motion.div
+                                initial={{ opacity: 0, y: 6 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                exit={{ opacity: 0, y: 6 }}
+                                transition={{ duration: 0.12 }}
+                                style={{ position: "absolute", top: "calc(100% + 8px)", right: 0, width: 220, background: C.white, borderRadius: 14, boxShadow: C.shadowLg, border: `1px solid ${C.border}`, overflow: "hidden", zIndex: 500 }}
+                            >
+                                {/* Profile info */}
+                                <div style={{ padding: "14px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                        <div style={{
+                                            width: 38, height: 38, borderRadius: 11, flexShrink: 0,
+                                            background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
+                                            display: "flex", alignItems: "center", justifyContent: "center",
+                                            fontSize: 13, fontWeight: 800, color: "#fff",
+                                        }}>
+                                            {userInitials}
+                                        </div>
+                                        <div style={{ minWidth: 0 }}>
+                                            <div style={{ fontSize: 13, fontWeight: 700, color: C.text, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</div>
+                                            <div style={{ fontSize: 11, color: C.textMuted, marginTop: 1, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userTitle}</div>
+                                        </div>
+                                    </div>
+                                    {(() => {
+                                        const rp = ROLE_PERMISSIONS[currentUser?.role];
+                                        if (!rp) return null;
+                                        return (
+                                            <div style={{ marginTop: 8, display: "inline-flex", padding: "2px 8px", borderRadius: 20, background: rp.color + "22", fontSize: 9.5, fontWeight: 700, color: rp.color, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                                                {rp.badge}
+                                            </div>
+                                        );
+                                    })()}
+                                </div>
+                                {/* Logout */}
+                                <div
+                                    onClick={() => { setAvatarOpen(false); onLogout(); }}
+                                    style={{ display: "flex", alignItems: "center", gap: 9, padding: "11px 16px", cursor: "pointer", transition: "background 0.12s" }}
+                                    onMouseEnter={e => e.currentTarget.style.background = C.dangerBg}
+                                    onMouseLeave={e => e.currentTarget.style.background = "transparent"}
+                                >
+                                    <Lucide.LogOut size={14} color={C.danger} strokeWidth={1.75} />
+                                    <span style={{ fontSize: 13, fontWeight: 600, color: C.danger }}>Sign out</span>
+                                </div>
+                            </motion.div>
+                        )}
+                    </AnimatePresence>
                 </div>
             </div>
         </div>
@@ -1301,9 +1566,6 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
     }, []);
     const currentUser = React.useContext(UserCtx);
     const { leaveRequests } = React.useContext(DataCtx);
-    const userName = currentUser?.name || "Admin";
-    const userTitle = currentUser?.title || "HR Administrator";
-    const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
     const expandedW = 256;
     const collapsedW = 80;
 
@@ -1406,71 +1668,38 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
 
             {/* ── Nav groups ──────────────────────────────────────── */}
             <div style={{ padding: "8px 12px", flex: 1, overflowY: "auto", display: "flex", flexDirection: "column", gap: 4 }}>
-                {ALL_NAV_GROUPS.map((group, gi) => (
-                    <div key={gi} style={{ marginTop: gi > 0 ? 8 : 0 }}>
-                        {!collapsed && group.label && (
-                            <motion.div
-                                animate={{ opacity: collapsed ? 0 : 1 }}
-                                style={{
-                                    fontSize: 10, fontWeight: 700, color: SB.label,
-                                    letterSpacing: "1.2px", textTransform: "uppercase",
-                                    padding: "10px 4px 4px",
-                                    userSelect: "none", whiteSpace: "nowrap", overflow: "hidden",
-                                }}>
-                                {group.label}
-                            </motion.div>
-                        )}
-                        {collapsed && gi > 0 && (
-                            <div style={{ height: 1, background: SB.separator, margin: "8px 4px" }} />
-                        )}
-                        <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
-                            {group.items.map(item => renderItem(item))}
+                {ALL_NAV_GROUPS.map((group, gi) => {
+                    const rolePerms = ROLE_PERMISSIONS[currentUser?.role];
+                    const allowed = rolePerms?.allowedNav;
+                    const filteredItems = (allowed && allowed.length > 0)
+                        ? group.items.filter(item => allowed.includes(item.key))
+                        : group.items;
+                    if (!filteredItems.length) return null;
+                    return (
+                        <div key={gi} style={{ marginTop: gi > 0 ? 8 : 0 }}>
+                            {!collapsed && group.label && (
+                                <motion.div
+                                    animate={{ opacity: collapsed ? 0 : 1 }}
+                                    style={{
+                                        fontSize: 10, fontWeight: 700, color: SB.label,
+                                        letterSpacing: "1.2px", textTransform: "uppercase",
+                                        padding: "10px 4px 4px",
+                                        userSelect: "none", whiteSpace: "nowrap", overflow: "hidden",
+                                    }}>
+                                    {group.label}
+                                </motion.div>
+                            )}
+                            {collapsed && gi > 0 && (
+                                <div style={{ height: 1, background: SB.separator, margin: "8px 4px" }} />
+                            )}
+                            <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
+                                {filteredItems.map(item => renderItem(item))}
+                            </div>
                         </div>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
-            {/* ── Footer: profile card + sign-out ─────────────────── */}
-            <div style={{ padding: "8px 12px 12px", borderTop: `1px solid ${SB.border}` }}>
-                <div style={{
-                    background: SB.footerCard,
-                    border: `1px solid ${SB.footerBorder}`,
-                    borderRadius: 12,
-                    padding: collapsed ? "10px 0" : "10px 12px",
-                    display: "flex", alignItems: "center", gap: collapsed ? 0 : 10,
-                    justifyContent: collapsed ? "center" : "flex-start",
-                    overflow: "hidden",
-                }}>
-                    {/* Avatar */}
-                    <div style={{ position: "relative", flexShrink: 0 }}>
-                        <div style={{
-                            width: 32, height: 32, borderRadius: 10,
-                            background: `linear-gradient(135deg, ${C.primary}, ${C.primaryHover})`,
-                            display: "flex", alignItems: "center", justifyContent: "center",
-                            fontSize: 11, fontWeight: 800, color: "#fff",
-                        }}>
-                            {userInitials}
-                        </div>
-                        <div style={{ position: "absolute", bottom: -1, right: -1, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: "2px solid #2d3133" }} />
-                    </div>
-                    {/* Name + role — hidden when collapsed */}
-                    <motion.div
-                        animate={{ opacity: collapsed ? 0 : 1, width: collapsed ? 0 : "auto" }}
-                        transition={{ duration: 0.15 }}
-                        style={{ flex: collapsed ? "none" : 1, minWidth: 0, overflow: "hidden" }}>
-                        <div style={{ fontSize: 12.5, fontWeight: 600, color: "#fff", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{userName}</div>
-                        <div style={{ fontSize: 10.5, color: SB.text, fontWeight: 400, whiteSpace: "nowrap", marginTop: 1 }}>{userTitle}</div>
-                    </motion.div>
-                    {!collapsed && (
-                        <div onClick={onLogout} title="Sign out"
-                            style={{ cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", width: 26, height: 26, borderRadius: 7, flexShrink: 0, transition: "background 0.15s" }}
-                            onMouseEnter={e => e.currentTarget.style.background = "rgba(239,68,68,0.18)"}
-                            onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
-                            <Lucide.LogOut size={13} color="rgba(255,255,255,0.45)" strokeWidth={1.75} />
-                        </div>
-                    )}
-                </div>
-            </div>
         </motion.aside>
     );
 };
@@ -1517,6 +1746,17 @@ const LoginPage = ({ onLogin }) => {
     const [loading, setLoading] = useState(false);
     const [focused, setFocused] = useState("");
 
+    const HERO_IMG = "file:///C:/Users/User/.gemini/antigravity/brain/4e16c024-5efe-4d70-a7e0-157a11891206/login_hero_bg_1775189960745.png";
+
+    const DEMO_ROLES = [
+        { id: "owner", title: "Super Admin", sub: "CEO / Company Owner", col: "#6366F1" },
+        { id: "head_hr", title: "Head of HR", sub: "Compliance & Strategy", col: "#0EA5E9" },
+        { id: "hr_manager", title: "HR Manager", sub: "Operations & Payroll", col: "#10B981" },
+        { id: "manager", title: "Dept Manager", sub: "Engineering Team", col: "#F59E0B" },
+        { id: "team_lead", title: "Team Lead", sub: "Direct Supervisor", col: "#8B5CF6" },
+        { id: "employee", title: "Employee", sub: "Self-Service Portal", col: "#64748B" },
+    ];
+
     const handleSubmit = () => {
         setError("");
         if (!email || !password) { setError("Please enter your email and password."); return; }
@@ -1533,138 +1773,217 @@ const LoginPage = ({ onLogin }) => {
         }, 900);
     };
 
-    const fillDemo = (type) => {
-        if (type === "admin") { setEmail("admin@company.com"); setPassword("admin123"); }
-        else { setEmail("john@company.com"); setPassword("employee123"); }
-        setError("");
+    const fillDemo = (id) => {
+        const creds = {
+            owner: ["owner@company.com", "owner123"],
+            head_hr: ["hrhod@company.com", "hrhod123"],
+            hr_manager: ["hrm@company.com", "hrm123"],
+            manager: ["manager@company.com", "manager123"],
+            team_lead: ["teamlead@company.com", "lead123"],
+            employee: ["john@company.com", "employee123"],
+        };
+        const [e, p] = creds[id] || creds.owner;
+        setEmail(e); setPassword(p); setError("");
     };
 
     return (
         <div style={{
-            minHeight: "100vh", display: "flex", background: C.bg,
-            fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif",
+            minHeight: "100vh", display: "flex", background: "#f8fafc",
+            fontFamily: "'Inter', 'Outfit', system-ui, sans-serif",
+            overflow: "hidden"
         }}>
-            {/* Left panel — clean branding */}
-            <div style={{
-                width: "35%", background: "#0d9488",
-                display: "flex", flexDirection: "column", justifyContent: "center",
-                padding: "48px 44px",
-            }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 32 }}>
-                    <SelfvoraLogo size={40} />
-                    <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: "-0.5px" }}>
-                        <span style={{ color: "#fff" }}>Self</span><span style={{ color: "#99f6e4" }}>vora</span>
-                    </span>
+            {/* Left panel — Hero Section */}
+            <motion.div
+                initial={{ opacity: 0, x: -20 }}
+                animate={{ opacity: 1, x: 0 }}
+                transition={{ duration: 0.8, ease: "easeOut" }}
+                style={{
+                    width: "45%", position: "relative", overflow: "hidden",
+                    display: "flex", flexDirection: "column", justifyContent: "flex-end",
+                    padding: "60px", color: "#fff"
+                }}
+            >
+                {/* Background Image with Overlay */}
+                <div style={{
+                    position: "absolute", inset: 0,
+                    backgroundImage: `url('${HERO_IMG}')`,
+                    backgroundSize: "cover", backgroundPosition: "center",
+                    zIndex: 0
+                }} />
+                <div style={{
+                    position: "absolute", inset: 0,
+                    background: "linear-gradient(135deg, rgba(76,29,149,0.92) 0%, rgba(124,58,237,0.4) 100%)",
+                    zIndex: 1
+                }} />
+
+                {/* Content */}
+                <div style={{ position: "relative", zIndex: 2 }}>
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3, duration: 0.6 }}
+                        style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 40 }}
+                    >
+                        <div style={{ padding: 10, background: "rgba(255,255,255,0.2)", borderRadius: 16, backdropFilter: "blur(10px)" }}>
+                            <SelfvoraLogo size={36} color="#fff" />
+                        </div>
+                        <span style={{ fontWeight: 850, fontSize: 24, letterSpacing: "-1px" }}>
+                            Selfvora
+                        </span>
+                    </motion.div>
+
+                    <motion.h1
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.5, duration: 0.6 }}
+                        style={{ fontSize: 42, fontWeight: 800, margin: "0 0 20px", lineHeight: 1.1, letterSpacing: "-1px" }}
+                    >
+                        Your workplace,<br />simplified.
+                    </motion.h1>
+
+                    <motion.p
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.7, duration: 0.6 }}
+                        style={{ fontSize: 16, color: "rgba(255,255,255,0.85)", lineHeight: 1.6, margin: 0, maxWidth: 320 }}
+                    >
+                        Attendance, leave, performance, and payroll — all expertly managed in one place.
+                    </motion.p>
                 </div>
-                <h1 style={{ fontSize: 32, fontWeight: 800, color: "#fff", margin: "0 0 12px", lineHeight: 1.2, letterSpacing: "-0.5px" }}>
-                    Your workplace,<br />simplified.
-                </h1>
-                <p style={{ fontSize: 14, color: "rgba(255,255,255,0.7)", lineHeight: 1.6, margin: 0, maxWidth: 280 }}>
-                    Attendance, leave, performance, and payroll — all in one place.
-                </p>
-            </div>
 
-            {/* Right login form */}
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "48px 40px" }}>
-                <div style={{ width: "100%", maxWidth: 380 }}>
-                    <h2 style={{ fontSize: 24, fontWeight: 700, color: C.text, margin: "0 0 32px" }}>Sign in</h2>
+                {/* Decorative Elements */}
+                <div style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, background: "rgba(255,255,255,0.05)", borderRadius: "50%", zIndex: 1 }} />
+            </motion.div>
 
-                    {/* Form */}
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 8 }}>
-                        <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: C.text, display: "block", marginBottom: 6 }}>Email</label>
-                            <input
-                                type="email" value={email}
-                                onChange={e => { setEmail(e.target.value); setError(""); }}
-                                onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
-                                onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                                placeholder="you@company.com"
-                                style={{
-                                    width: "100%", padding: "11px 14px",
-                                    border: `1.5px solid ${error && !email ? C.danger : focused === "email" ? C.primary : C.border}`,
-                                    borderRadius: 8, fontSize: 14, color: C.text, outline: "none",
-                                    background: C.white, fontFamily: "inherit", boxSizing: "border-box",
-                                    transition: "border-color 0.15s",
-                                }}
-                            />
-                        </div>
-                        <div>
-                            <label style={{ fontSize: 12, fontWeight: 600, color: C.text, display: "block", marginBottom: 6 }}>Password</label>
-                            <div style={{ position: "relative" }}>
-                                <input
-                                    type={showPass ? "text" : "password"} value={password}
-                                    onChange={e => { setPassword(e.target.value); setError(""); }}
-                                    onFocus={() => setFocused("pass")} onBlur={() => setFocused("")}
-                                    onKeyDown={e => e.key === "Enter" && handleSubmit()}
-                                    placeholder="Enter your password"
-                                    style={{
-                                        width: "100%", padding: "11px 42px 11px 14px",
-                                        border: `1.5px solid ${error && !password ? C.danger : focused === "pass" ? C.primary : C.border}`,
-                                        borderRadius: 8, fontSize: 14, color: C.text, outline: "none",
-                                        background: C.white, fontFamily: "inherit", boxSizing: "border-box",
-                                        transition: "border-color 0.15s",
-                                    }}
-                                />
-                                <button type="button" onClick={() => setShowPass(v => !v)}
-                                    style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: C.textMuted, padding: 0 }}>
-                                    <Icon n={showPass ? "eyeOff" : "eye"} size={15} />
-                                </button>
-                            </div>
-                        </div>
+            {/* Right Section — Form */}
+            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px", overflowY: "auto" }}>
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.2, duration: 0.6 }}
+                    style={{ width: "100%", maxWidth: 420 }}
+                >
+                    <div style={{ marginBottom: 40 }}>
+                        <h2 style={{ fontSize: 28, fontWeight: 800, color: "#1e293b", margin: "0 0 10px", letterSpacing: "-0.5px" }}>Sign in</h2>
+                        <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>Welcome back! Please enter your credentials.</p>
                     </div>
 
-                    {/* Error */}
-                    {error && (
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 14px", borderRadius: 8, background: C.dangerBg, border: `1px solid ${C.dangerBorder}`, marginTop: 12 }}>
-                            <span style={{ fontSize: 13, color: C.danger, fontWeight: 500 }}>{error}</span>
-                        </div>
-                    )}
-
-                    {/* Sign In button */}
-                    <button onClick={handleSubmit} disabled={loading}
-                        style={{
-                            width: "100%", marginTop: 20, padding: "12px",
-                            borderRadius: 8, border: "none",
-                            background: loading ? C.primaryMid : C.primary,
-                            color: "#fff", fontSize: 14, fontWeight: 600,
-                            cursor: loading ? "not-allowed" : "pointer",
-                            fontFamily: "inherit", transition: "background 0.15s",
-                        }}>
-                        {loading ? "Signing in..." : "Sign in"}
-                    </button>
-
-                    {/* Demo shortcuts — below the form */}
-                    <div style={{ marginTop: 28 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
-                            <div style={{ flex: 1, height: 1, background: C.border }} />
-                            <span style={{ fontSize: 11, color: C.textMuted, fontWeight: 500 }}>Try the demo</span>
-                            <div style={{ flex: 1, height: 1, background: C.border }} />
-                        </div>
-                        <div style={{ display: "flex", gap: 10 }}>
-                            {[
-                                { label: "HR Admin Demo", type: "admin" },
-                                { label: "Employee Demo", type: "employee" },
-                            ].map(d => (
-                                <button key={d.type} onClick={() => fillDemo(d.type)}
+                    {/* Login Form Card */}
+                    <div style={{
+                        background: "#fff", padding: "32px", borderRadius: 24,
+                        boxShadow: "0 10px 40px rgba(0,0,0,0.04), 0 1px 3px rgba(0,0,0,0.02)",
+                        border: "1px solid #f1f5f9", marginBottom: 32
+                    }}>
+                        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+                            <div>
+                                <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block", marginBottom: 8 }}>Email Address</label>
+                                <input
+                                    type="email" value={email}
+                                    onChange={e => { setEmail(e.target.value); setError(""); }}
+                                    onFocus={() => setFocused("email")} onBlur={() => setFocused("")}
+                                    onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                                    placeholder="you@company.com"
                                     style={{
-                                        flex: 1, padding: "10px 14px", borderRadius: 8,
-                                        border: `1px solid ${C.border}`, background: C.white,
-                                        cursor: "pointer", fontFamily: "inherit",
-                                        fontSize: 13, fontWeight: 600, color: C.text,
-                                        transition: "border-color 0.15s",
+                                        width: "100%", padding: "13px 16px",
+                                        border: `2px solid ${error && !email ? "#ef4444" : focused === "email" ? "#0d9488" : "#f1f5f9"}`,
+                                        borderRadius: 12, fontSize: 15, color: "#1e293b", outline: "none",
+                                        background: focused === "email" ? "#fff" : "#f8fafc", fontFamily: "inherit", boxSizing: "border-box",
+                                        transition: "all 0.2s"
                                     }}
-                                    onMouseEnter={e => e.currentTarget.style.borderColor = C.primary}
-                                    onMouseLeave={e => e.currentTarget.style.borderColor = C.border}>
-                                    {d.label}
-                                </button>
+                                />
+                            </div>
+                            <div>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                                    <label style={{ fontSize: 13, fontWeight: 600, color: "#475569", display: "block" }}>Password</label>
+                                    <button style={{ background: "none", border: "none", color: "#0d9488", fontSize: 12, fontWeight: 700, padding: 0, cursor: "pointer" }}>Forgot password?</button>
+                                </div>
+                                <div style={{ position: "relative" }}>
+                                    <input
+                                        type={showPass ? "text" : "password"} value={password}
+                                        onChange={e => { setPassword(e.target.value); setError(""); }}
+                                        onFocus={() => setFocused("pass")} onBlur={() => setFocused("")}
+                                        onKeyDown={e => e.key === "Enter" && handleSubmit()}
+                                        placeholder="••••••••"
+                                        style={{
+                                            width: "100%", padding: "13px 44px 13px 16px",
+                                            border: `2px solid ${error && !password ? "#ef4444" : focused === "pass" ? "#0d9488" : "#f1f5f9"}`,
+                                            borderRadius: 12, fontSize: 15, color: "#1e293b", outline: "none",
+                                            background: focused === "pass" ? "#fff" : "#f8fafc", fontFamily: "inherit", boxSizing: "border-box",
+                                            transition: "all 0.2s"
+                                        }}
+                                    />
+                                    <button type="button" onClick={() => setShowPass(v => !v)}
+                                        style={{ position: "absolute", right: 14, top: "50%", transform: "translateY(-50%)", background: "none", border: "none", cursor: "pointer", color: "#94a3b8", padding: 0 }}>
+                                        <Icon n={showPass ? "eyeOff" : "eye"} size={18} />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                        {error && (
+                            <motion.div
+                                initial={{ opacity: 0, y: -10 }}
+                                animate={{ opacity: 1, y: 0 }}
+                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", borderRadius: 12, background: "#fef2f2", border: "1px solid #fee2e2", marginTop: 24 }}
+                            >
+                                <Icon n="alertCircle" size={16} color="#ef4444" />
+                                <span style={{ fontSize: 13, color: "#b91c1c", fontWeight: 600 }}>{error}</span>
+                            </motion.div>
+                        )}
+
+                        <button
+                            onClick={handleSubmit}
+                            disabled={loading}
+                            style={{
+                                width: "100%", marginTop: 32, padding: "14px",
+                                borderRadius: 12, border: "none",
+                                background: loading ? "#7c3aed90" : "#7c3aed",
+                                color: "#fff", fontSize: 16, fontWeight: 700,
+                                cursor: loading ? "not-allowed" : "pointer",
+                                boxShadow: "0 10px 15px -3px rgba(124,58,237,0.25)",
+                                transition: "all 0.2s"
+                            }}
+                        >
+                            {loading ? "Signing in..." : "Sign in to Dashboard"}
+                        </button>
+                    </div>
+
+                    {/* Role Demo Section */}
+                    <div>
+                        <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 20 }}>
+                            <div style={{ height: "1px", flex: 1, background: "#f1f5f9" }} />
+                            <span style={{ fontSize: 12, fontWeight: 700, color: "#94a3b8", textTransform: "uppercase", letterSpacing: "1px" }}>Try a role demo</span>
+                            <div style={{ height: "1px", flex: 1, background: "#f1f5f9" }} />
+                        </div>
+
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                            {DEMO_ROLES.map(role => (
+                                <motion.button
+                                    key={role.id}
+                                    whileHover={{ y: -3, boxShadow: "0 10px 15px -3px rgba(0,0,0,0.05)" }}
+                                    whileTap={{ scale: 0.98 }}
+                                    onClick={() => fillDemo(role.id)}
+                                    style={{
+                                        display: "flex", flexDirection: "column", alignItems: "flex-start",
+                                        padding: "12px 16px", background: "#fff", border: `1.5px solid ${focused === role.id ? "#7c3aed" : "#f1f5f9"}`,
+                                        borderRadius: 16, cursor: "pointer", textAlign: "left", transition: "all 0.2s"
+                                    }}
+                                >
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
+                                        <div style={{ width: 8, height: 8, borderRadius: "50%", background: role.col }} />
+                                        <span style={{ fontSize: 13, fontWeight: 800, color: "#1e293b" }}>{role.title}</span>
+                                    </div>
+                                    <span style={{ fontSize: 11, color: "#64748b", fontWeight: 500 }}>{role.sub}</span>
+                                </motion.button>
                             ))}
                         </div>
                     </div>
-                </div>
+                </motion.div>
             </div>
         </div>
     );
 };
+
 
 /* ─── Landing Navbar ──────────────────────────────────────────── */
 const LandingNavbar = ({ onEnterApp, onScrollTo, onStartSetup }) => {
@@ -2991,7 +3310,7 @@ const TimeAndLeavePage = ({ pageKey, leaveApplyTrigger }) => {
 // ── CHANGE: full industry-aware dashboard — Zones 4-7 ── near DashboardPage ──
 const DashboardPage = () => {
     // ── CHANGE: add skillRequests + reviews; remove clockedIn (Clock In lives in Topbar only) ──
-    const { employees, leaveRequests, setLeaveRequests, attendance, payroll, notifications, setNotifications, companyConfig, navigate, skillRequests, reviews, teams, goals, feedbacks, recognitions } = React.useContext(DataCtx);
+    const { employees, leaveRequests, setLeaveRequests, attendance, payroll, notifications, setNotifications, companyConfig, navigate, skillRequests, reviews, teams, goals, feedbacks, recognitions, successionPlans } = React.useContext(DataCtx);
     const currentUser = React.useContext(UserCtx);
     const [alertDismissed, setAlertDismissed] = useState(false);
     const [guideDismissed, setGuideDismissed] = useState(() => {
@@ -3264,7 +3583,13 @@ const DashboardPage = () => {
         return Math.round((onTrack / goals.length) * 100);
     }, [goals]);
 
-    const pendingLeaveList = leaveRequests.filter(l => l.status === "Pending");
+    // Scope pending leave: team_lead and dept_manager only see their manageable employees
+    const scopedEmpIds = React.useMemo(() => {
+        const scoped = getScopedEmployees(currentUser, employees);
+        return new Set(scoped.map(e => e.id));
+    }, [currentUser, employees]);
+    const canApproveLeave = hasGlobalScope(currentUser) || currentUser?.role === "team_lead" || currentUser?.role === "dept_manager";
+    const pendingLeaveList = leaveRequests.filter(l => l.status === "Pending" && (hasGlobalScope(currentUser) || scopedEmpIds.has(l.empId)));
 
     // ── KPI pool (all available metrics) ────────────────────────
     const attPct = React.useMemo(() => Math.round(((present + late) / Math.max(employees.filter(e => e.status !== "Inactive").length, 1)) * 100), [present, late, employees]);
@@ -3288,9 +3613,13 @@ const DashboardPage = () => {
 
     // ── Dashboard widget prefs ──────────────────────────────────
     const DEFAULT_PREFS = {
-        selectedKpis: ["headcount", "here_today", "on_leave", "goals", "pending_leave", "skill_reviews"],
+        selectedKpis: ["headcount", "here_today", "on_leave", "goals"],
         charts: true,
         pending: true,
+        kpiStrip: true,
+        payrollPanel: true,
+        sidebar: true,
+        attFormat: "bar",
     };
     const [showCustomize, setShowCustomize] = useState(false);
     const [dashPrefs, setDashPrefs] = useState(() => {
@@ -3307,73 +3636,731 @@ const DashboardPage = () => {
         savePrefs({ ...dashPrefs, selectedKpis: next });
     };
 
-    return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
+    /* ── Role-aware KPI selection ── */
+    const rolePerms = ROLE_PERMISSIONS[currentUser?.role];
+    const effectiveKpis = (rolePerms?.defaultKpis !== null && rolePerms?.defaultKpis !== undefined)
+        ? rolePerms.defaultKpis
+        : dashPrefs.selectedKpis;
 
-            {/* ── Dashboard customize slide-over ──────────────────── */}
-            <AnimatePresence>
-                {showCustomize && (
-                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
-                        onClick={() => setShowCustomize(false)}
-                        style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 500, display: "flex", justifyContent: "flex-end" }}>
-                        <motion.div initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ duration: 0.22, ease: "easeOut" }}
-                            onClick={e => e.stopPropagation()}
-                            style={{ width: 340, background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
-                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
-                                <div style={{ fontSize: 16, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Customize Dashboard</div>
-                                <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={_darkMode ? C.textMuted : T.outline} /></div>
+    /* ── Dept drill-down + leave tooltip state ── */
+    const [selectedDept, setSelectedDept] = useState(null);
+    const [hoveredLeaveId, setHoveredLeaveId] = useState(null);
+    /* ── CEO AI assistant state (always declared — hooks must be unconditional) ── */
+    const [ceoAiQ, setCeoAiQ] = useState("");
+    const [ceoAiResp, setCeoAiResp] = useState("");
+
+    // ── Strategic Administrative Data (CEO & Head of HR) ───────────
+    const isAdmin = currentUser?.role === "super_admin" || currentUser?.role === "head_of_hr";
+    const isCEO = currentUser?.role === "super_admin";
+    const isHeadHR = currentUser?.role === "head_of_hr";
+
+    const payrollByDept = React.useMemo(() => {
+        const map = {};
+        (payroll || []).forEach(p => { const d = p.dept || "Other"; map[d] = (map[d] || 0) + (p.netPay || 0); });
+        return Object.entries(map).sort((a, b) => b[1] - a[1]);
+    }, [payroll]);
+    const totalPayrollCost = payrollByDept.reduce((s, [, v]) => s + v, 0);
+    const payrollFmt = (v) => v >= 1000000 ? `LKR ${(v / 1000000).toFixed(1)}M` : `LKR ${Math.round(v / 1000)}K`;
+
+    const flightRiskEmployees = React.useMemo(() => {
+        if (!isAdmin) return [];
+        return employees.map(emp => {
+            let score = 0;
+            const deptEmps = employees.filter(e => e.dept === emp.dept && e.id !== emp.id);
+            const avgSal = deptEmps.length ? deptEmps.reduce((s, e) => s + (e.salary || 0), 0) / deptEmps.length : emp.salary;
+            const ratio = avgSal ? (emp.salary || 0) / avgSal : 1;
+            if (ratio < 0.80) score += 28; else if (ratio < 0.90) score += 14;
+            if (emp.rating === 0) score += 18; else if (emp.rating < 3.5) score += 22; else if (emp.rating >= 4.5) score += 8;
+            const yrs = 2026 - parseInt((emp.startDate || "2024").split("-")[0]);
+            if (yrs < 1) score += 18; else if (yrs > 3) score += 8;
+            score += emp.name.length % 10;
+            score = Math.min(score, 97);
+            return { ...emp, riskScore: score, riskLevel: score >= 55 ? "High" : score >= 32 ? "Medium" : "Low" };
+        }).sort((a, b) => b.riskScore - a.riskScore).slice(0, 7);
+    }, [employees, isCEO]);
+
+    const attTrends = React.useMemo(() => {
+        if (!isAdmin) return [];
+        const dates = [...new Set((attendance || []).map(a => a.date))].sort().slice(-7);
+        return dates.map(date => {
+            const recs = (attendance || []).filter(a => a.date === date);
+            const total = Math.max(recs.length, 1);
+            return { date: date.slice(5), present: recs.filter(a => a.status === "Present").length, late: recs.filter(a => a.status === "Late").length, absent: recs.filter(a => a.status === "Absent").length, ot: recs.filter(a => parseFloat(a.hours || 0) > 8).length, total };
+        });
+    }, [attendance, isCEO]);
+
+    const skillHeatmap = React.useMemo(() => {
+        if (!isAdmin) return { depts: [], skills: [], cells: {} };
+        const deptList = [...new Set(employees.filter(e => e.status !== "Inactive").map(e => e.dept))].slice(0, 5);
+        const freq = {};
+        employees.forEach(e => (e.skills || []).forEach(s => { const n = typeof s === "string" ? s : s.name; if (n) freq[n] = (freq[n] || 0) + 1; }));
+        const topSkills = Object.entries(freq).sort((a, b) => b[1] - a[1]).slice(0, 6).map(([s]) => s);
+        const cells = {};
+        deptList.forEach(dept => {
+            const de = employees.filter(e => e.dept === dept && e.status !== "Inactive");
+            topSkills.forEach(skill => {
+                const have = de.filter(e => (e.skills || []).some(s => (typeof s === "string" ? s : s.name) === skill)).length;
+                cells[`${dept}|${skill}`] = de.length > 0 ? Math.round((have / de.length) * 100) : 0;
+            });
+        });
+        return { depts: deptList, skills: topSkills, cells };
+    }, [employees, isCEO]);
+
+    const exitsCount = employees.filter(e => e.status === "Inactive").length;
+
+    /* ── KPI threshold alert colours ── */
+    const KPI_ALERT_RULES = {
+        at_risk: { danger: v => parseInt(v) > 3 },
+        pending_leave: { warn: v => parseInt(v) >= 3 },
+        payroll_pend: { warn: v => parseInt(v) > 0 },
+        absent_cost: { warn: v => parseFloat((v + "").replace(/[^0-9.]/g, "")) > 50000 },
+    };
+    const getKpiAlert = (id, value) => {
+        const rule = KPI_ALERT_RULES[id];
+        if (!rule) return null;
+        if (rule.danger && rule.danger(value)) return { color: "#ef4444", bg: "#fef2f200", accent: "#ef4444" };
+        if (rule.warn && rule.warn(value)) return { color: "#f59e0b", bg: "#fffbeb00", accent: "#f59e0b" };
+        return null;
+    };
+
+    const hrModules = [
+        { id: "dir", title: "Employee directory", icon: "Users", desc: "Add, edit, filter, export all employees", sub: "CSV import, invite tracking", col: "#7C3AED" },
+        { id: "off", title: "Offboarding", icon: "LogOut", desc: "Exit checklist, asset return, access revoke", sub: "Standardized workflows", col: "#8B5CF6" },
+        { id: "leave", title: "Leave policies", icon: "Calendar", desc: "Define types, accrual rules, carry-over", sub: "Global compliance", col: "#9333EA" },
+        { id: "pay", title: "Payroll setup", icon: "DollarSign", desc: "Connect Deel / Xero / ADP, run payroll", sub: "FinOps integration", col: "#A855F7" },
+        { id: "att", title: "Attendance config", icon: "Clock", desc: "Biometric, GPS, Wi-Fi, manual rules", sub: "Smart tracking", col: "#C084FC" },
+        { id: "perm", title: "Permissions matrix", icon: "Shield", desc: "14 modules × 6 actions per job family", sub: "RBAC security", col: "#D8B4FE" },
+        { id: "rep", title: "Reports & analytics", icon: "BarChart2", desc: "Headcount, leave, payroll, skills CSV", sub: "Data-driven insights", col: "#E9D5FF" },
+        { id: "set", title: "System settings", icon: "Settings", desc: "Time, security, MFA, integrations", sub: "Global config", col: "#F3E8FF" },
+    ];
+
+    const renderScheduleSidebar = () => (
+        <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1.5px solid ${_darkMode ? C.border : T.outlineVar + "22"}`, height: "100%", display: "flex", flexDirection: "column" }}>
+            {/* Mini Calendar */}
+            <div style={{ padding: "24px 20px", borderBottom: `1.5px solid ${_darkMode ? C.borderLight : T.outlineVar + "18"}` }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18 }}>
+                    <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontFamily: "Manrope, sans-serif" }}>Schedule</div>
+                    <div style={{ display: "flex", gap: 6 }}>
+                        <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Lucide.ChevronLeft size={16} color={_darkMode ? C.textMuted : T.outline} /></button>
+                        <button style={{ background: "none", border: "none", cursor: "pointer", padding: 4 }}><Lucide.ChevronRight size={16} color={_darkMode ? C.textMuted : T.outline} /></button>
+                    </div>
+                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(7, 1fr)", gap: 4, textAlign: "center" }}>
+                    {['M', 'T', 'W', 'T', 'F', 'S', 'S'].map((d, i) => (
+                        <div key={i} style={{ fontSize: 10, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, marginBottom: 8 }}>{d}</div>
+                    ))}
+                    {Array.from({ length: 7 }).map((_, i) => {
+                        const day = 23 + i;
+                        const isToday = day === 27;
+                        return (
+                            <div key={i} style={{
+                                height: 32, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                                background: isToday ? (_darkMode ? C.primary : T.primary) : "transparent",
+                                color: isToday ? "#fff" : (_darkMode ? C.text : T.onSurface)
+                            }}>
+                                {day}
                             </div>
-                            <p style={{ fontSize: 12.5, color: _darkMode ? C.textMuted : T.outline, marginBottom: 20 }}>Select which KPI cards appear on your dashboard.</p>
+                        );
+                    })}
+                </div>
+            </div>
 
-                            {/* KPI picker */}
-                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>KPI Cards</div>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 24 }}>
-                                {KPI_POOL.map(kpi => {
-                                    const KpiIcon = Lucide[kpi.icon] || Lucide.Circle;
-                                    const on = dashPrefs.selectedKpis.includes(kpi.id);
+            {/* Event Tabs */}
+            <div style={{ padding: "12px 20px", display: "flex", gap: 20, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "12"}` }}>
+                {['Meeting', 'Events'].map((tab, i) => (
+                    <div key={tab} style={{ fontSize: 12, fontWeight: 700, color: i === 0 ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.textMuted : T.outline), cursor: "pointer", position: "relative", paddingBottom: 8 }}>
+                        {tab}
+                        {i === 0 && <div style={{ position: "absolute", bottom: -1, left: 0, right: 0, height: 2, background: _darkMode ? C.primary : T.primary, borderRadius: 2 }} />}
+                    </div>
+                ))}
+            </div>
+
+            {/* Event List */}
+            <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 14, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "18"}` }}>
+                {[
+                    { title: "Weekly Strategy", time: "10:30 AM", type: "Google Meet", col: "#6366f1" },
+                    { title: "Project Sync", time: "02:00 PM", type: "Zoom", col: "#06b6d4" },
+                    { title: "Team Lunch", time: "01:00 PM", type: "On-site", col: "#f59e0b" },
+                    { title: "Q1 Review Prep", time: "03:30 PM", type: "Google Meet", col: "#10b981" },
+                ].map((ev, i) => (
+                    <div key={i} style={{ display: "flex", gap: 12 }}>
+                        <div style={{ width: 3, borderRadius: 2, background: ev.col, alignSelf: "stretch", flexShrink: 0 }} />
+                        <div>
+                            <div style={{ fontSize: 12.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{ev.title}</div>
+                            <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{ev.time} · {ev.type}</div>
+                        </div>
+                    </div>
+                ))}
+            </div>
+
+            {/* Team Status Today */}
+            <div style={{ padding: "16px 20px", flex: 1, overflowY: "auto" }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.6px", marginBottom: 12 }}>Team Today</div>
+                <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                    {employees.slice(0, 8).map(emp => {
+                        const attRec = attendance.filter(a => a.date === todayStr && a.empId === emp.id)[0];
+                        const st = attRec?.status || (emp.status === "On Leave" ? "On Leave" : "—");
+                        const stColor = st === "Present" ? C.success : st === "Late" ? C.warning : st === "Absent" ? C.danger : st === "On Leave" ? C.info : (_darkMode ? C.textMuted : T.outline);
+                        return (
+                            <div key={emp.id} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                <Avatar name={emp.name} size={24} />
+                                <div style={{ flex: 1, minWidth: 0 }}>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp.name.split(" ")[0]}</div>
+                                    <div style={{ fontSize: 10.5, color: _darkMode ? C.textMuted : T.outline }}>{emp.dept}</div>
+                                </div>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: stColor }}>{st}</span>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        </div>
+    );
+    if (isAdmin) {
+        const ceoBg = _darkMode ? C.bg : T.surface;
+        const ceoCard = { background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.07)" };
+        const cardHdr = { padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" };
+        const hdrTitle = { fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface };
+        const accentColor = "#7C3AED";
+        const maxPayroll = payrollByDept[0]?.[1] || 1;
+        const attMax = Math.max(...attTrends.map(d => d.present + d.late + d.absent), 1);
+        const ceoAiResponses = [
+            "Average salary is LKR 148K/mo. Engineering leads at LKR 185K average.",
+            "4 employees show high flight risk. Key concern: below-market salaries in Engineering.",
+            "Skill coverage for React is 60% in Engineering — recommend upskilling 3 engineers.",
+            "Succession bench has 6 roles mapped. 2 successors are Ready Now.",
+            "Attendance rate this week is 87%. Friday shows the lowest at 72%.",
+        ];
+        const sendCeoAi = () => {
+            if (!ceoAiQ.trim()) return;
+            setCeoAiResp(ceoAiResponses[ceoAiQ.length % ceoAiResponses.length]);
+            setCeoAiQ("");
+        };
+
+        return (
+            <>
+            {ReactDOM.createPortal(
+                <AnimatePresence>
+                    {showCustomize && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                            onClick={() => setShowCustomize(false)}
+                            style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 9000, display: "flex", justifyContent: "flex-end" }}>
+                            <motion.div initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ duration: 0.22, ease: "easeOut" }}
+                                onClick={e => e.stopPropagation()}
+                                style={{ width: 340, background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Customize Dashboard</div>
+                                    <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={_darkMode ? C.textMuted : T.outline} /></div>
+                                </div>
+                                <p style={{ fontSize: 12.5, color: _darkMode ? C.textMuted : T.outline, marginBottom: 20 }}>Personalise your admin dashboard view.</p>
+
+                                {/* Section toggles */}
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
+                                {[
+                                    { key: "kpiStrip",     label: "Workforce Overview",     desc: "Headcount, new hires, leave & exits" },
+                                    { key: "payrollPanel", label: "Payroll & Attrition Risk", desc: "Payroll by dept + flight risk scores" },
+                                    { key: "charts",       label: "Charts & Analytics",      desc: "Attendance trends + skill heatmap" },
+                                    { key: "pending",      label: "Pending Actions",         desc: "Leave approvals + recent activity" },
+                                    { key: "sidebar",      label: "Schedule Sidebar",        desc: "Calendar, events & team status" },
+                                ].map(w => {
+                                    const on = dashPrefs[w.key] !== false;
                                     return (
-                                        <div key={kpi.id} onClick={() => toggleKpi(kpi.id)}
-                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", border: `1px solid ${on ? (_darkMode ? C.primaryMid : T.primary + "44") : (_darkMode ? C.borderLight : T.outlineVar + "22")}`, transition: "all 0.15s" }}>
-                                            <div style={{ width: 30, height: 30, borderRadius: 8, background: on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.bg : T.surfaceLow), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}>
-                                                <KpiIcon size={14} color={on ? "#fff" : (_darkMode ? C.textMuted : T.outline)} strokeWidth={2} />
+                                        <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "11px 0", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{w.label}</div>
+                                                <div style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{w.desc}</div>
                                             </div>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{kpi.label}</div>
-                                                <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{kpi.sub}</div>
+                                            <div onClick={() => savePrefs({ ...dashPrefs, [w.key]: !on })}
+                                                style={{ width: 38, height: 22, borderRadius: 11, background: on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50"), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                                                <motion.div animate={{ x: on ? 18 : 2 }} transition={{ duration: 0.2 }}
+                                                    style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                                             </div>
-                                            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50")}`, background: on ? (_darkMode ? C.primary : T.primary) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
-                                                {on && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Attendance chart format */}
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10, marginTop: 22 }}>Attendance Chart</div>
+                                {[
+                                    { id: "bar",   label: "Stacked Bar",  Ic: Lucide.BarChart2 },
+                                    { id: "line",  label: "Line Chart",   Ic: Lucide.TrendingUp },
+                                    { id: "donut", label: "Ring / Donut", Ic: Lucide.PieChart },
+                                ].map(fmt => {
+                                    const active = (dashPrefs.attFormat || "bar") === fmt.id;
+                                    const ac = _darkMode ? C.primary : T.primary;
+                                    return (
+                                        <div key={fmt.id} onClick={() => savePrefs({ ...dashPrefs, attFormat: fmt.id })}
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", marginBottom: 6, background: active ? ac + "12" : "transparent", border: `1.5px solid ${active ? ac : (_darkMode ? C.borderLight : T.outlineVar + "35")}`, transition: "all 0.15s" }}>
+                                            <fmt.Ic size={16} color={active ? ac : (_darkMode ? C.textMuted : T.outline)} strokeWidth={1.75} />
+                                            <span style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? ac : (_darkMode ? C.text : T.onSurface), flex: 1 }}>{fmt.label}</span>
+                                            {active && <Lucide.Check size={14} color={ac} strokeWidth={2.5} />}
+                                        </div>
+                                    );
+                                })}
+
+                                {/* Skill Heatmap format */}
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10, marginTop: 22 }}>Skill Chart</div>
+                                {[
+                                    { id: "heatmap", label: "Heatmap Table", Ic: Lucide.Grid3X3 },
+                                    { id: "bars",    label: "Dept Bars",     Ic: Lucide.BarChart },
+                                ].map(fmt => {
+                                    const active = (dashPrefs.skillFormat || "heatmap") === fmt.id;
+                                    const ac = _darkMode ? C.primary : T.primary;
+                                    return (
+                                        <div key={fmt.id} onClick={() => savePrefs({ ...dashPrefs, skillFormat: fmt.id })}
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", marginBottom: 6, background: active ? ac + "12" : "transparent", border: `1.5px solid ${active ? ac : (_darkMode ? C.borderLight : T.outlineVar + "35")}`, transition: "all 0.15s" }}>
+                                            <fmt.Ic size={16} color={active ? ac : (_darkMode ? C.textMuted : T.outline)} strokeWidth={1.75} />
+                                            <span style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? ac : (_darkMode ? C.text : T.onSurface), flex: 1 }}>{fmt.label}</span>
+                                            {active && <Lucide.Check size={14} color={ac} strokeWidth={2.5} />}
+                                        </div>
+                                    );
+                                })}
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+            <div style={{ display: "flex", minHeight: "100%", background: ceoBg }}>
+                <div style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 22 }}>
+                        <div>
+                            <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Admin Dashboard</h1>
+                            <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>{isCEO ? "CEO" : "Head of HR"} · Company-wide health · March 2026</p>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <Btn variant="outline" size="sm" onClick={() => {
+                                const rows = [["Dept", "Payroll Cost"], ...payrollByDept.map(([d, v]) => [d, v])];
+                                const csv = rows.map(r => r.join(",")).join("\n");
+                                const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); a.download = "payroll_summary.csv"; a.click();
+                            }}>
+                                <Lucide.Download size={13} color={_darkMode ? C.textMid : T.onSurfaceVar} style={{ marginRight: 4 }} />Export Report
+                            </Btn>
+                            <Btn variant="outline" size="sm" onClick={() => setShowCustomize(true)}>
+                                <Lucide.SlidersHorizontal size={13} color={_darkMode ? C.textMid : T.onSurfaceVar} style={{ marginRight: 4 }} />Customize
+                            </Btn>
+                        </div>
+                    </div>
+
+                    {/* ── Workforce Overview strip ── */}
+                    {dashPrefs.kpiStrip !== false && <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 14, marginBottom: 20 }}>
+                        {[
+                            { label: "Total Headcount", value: employees.length, icon: Lucide.Users, color: accentColor, sub: "Active workforce" },
+                            { label: "New Hires", value: newHires, icon: Lucide.UserPlus, color: "#059669", sub: "Since Jan 2026" },
+                            { label: "On Leave Today", value: onLeave, icon: Lucide.Plane, color: "#0891B2", sub: `${pendingLeaveList.length} pending requests` },
+                            { label: "Exits / Inactive", value: exitsCount, icon: Lucide.UserMinus, color: "#DC2626", sub: "Last 12 months" },
+                            { label: "Open Roles", value: 4, icon: Lucide.Briefcase, color: "#D97706", sub: "Across 3 departments" },
+                        ].map((s, i) => (
+                            <motion.div key={s.label} initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}
+                                whileHover={{ y: -2, boxShadow: "0 6px 18px rgba(0,0,0,0.1)" }}
+                                style={{ ...ceoCard, padding: "16px 20px" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                                    <span style={{ fontSize: 10.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.07em" }}>{s.label}</span>
+                                    <div style={{ width: 28, height: 28, borderRadius: "50%", background: s.color + "15", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <s.icon size={13} color={s.color} strokeWidth={1.75} />
+                                    </div>
+                                </div>
+                                <div style={{ fontSize: 24, fontWeight: 900, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>{s.value}</div>
+                                <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginTop: 6, fontWeight: 500 }}>{s.sub}</div>
+                            </motion.div>
+                        ))}
+                    </div>}
+
+                    {dashPrefs.payrollPanel !== false && <div style={{ display: "grid", gridTemplateColumns: "1.5fr 1fr", gap: 16, marginBottom: 16 }}>
+                        <div style={ceoCard}>
+                            <div style={cardHdr}>
+                                <div>
+                                    <div style={hdrTitle}>Payroll Summary</div>
+                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Total monthly cost: <span style={{ fontWeight: 700, color: accentColor }}>{payrollFmt(totalPayrollCost)}</span></div>
+                                </div>
+                                <Badge label="March 2026" variant="primary" />
+                            </div>
+                            <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
+                                {payrollByDept.slice(0, 6).map(([dept, cost], i) => {
+                                    const pct = Math.round((cost / maxPayroll) * 100);
+                                    const DEPT_COLORS = ["#7C3AED", "#0891B2", "#0D9488", "#D97706", "#DC2626", "#059669"];
+                                    const col = DEPT_COLORS[i % DEPT_COLORS.length];
+                                    return (
+                                        <div key={dept}>
+                                            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                                                <span style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{dept}</span>
+                                                <span style={{ fontSize: 12, fontWeight: 700, color: col }}>{payrollFmt(cost)}</span>
+                                            </div>
+                                            <div style={{ height: 8, background: _darkMode ? "rgba(255,255,255,0.07)" : T.surfaceLow, borderRadius: 4, overflow: "hidden" }}>
+                                                <motion.div initial={{ width: 0 }} animate={{ width: `${pct}%` }} transition={{ duration: 0.8, ease: "easeOut", delay: i * 0.05 }}
+                                                    style={{ height: "100%", background: col, borderRadius: 4 }} />
                                             </div>
                                         </div>
                                     );
                                 })}
                             </div>
+                        </div>
 
-                            {/* Section toggles */}
-                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
-                            {[
-                                { key: "charts", label: "Charts & Analytics", desc: "Weekly attendance chart + donuts" },
-                                { key: "pending", label: "Pending Actions", desc: "Leave approvals, recent activity" },
-                            ].map(w => (
-                                <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
-                                    <div>
-                                        <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{w.label}</div>
-                                        <div style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{w.desc}</div>
-                                    </div>
-                                    <div onClick={() => savePrefs({ ...dashPrefs, [w.key]: !dashPrefs[w.key] })}
-                                        style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50"), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
-                                        <motion.div animate={{ x: dashPrefs[w.key] ? 18 : 2 }} transition={{ duration: 0.2 }}
-                                            style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
-                                    </div>
+                        <div style={ceoCard}>
+                            <div style={cardHdr}>
+                                <div style={hdrTitle}>Attrition Risk</div>
+                                <div style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: "#fef2f2", border: "1px solid #fecaca" }}>
+                                    <Lucide.AlertTriangle size={10} color="#ef4444" strokeWidth={2.5} />
+                                    <span style={{ fontSize: 10.5, fontWeight: 700, color: "#ef4444" }}>{flightRiskEmployees.filter(e => e.riskLevel === "High").length} High Risk</span>
                                 </div>
-                            ))}
-                        </motion.div>
-                    </motion.div>
+                            </div>
+                            <div>
+                                {flightRiskEmployees.map((emp, i) => {
+                                    const rCol = emp.riskLevel === "High" ? "#ef4444" : emp.riskLevel === "Medium" ? "#f59e0b" : "#10b981";
+                                    return (
+                                        <div key={emp.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: i < flightRiskEmployees.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
+                                            <Avatar name={emp.name} size={28} />
+                                            <div style={{ flex: 1, minWidth: 0 }}>
+                                                <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp.name}</div>
+                                                <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{emp.dept}</div>
+                                            </div>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                <div style={{ width: 42, height: 5, borderRadius: 3, background: _darkMode ? "rgba(255,255,255,0.1)" : "#f1f5f9", overflow: "hidden" }}>
+                                                    <div style={{ height: "100%", width: `${emp.riskScore}%`, background: rCol, borderRadius: 3 }} />
+                                                </div>
+                                                <span style={{ fontSize: 11, fontWeight: 700, color: rCol, minWidth: 24 }}>{emp.riskScore}</span>
+                                            </div>
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        </div>
+                    </div>}
+
+                    {dashPrefs.charts !== false && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+                        <div style={ceoCard}>
+                            <div style={cardHdr}>
+                                <div style={hdrTitle}>Attendance Trends</div>
+                                <div style={{ display: "flex", gap: 14 }}>
+                                    {[{ label: "Present", color: "#10b981" }, { label: "Late", color: "#f59e0b" }, { label: "Absent", color: "#ef4444" }].map(l => (
+                                        <div key={l.label} style={{ display: "flex", alignItems: "center", gap: 4 }}>
+                                            <div style={{ width: 8, height: 8, borderRadius: 2, background: l.color }} />
+                                            <span style={{ fontSize: 10.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>{l.label}</span>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                            <div style={{ padding: "16px 20px" }}>
+                                {(() => {
+                                    const fmt = dashPrefs.attFormat || "bar";
+                                    if (fmt === "bar") return (
+                                        <div style={{ display: "flex", alignItems: "flex-end", gap: 10, height: 140, justifyContent: "space-between" }}>
+                                            {attTrends.map((d, i) => (
+                                                <div key={d.date} style={{ display: "flex", flexDirection: "column", alignItems: "center", flex: 1, gap: 2 }}>
+                                                    <div style={{ display: "flex", flexDirection: "column", justifyContent: "flex-end", gap: 1, height: 110, width: "100%" }}>
+                                                        {[{ v: d.present, c: "#10b981" }, { v: d.late, c: "#f59e0b" }, { v: d.absent, c: "#ef4444" }].map((seg, si) => (
+                                                            <motion.div key={si} initial={{ scaleY: 0 }} animate={{ scaleY: 1 }} transition={{ duration: 0.5, delay: i * 0.05 + si * 0.03, ease: "easeOut" }}
+                                                                style={{ width: "100%", height: `${Math.max((seg.v / attMax) * 100, seg.v > 0 ? 4 : 0)}%`, background: seg.c, borderRadius: si === 0 ? "0 0 4px 4px" : si === 2 ? "4px 4px 0 0" : 0, transformOrigin: "bottom" }} />
+                                                        ))}
+                                                    </div>
+                                                    <span style={{ fontSize: 9.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 600, whiteSpace: "nowrap" }}>{d.date}</span>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    );
+                                    if (fmt === "line") {
+                                        const n = attTrends.length || 1;
+                                        const cW = 400, cH = 130, pL = 28, pB = 22, pT = 10;
+                                        const iW = cW - pL - 8, iH = cH - pB - pT;
+                                        const maxV = Math.max(...attTrends.map(d => d.present + d.late + d.absent), 1);
+                                        const X = (i) => pL + (i / Math.max(n - 1, 1)) * iW;
+                                        const Y = (v) => pT + iH - (v / maxV) * iH;
+                                        const mkPath = (key) => attTrends.map((d, i) => `${i === 0 ? "M" : "L"} ${X(i).toFixed(1)} ${Y(d[key]).toFixed(1)}`).join(" ");
+                                        return (
+                                            <svg width="100%" viewBox={`0 0 ${cW} ${cH}`} style={{ overflow: "visible" }}>
+                                                {[{ key: "present", c: "#10b981" }, { key: "late", c: "#f59e0b" }, { key: "absent", c: "#ef4444" }].map(s => (
+                                                    <g key={s.key}>
+                                                        <motion.path initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 0.8, ease: "easeOut" }}
+                                                            d={mkPath(s.key)} fill="none" stroke={s.c} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+                                                        {attTrends.map((d, i) => (
+                                                            <circle key={i} cx={X(i)} cy={Y(d[s.key])} r={3} fill={s.c} />
+                                                        ))}
+                                                    </g>
+                                                ))}
+                                                {attTrends.map((d, i) => (
+                                                    <text key={i} x={X(i)} y={cH - 4} textAnchor="middle" fontSize="9" fill={_darkMode ? "#64748b" : "#94a3b8"} fontWeight="600">{d.date}</text>
+                                                ))}
+                                            </svg>
+                                        );
+                                    }
+                                    if (fmt === "donut") {
+                                        const tot = { p: attTrends.reduce((s, d) => s + d.present, 0), l: attTrends.reduce((s, d) => s + d.late, 0), a: attTrends.reduce((s, d) => s + d.absent, 0) };
+                                        const total = Math.max(tot.p + tot.l + tot.a, 1);
+                                        const r = 46, cx = 70, cy = 60, stroke = 20;
+                                        const circ = 2 * Math.PI * r;
+                                        let offset = 0;
+                                        const segs = [{ v: tot.p, c: "#10b981", label: "Present" }, { v: tot.l, c: "#f59e0b", label: "Late" }, { v: tot.a, c: "#ef4444", label: "Absent" }];
+                                        return (
+                                            <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                                                <svg width="140" height="120" viewBox="0 0 140 120">
+                                                    <circle cx={cx} cy={cy} r={r} fill="none" stroke={_darkMode ? "#1e2840" : "#f1f5f9"} strokeWidth={stroke} />
+                                                    {segs.map(seg => {
+                                                        const pct = seg.v / total;
+                                                        const dash = pct * circ;
+                                                        const el = <motion.circle key={seg.label} initial={{ strokeDashoffset: circ }} animate={{ strokeDashoffset: circ - dash }}
+                                                            transition={{ duration: 0.8, ease: "easeOut" }}
+                                                            cx={cx} cy={cy} r={r} fill="none" stroke={seg.c} strokeWidth={stroke}
+                                                            strokeDasharray={`${dash.toFixed(1)} ${(circ - dash).toFixed(1)}`}
+                                                            strokeDashoffset={-offset * circ / 1}
+                                                            style={{ transformOrigin: `${cx}px ${cy}px`, transform: `rotate(${-90 + offset * 360}deg)` }} />;
+                                                        offset += pct;
+                                                        return el;
+                                                    })}
+                                                    <text x={cx} y={cy - 6} textAnchor="middle" fontSize="16" fontWeight="800" fill={_darkMode ? "#f1f5f9" : "#0f172a"}>{Math.round((tot.p / total) * 100)}%</text>
+                                                    <text x={cx} y={cy + 10} textAnchor="middle" fontSize="9" fill={_darkMode ? "#64748b" : "#94a3b8"}>Present</text>
+                                                </svg>
+                                                <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                                    {segs.map(s => (
+                                                        <div key={s.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                            <div style={{ width: 10, height: 10, borderRadius: 3, background: s.c, flexShrink: 0 }} />
+                                                            <div>
+                                                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{s.label}</div>
+                                                                <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline }}>{s.v} days · {Math.round((s.v / total) * 100)}%</div>
+                                                            </div>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        );
+                                    }
+                                    return null;
+                                })()}
+                            </div>
+                        </div>
+
+                        <div style={ceoCard}>
+                            <div style={cardHdr}>
+                                <div style={hdrTitle}>Skill Coverage</div>
+                                {(dashPrefs.skillFormat || "heatmap") === "heatmap"
+                                    ? <div style={{ display: "flex", alignItems: "center", gap: 6, fontSize: 10, color: _darkMode ? C.textMuted : T.outline }}>
+                                        <div style={{ display: "flex", gap: 3 }}>
+                                            {["#fef2f2", "#fffbeb", "#ecfdf5"].map((c, i) => <div key={i} style={{ width: 12, height: 12, borderRadius: 3, background: c, border: "1px solid rgba(0,0,0,0.08)" }} />)}
+                                        </div>
+                                        Low → High
+                                    </div>
+                                    : <span style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline }}>Top 3 skills / dept</span>
+                                }
+                            </div>
+                            <div style={{ padding: "14px 20px", overflowX: "auto" }}>
+                                {(dashPrefs.skillFormat || "heatmap") === "heatmap" ? (
+                                    <table style={{ width: "100%", borderCollapse: "separate", borderSpacing: "3px 3px" }}>
+                                        <thead>
+                                            <tr>
+                                                <th style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline, textAlign: "left", paddingBottom: 6 }}>Dept</th>
+                                                {skillHeatmap.skills.map(s => <th key={s} style={{ fontSize: 9.5, color: _darkMode ? C.textMuted : T.outline, textAlign: "center", paddingBottom: 6 }}>{s.slice(0, 3)}</th>)}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {skillHeatmap.depts.map(dept => (
+                                                <tr key={dept}>
+                                                    <td style={{ fontSize: 11, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, paddingRight: 10 }}>{dept}</td>
+                                                    {skillHeatmap.skills.map(skill => {
+                                                        const pct = skillHeatmap.cells[`${dept}|${skill}`] || 0;
+                                                        const bg = pct >= 70 ? "#dcfce7" : pct >= 40 ? "#fef9c3" : "#fee2e2";
+                                                        return (
+                                                            <td key={skill} style={{ textAlign: "center", padding: "4px 2px" }}>
+                                                                <div style={{ width: "100%", padding: "5px 2px", borderRadius: 6, background: bg, fontSize: 10, fontWeight: 700, color: pct >= 70 ? "#15803d" : pct >= 40 ? "#854d0e" : "#991b1b" }}>{pct}%</div>
+                                                            </td>
+                                                        );
+                                                    })}
+                                                </tr>
+                                            ))}
+                                        </tbody>
+                                    </table>
+                                ) : (
+                                    <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                                        {skillHeatmap.depts.map(dept => {
+                                            const avgPct = skillHeatmap.skills.length
+                                                ? Math.round(skillHeatmap.skills.reduce((s, sk) => s + (skillHeatmap.cells[`${dept}|${sk}`] || 0), 0) / skillHeatmap.skills.length)
+                                                : 0;
+                                            const col = avgPct >= 70 ? "#10b981" : avgPct >= 40 ? "#f59e0b" : "#ef4444";
+                                            return (
+                                                <div key={dept}>
+                                                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 3 }}>
+                                                        <span style={{ fontSize: 11.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{dept}</span>
+                                                        <span style={{ fontSize: 11, fontWeight: 700, color: col }}>{avgPct}%</span>
+                                                    </div>
+                                                    <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : "#f1f5f9", borderRadius: 4, overflow: "hidden" }}>
+                                                        <motion.div initial={{ width: 0 }} animate={{ width: `${avgPct}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
+                                                            style={{ height: "100%", background: col, borderRadius: 4 }} />
+                                                    </div>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>}
+
+                    {dashPrefs.pending !== false && <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginBottom: 16 }}>
+                        {/* Pending Leave */}
+                        <div style={ceoCard}>
+                            <div style={{ ...cardHdr }}>
+                                <div style={hdrTitle}>Pending Leave Requests</div>
+                                {pendingLeaveList.length > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: "#fffbeb", color: "#f59e0b", border: "1px solid #fde68a", borderRadius: 20, padding: "2px 10px" }}>{pendingLeaveList.length}</span>}
+                            </div>
+                            <div>
+                                {pendingLeaveList.length === 0
+                                    ? <div style={{ padding: "20px 20px", fontSize: 13, color: _darkMode ? C.textMuted : T.outline, display: "flex", alignItems: "center", gap: 8 }}>
+                                        <Lucide.CalendarCheck size={16} color={_darkMode ? C.border : T.outlineVar} strokeWidth={1.5} />
+                                        All leave requests cleared
+                                    </div>
+                                    : pendingLeaveList.slice(0, 5).map((lr, i) => {
+                                        const emp = employees.find(e => e.id === lr.empId);
+                                        return (
+                                            <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: i < Math.min(pendingLeaveList.length, 5) - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
+                                                <Avatar name={emp?.name || "?"} size={28} />
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name}</div>
+                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{lr.type} · {lr.days}d · {lr.from}</div>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 4 }}>
+                                                    <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
+                                                    <Btn variant="danger" size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={11} /></Btn>
+                                                </div>
+                                            </div>
+                                        );
+                                    })
+                                }
+                            </div>
+                        </div>
+
+                        {/* Recent Activity */}
+                        <div style={ceoCard}>
+                            <div style={cardHdr}>
+                                <div style={hdrTitle}>Recent Activity</div>
+                                {unread > 0 && <span style={{ fontSize: 11, fontWeight: 700, background: accentColor + "18", color: accentColor, border: `1px solid ${accentColor}30`, borderRadius: 20, padding: "2px 10px" }}>{unread} new</span>}
+                            </div>
+                            <div>
+                                {(notifications || []).slice(0, 6).map((n, i) => (
+                                    <div key={n.id} style={{ padding: "9px 18px", display: "flex", gap: 10, alignItems: "flex-start", borderBottom: i < 5 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
+                                        <div style={{ width: 7, height: 7, borderRadius: "50%", background: n.read ? (_darkMode ? C.border : T.outlineVar) : accentColor, marginTop: 5, flexShrink: 0 }} />
+                                        <div style={{ flex: 1, minWidth: 0 }}>
+                                            <div style={{ fontSize: 12, color: _darkMode ? C.text : T.onSurface, fontWeight: n.read ? 400 : 600, lineHeight: 1.4 }}>{n.msg}</div>
+                                            <div style={{ fontSize: 10.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{n.time}</div>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+                        </div>
+                    </div>}
+
+                    {isHeadHR && (
+                        <div style={{ marginTop: 4, paddingBottom: 24 }}>
+                            <h3 style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : "#1e293b", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
+                                <Icon n="briefcase" size={18} color="#7c3aed" />
+                                Core HR Operations
+                            </h3>
+                            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(280px, 1fr))", gap: 20 }}>
+                                {hrModules.map(m => (
+                                    <motion.div
+                                        key={m.id}
+                                        whileHover={{ y: -5, boxShadow: "0 12px 24px -10px rgba(124,58,237,0.15)" }}
+                                        style={{
+                                            background: "#fff", padding: "24px", borderRadius: 24, border: "1px solid #f1f5f9",
+                                            cursor: "pointer", transition: "all 0.3s ease", position: "relative", overflow: "hidden"
+                                        }}
+                                    >
+                                        <div style={{ position: "absolute", top: -20, right: -20, width: 80, height: 80, background: m.col + "08", borderRadius: "50%" }} />
+                                        <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
+                                            <div style={{ width: 44, height: 44, borderRadius: 14, background: m.col + "15", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                <Icon n={m.icon} size={22} color={m.col} />
+                                            </div>
+                                            <h4 style={{ fontSize: 15, fontWeight: 800, color: "#1e293b", margin: 0 }}>{m.title}</h4>
+                                        </div>
+                                        <p style={{ fontSize: 13, color: "#475569", lineHeight: 1.5, marginBottom: 12, fontWeight: 500 }}>{m.desc}</p>
+                                    </motion.div>
+                                ))}
+                            </div>
+                        </div>
+                    )}
+                </div>
+
+                {dashPrefs.sidebar !== false && (
+                    <div style={{ width: 300, flexShrink: 0, position: "sticky", top: 0, height: "calc(100vh - 60px)", overflowY: "auto" }}>
+                        {renderScheduleSidebar()}
+                    </div>
                 )}
-            </AnimatePresence>
+            </div>
+            </>
+        );
+    }
+
+
+
+
+    return (
+        <>
+            {/* ── Dashboard customize slide-over — rendered in a portal to escape Framer Motion transforms ── */}
+            {ReactDOM.createPortal(
+                <AnimatePresence>
+                    {showCustomize && (
+                        <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: 0.15 }}
+                            onClick={() => setShowCustomize(false)}
+                            style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 9000, display: "flex", justifyContent: "flex-end" }}>
+                            <motion.div initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ duration: 0.22, ease: "easeOut" }}
+                                onClick={e => e.stopPropagation()}
+                                style={{ width: 340, background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                    <div style={{ fontSize: 16, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Customize Dashboard</div>
+                                    <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={_darkMode ? C.textMuted : T.outline} /></div>
+                                </div>
+                                <p style={{ fontSize: 12.5, color: _darkMode ? C.textMuted : T.outline, marginBottom: 20 }}>Select which KPI cards appear on your dashboard.</p>
+
+                                {/* KPI picker */}
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>KPI Cards</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 2, marginBottom: 24 }}>
+                                    {KPI_POOL.map(kpi => {
+                                        const KpiIcon = Lucide[kpi.icon] || Lucide.Circle;
+                                        const on = dashPrefs.selectedKpis.includes(kpi.id);
+                                        return (
+                                            <div key={kpi.id} onClick={() => toggleKpi(kpi.id)}
+                                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", border: `1px solid ${on ? (_darkMode ? C.primaryMid : T.primary + "44") : (_darkMode ? C.borderLight : T.outlineVar + "22")}`, transition: "all 0.15s" }}>
+                                                <div style={{ width: 30, height: 30, borderRadius: 8, background: on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.bg : T.surfaceLow), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}>
+                                                    <KpiIcon size={14} color={on ? "#fff" : (_darkMode ? C.textMuted : T.outline)} strokeWidth={2} />
+                                                </div>
+                                                <div style={{ flex: 1, minWidth: 0 }}>
+                                                    <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{kpi.label}</div>
+                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{kpi.sub}</div>
+                                                </div>
+                                                <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50")}`, background: on ? (_darkMode ? C.primary : T.primary) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                                                    {on && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+
+                                {/* Section toggles */}
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
+                                {[
+                                    { key: "charts", label: "Charts & Analytics", desc: "Weekly attendance chart + donuts" },
+                                    { key: "pending", label: "Pending Actions", desc: "Leave approvals, recent activity" },
+                                ].map(w => (
+                                    <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                        <div>
+                                            <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{w.label}</div>
+                                            <div style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{w.desc}</div>
+                                        </div>
+                                        <div onClick={() => savePrefs({ ...dashPrefs, [w.key]: !dashPrefs[w.key] })}
+                                            style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50"), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                                            <motion.div animate={{ x: dashPrefs[w.key] ? 18 : 2 }} transition={{ duration: 0.2 }}
+                                                style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
+                                        </div>
+                                    </div>
+                                ))}
+                            </motion.div>
+                        </motion.div>
+                    )}
+                </AnimatePresence>,
+                document.body
+            )}
+
+        <div style={{ padding: "24px 28px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
 
             {/* ── Page header row ──────────────────────────────────── */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 28 }}>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: rolePerms && currentUser?.role !== "hr_admin" ? 16 : 20 }}>
                 <div>
                     <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Dashboard</h1>
                     <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Your workforce at a glance</p>
@@ -3392,36 +4379,99 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* ── KPI strip (user-selected) ────────────────────────── */}
-            {dashPrefs.selectedKpis.length > 0 && (() => {
-                const selected = KPI_POOL.filter(k => dashPrefs.selectedKpis.includes(k.id));
-                const cols = Math.min(selected.length, 6);
+            {/* ── Role context banner (non-admin roles) ──────────────── */}
+            {rolePerms && currentUser?.role !== "hr_admin" && (() => {
+                const RoleIconMap = {
+                    super_admin: Lucide.TrendingUp,
+                    head_of_hr: Lucide.ShieldCheck,
+                    hr_manager: Lucide.ClipboardList,
+                    dept_manager: Lucide.Users,
+                    team_lead: Lucide.UserCheck,
+                };
+                const RoleIcon = RoleIconMap[currentUser?.role] || Lucide.User;
+                const capEntries = Object.entries(rolePerms.caps || {}).filter(([, v]) => v === true).slice(0, 4);
                 return (
-                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, marginBottom: 18, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-                            {selected.map((s, i) => {
-                                const KIcon = Lucide[s.icon] || Lucide.Circle;
-                                return (
-                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                                            <KIcon size={13} color={_darkMode ? C.textMuted : T.outline} strokeWidth={2} />
-                                            <span style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>{s.label}</span>
-                                        </div>
-                                        <div style={{ fontSize: 26, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.value}</div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 5 }}>
-                                            {s.up ? <Lucide.TrendingUp size={11} color={C.success} /> : <Lucide.TrendingDown size={11} color={C.warning} />}
-                                            <span style={{ fontSize: 11, color: s.up ? C.success : (_darkMode ? C.textMuted : T.outline), fontWeight: 500 }}>{s.sub}</span>
+                    <motion.div initial={{ opacity: 0, y: -6 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }}
+                        style={{ display: "flex", alignItems: "center", gap: 14, padding: "12px 18px", borderRadius: 12, marginBottom: 22, background: rolePerms.color + "10", border: `1px solid ${rolePerms.color}28` }}>
+                        <div style={{ width: 38, height: 38, borderRadius: 10, background: rolePerms.color + "18", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                            <RoleIcon size={18} color={rolePerms.color} strokeWidth={1.75} />
+                        </div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+                                <span style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{rolePerms.label}</span>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: rolePerms.color, background: rolePerms.color + "18", padding: "2px 8px", borderRadius: 20, letterSpacing: "0.4px", textTransform: "uppercase" }}>{rolePerms.badge}</span>
+                            </div>
+                            <p style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, margin: 0, fontWeight: 500 }}>{rolePerms.focus}</p>
+                        </div>
+                        {capEntries.length > 0 && (
+                            <div style={{ display: "flex", gap: 6, flexWrap: "wrap", justifyContent: "flex-end" }}>
+                                {capEntries.map(([cap]) => {
+                                    const capLabels = { viewPayrollFull: "Full Payroll", connectPayrollProvider: "Connect Providers", manageCompanySettings: "Company Settings", viewSuccession: "Succession", manageRBAC: "Access Mgmt", runPayroll: "Run Payroll", manageOffboarding: "Offboarding", managePolicies: "Policies", createReviewCycles: "Review Cycles", viewDeptOnly: "Dept View", approveTeamOnly: "Team Approvals" };
+                                    return (
+                                        <span key={cap} style={{ fontSize: 10, fontWeight: 600, color: rolePerms.color, background: rolePerms.color + "14", border: `1px solid ${rolePerms.color}28`, padding: "3px 9px", borderRadius: 20, whiteSpace: "nowrap" }}>
+                                            {capLabels[cap] || cap}
+                                        </span>
+                                    );
+                                })}
+                            </div>
+                        )}
+                    </motion.div>
+                );
+            })()}
+
+            {/* ── KPI Bento Grid ── */}
+            {effectiveKpis.length > 0 && (() => {
+                const selected = KPI_POOL.filter(k => effectiveKpis.includes(k.id)).slice(0, 7);
+                const KPI_IC = {
+                    headcount: { bg: "#eef2ff", color: "#6366f1" }, here_today: { bg: "#ecfdf5", color: "#10b981" },
+                    on_leave: { bg: "#eff6ff", color: "#3b82f6" }, attendance: { bg: "#ecfdf5", color: "#10b981" },
+                    goals: { bg: "#eef2ff", color: "#6366f1" }, pending_leave: { bg: "#fffbeb", color: "#f59e0b" },
+                    skill_reviews: { bg: "#eff6ff", color: "#3b82f6" }, at_risk: { bg: "#fef2f2", color: "#ef4444" },
+                    chemistry: { bg: "#fdf4ff", color: "#a855f7" }, payroll_pend: { bg: "#f5f3ff", color: "#8b5cf6" },
+                    avg_rating: { bg: "#fffbeb", color: "#f59e0b" }, absent_cost: { bg: "#fef2f2", color: "#ef4444" },
+                };
+                return (
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 18 }}>
+                        {selected.map((s, i) => {
+                            const KIcon = Lucide[s.icon] || Lucide.Circle;
+                            const ic = KPI_IC[s.id] || { bg: "#eef2ff", color: "#6366f1" };
+                            const alert = getKpiAlert(s.id, s.value);
+                            const isHero = i === 0;
+                            const leftColor = alert ? alert.accent : (isHero ? (_darkMode ? C.primary : T.primary) : "transparent");
+                            const cardBg = _darkMode ? C.white : T.surfaceCard;
+                            return (
+                                <motion.div key={s.id}
+                                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}
+                                    whileHover={{ y: -2, boxShadow: "0 6px 18px rgba(0,0,0,0.09)" }}
+                                    style={{
+                                        background: cardBg,
+                                        borderTop: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`,
+                                        borderRight: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`,
+                                        borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`,
+                                        borderLeft: `4px solid ${leftColor}`,
+                                        borderRadius: 14, padding: isHero ? "18px 20px" : "15px 18px",
+                                        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                                    }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                                        <span style={{ fontSize: 10.5, fontWeight: 700, color: alert ? alert.color : (_darkMode ? C.textMuted : T.outline), textTransform: "uppercase", letterSpacing: "0.07em" }}>{s.label}</span>
+                                        <div style={{ width: 30, height: 30, borderRadius: "50%", background: alert ? alert.color + "18" : ic.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <KIcon size={13} color={alert ? alert.color : ic.color} strokeWidth={1.75} />
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                    <div style={{ fontSize: isHero ? 30 : 24, fontWeight: 800, color: alert ? alert.color : (_darkMode ? C.text : T.onSurface), letterSpacing: "-0.5px", lineHeight: 1, fontFamily: "Manrope, sans-serif" }}>{s.value}</div>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 7 }}>
+                                        {s.up ? <Lucide.TrendingUp size={10} color={C.success} strokeWidth={2.5} /> : <Lucide.TrendingDown size={10} color={alert ? alert.color : C.warning} strokeWidth={2.5} />}
+                                        <span style={{ fontSize: 10.5, fontWeight: 500, color: s.up ? C.success : (alert ? alert.color : (_darkMode ? C.textMuted : T.outline)) }}>{s.sub}</span>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 );
             })()}
 
             {/* ── Main row: Chart + Status ─────────────────────────── */}
-            {dashPrefs.charts && (() => {
+            {(dashPrefs.charts || (rolePerms?.defaultKpis !== null && rolePerms?.defaultKpis !== undefined)) && (() => {
                 // Weekly attendance data (deterministic from emp count)
                 const empBase = employees.filter(e => e.status !== "Inactive").length;
                 const thisWeek = [0.72, 0.85, 0.92, 0.68, 0.88, 0.80, 0.76].map(r => Math.round(r * empBase));
@@ -3570,28 +4620,44 @@ const DashboardPage = () => {
                 const primaryColor = _darkMode ? C.primary : T.primary;
                 return (
                     <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16 }}>
-                        {/* Left: Market / Department overview */}
+                        {/* Left: Department overview with unique colours + drill-down */}
                         <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                             <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Department Overview</div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
-                                    <span style={{ fontSize: 12, color: _darkMode ? C.textMid : T.onSurfaceVar, fontWeight: 500 }}>This month</span>
-                                    <Lucide.ChevronDown size={12} color={_darkMode ? C.textMuted : T.outline} />
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    {selectedDept && (
+                                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                            onClick={() => setSelectedDept(null)}
+                                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: primaryColor + "14", border: `1px solid ${primaryColor}44`, cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: primaryColor }}>
+                                            {selectedDept} <Lucide.X size={11} color={primaryColor} strokeWidth={2.5} />
+                                        </motion.div>
+                                    )}
+                                    <span style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>Click to filter</span>
                                 </div>
                             </div>
                             <div style={{ padding: "14px 20px" }}>
-                                {deptEntries.slice(0, 6).map(([dept, count]) => (
-                                    <div key={dept} style={{ marginBottom: 12 }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                                            <span style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{dept}</span>
-                                            <span style={{ fontSize: 12, fontWeight: 700, color: primaryColor }}>{count}</span>
-                                        </div>
-                                        <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : T.surfaceLow, borderRadius: 4, overflow: "hidden" }}>
-                                            <motion.div initial={{ width: 0 }} animate={{ width: `${(count / maxDept) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
-                                                style={{ height: "100%", background: `linear-gradient(90deg, ${primaryColor}, ${primaryColor}cc)`, borderRadius: 4 }} />
-                                        </div>
-                                    </div>
-                                ))}
+                                {(() => {
+                                    const DEPT_PALETTE = ["#6366f1", "#0d9488", "#3b82f6", "#f59e0b", "#ef4444", "#8b5cf6", "#0891b2", "#d97706"];
+                                    return deptEntries.slice(0, 7).map(([dept, count], di) => {
+                                        const barColor = DEPT_PALETTE[di % DEPT_PALETTE.length];
+                                        const isActive = selectedDept === dept;
+                                        const isDimmed = selectedDept && !isActive;
+                                        return (
+                                            <motion.div key={dept} animate={{ opacity: isDimmed ? 0.35 : 1 }} transition={{ duration: 0.2 }}
+                                                onClick={() => setSelectedDept(isActive ? null : dept)}
+                                                style={{ marginBottom: 11, cursor: "pointer" }}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                                                    <span style={{ fontSize: 12.5, fontWeight: isActive ? 700 : 600, color: isActive ? barColor : (_darkMode ? C.text : T.onSurface) }}>{dept}</span>
+                                                    <span style={{ fontSize: 12, fontWeight: 700, color: barColor }}>{count}</span>
+                                                </div>
+                                                <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : T.surfaceLow, borderRadius: 4, overflow: "hidden" }}>
+                                                    <motion.div initial={{ width: 0 }} animate={{ width: `${(count / maxDept) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
+                                                        style={{ height: "100%", background: isActive ? barColor : barColor + "bb", borderRadius: 4 }} />
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         </div>
 
@@ -3604,20 +4670,40 @@ const DashboardPage = () => {
                                 </div>
                                 <div>
                                     {pendingLeaveList.length === 0
-                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>No pending requests</div>
+                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>
+                                            <Lucide.CalendarCheck size={24} color={_darkMode ? C.border : T.outlineVar} strokeWidth={1.5} style={{ margin: "0 auto 8px", display: "block" }} />
+                                            All caught up — no pending requests
+                                        </div>
                                         : pendingLeaveList.slice(0, 4).map(lr => {
                                             const emp = employees.find(e => e.id === lr.empId);
+                                            const manager = employees.find(e => e.id === emp?.managerId);
+                                            const isHov = hoveredLeaveId === lr.id;
                                             return (
-                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                                <div key={lr.id} onMouseEnter={() => setHoveredLeaveId(lr.id)} onMouseLeave={() => setHoveredLeaveId(null)}
+                                                    style={{ position: "relative", padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, background: isHov ? (_darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow) : "transparent", transition: "background 0.15s" }}>
                                                     <Avatar name={emp?.name || "?"} size={28} />
                                                     <div style={{ flex: 1, minWidth: 0 }}>
                                                         <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name || "Employee"}</div>
                                                         <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{lr.type} · {lr.days}d</div>
                                                     </div>
-                                                    <div style={{ display: "flex", gap: 4 }}>
-                                                        <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
-                                                        <Btn variant="danger" size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={11} /></Btn>
-                                                    </div>
+                                                    {canApproveLeave && (
+                                                        <div style={{ display: "flex", gap: 4 }}>
+                                                            <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
+                                                            <Btn variant="danger" size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={11} /></Btn>
+                                                        </div>
+                                                    )}
+                                                    {/* Quick-view tooltip */}
+                                                    <AnimatePresence>
+                                                        {isHov && (
+                                                            <motion.div initial={{ opacity: 0, y: 4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4, scale: 0.97 }} transition={{ duration: 0.12 }}
+                                                                style={{ position: "absolute", left: 18, bottom: "calc(100% + 8px)", zIndex: 60, background: _darkMode ? "#1e293b" : T.onSurface, color: "#fff", borderRadius: 10, padding: "9px 13px", fontSize: 11.5, fontWeight: 500, boxShadow: "0 6px 20px rgba(0,0,0,0.22)", whiteSpace: "nowrap", pointerEvents: "none" }}>
+                                                                <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 12 }}>{emp?.dept} · {emp?.level || emp?.type}</div>
+                                                                <div style={{ opacity: 0.8, marginBottom: 2 }}>Manager: {manager?.name || "—"}</div>
+                                                                <div style={{ opacity: 0.8 }}>{lr.from} → {lr.to}</div>
+                                                                <div style={{ position: "absolute", bottom: -5, left: 18, width: 10, height: 10, background: _darkMode ? "#1e293b" : T.onSurface, transform: "rotate(45deg)", borderRadius: 2 }} />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
                                             );
                                         })
@@ -3653,6 +4739,7 @@ const DashboardPage = () => {
                 );
             })()}
         </div>
+        </>
     );
 };
 
@@ -3677,12 +4764,17 @@ const EMPLOYEE_PHOTOS = {
 
 const PeoplePage = ({ pageKey }) => {
     const { employees, setEmployees, jobFamilies, setNotifications, companyConfig, navigate, teams } = React.useContext(DataCtx);
+    const currentUser = React.useContext(UserCtx);
     const [search, setSearch] = useState("");
     const [isAdding, setIsAdding] = useState(false);
     const [isBulkImporting, setIsBulkImporting] = useState(false);
     const [selectedEmp, setSelectedEmp] = useState(null);
     const primaryColor = _darkMode ? C.primary : T.primary;
     const { showToast } = useToast();
+    // Scope: dept_manager sees only their dept; team_lead sees direct reports
+    const scopedEmployees = React.useMemo(() => getScopedEmployees(currentUser, employees), [currentUser, employees]);
+    const canAddEmployee = hasCapability(currentUser, "manageOffboarding") || hasGlobalScope(currentUser);
+    const canRunPayroll = hasCapability(currentUser, "runPayroll");
 
     // ── Add New Hire form state ──────────────────────────────────────
     const EMPTY_FORM = { name: "", email: "", dept: "Engineering", familyId: "jf1", level: "", managerId: "", type: "Full-time", country: "LK", startDate: "", salary: "" };
@@ -3779,13 +4871,13 @@ const PeoplePage = ({ pageKey }) => {
     const [tab, setTab] = useState(tabFromKey(pageKey));
     React.useEffect(() => { setTab(tabFromKey(pageKey)); }, [pageKey]);
 
-    const filtered = (employees || []).filter(e => {
+    const filtered = (scopedEmployees || []).filter(e => {
         if (!search) return true;
         const s = search.toLowerCase();
         return (e.name || "").toLowerCase().includes(s) || (e.email || "").toLowerCase().includes(s) || (e.id || "").toLowerCase().includes(s);
     }).sort((a, b) => (a.name || "").localeCompare(b.name || ""));
 
-    const activeCount = (employees || []).filter(e => e.status === "Active").length;
+    const activeCount = (scopedEmployees || []).filter(e => e.status === "Active").length;
     const tabs = [
         { key: "directory", label: "Directory" },
         { key: "teams", label: "Teams" },
@@ -3812,18 +4904,20 @@ const PeoplePage = ({ pageKey }) => {
                                 {btn.label}
                             </motion.button>
                         ))}
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                            onClick={() => setIsBulkImporting(true)}
-                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                            <Lucide.Upload size={14} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
-                            Import CSV
-                        </motion.button>
-                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                            onClick={() => setIsAdding(true)}
-                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
-                            <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />
-                            Add Employee
-                        </motion.button>
+                        {canAddEmployee && (<>
+                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                                onClick={() => setIsBulkImporting(true)}
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                <Lucide.Upload size={14} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
+                                Import CSV
+                            </motion.button>
+                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                                onClick={() => setIsAdding(true)}
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                                <Lucide.Plus size={15} color="#fff" strokeWidth={2.5} />
+                                Add Employee
+                            </motion.button>
+                        </>)}
                     </div>
                 )}
             </div>
@@ -5757,10 +6851,7 @@ const PerformanceTabbedPage = ({ pageKey }) => {
     ];
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Performance</h1>
-            <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>Goals, reviews, and team feedback</p>
-
+        <div style={{ overflowY: "auto", flex: 1 }}>
             {tab === "overview" && <PerformanceOverviewPage />}
             {tab === "goals" && <GoalsOKRPage />}
             {tab === "feedback" && <FeedbackPage />}
@@ -5793,15 +6884,11 @@ const PerformanceOverviewPage = () => {
 
     return (
         <div style={{ padding: "28px 32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Performance" }, { label: "Overview" }]} />
-            
-            <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 4 }}>
-                <div style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #10B981 0%, #059669 100%)", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 14px rgba(16,185,129,0.35)", flexShrink: 0 }}>
-                    <Lucide.PieChart size={22} color="#fff" strokeWidth={2.2} />
-                </div>
+
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end" }}>
                 <div>
-                    <h1 style={{ fontSize: 24, fontWeight: 900, color: C.text, margin: 0, letterSpacing: "-0.6px" }}>Performance Overview</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: 0, marginTop: 2 }}>Real-time insights across team goals, reviews, and feedback</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Performance Overview</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Real-time insights across team goals, reviews, and feedback</p>
                 </div>
             </div>
 
@@ -6018,7 +7105,7 @@ const GoalsOKRPage = () => {
     const STATUS_COLORS = { "On Track": C.success, "At Risk": C.warning, "Behind": C.danger, "Completed": C.primary };
     return (
         <div style={{ padding: "28px 32px 40px", display: "flex", flexDirection: "column", gap: 24 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Performance" }, { label: "Goals & OKR" }]} />
+
 
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
@@ -6031,9 +7118,9 @@ const GoalsOKRPage = () => {
                     </div>
                 </div>
                 <button onClick={() => setShowAdd(true)}
-                    style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", background: "linear-gradient(135deg, #10B981, #059669)", border: "none", borderRadius: 12, fontSize: 13.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(16,185,129,0.4)", transition: "all 0.2s" }}
-                    onMouseEnter={e => e.currentTarget.style.boxShadow = "0 6px 20px rgba(16,185,129,0.55)"}
-                    onMouseLeave={e => e.currentTarget.style.boxShadow = "0 4px 14px rgba(16,185,129,0.4)"}>
+                    style={{ display: "inline-flex", alignItems: "center", gap: 7, padding: "10px 20px", background: C.mainGradient, border: "none", borderRadius: 12, fontSize: 13.5, fontWeight: 700, color: "#fff", cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}40`, transition: "all 0.2s" }}
+                    onMouseEnter={e => e.currentTarget.style.boxShadow = `0 6px 20px ${C.primary}55`}
+                    onMouseLeave={e => e.currentTarget.style.boxShadow = `0 4px 14px ${C.primary}40`}>
                     <Lucide.Plus size={16} color="#fff" />
                     Add New Goal
                 </button>
@@ -6241,6 +7328,8 @@ const FeedbackPage = () => {
     const TYPE_COLORS = { Praise: C.success, Development: C.info, Concern: C.warning, Recognition: "#8B5CF6" };
     const senderName = currentUser?.name || "HR Admin";
     const senderId = currentUser?.email ? currentUser.email.split("@")[0].toUpperCase() : "ADMIN";
+    // Team lead & dept manager can only give feedback to their scoped reports
+    const feedbackRecipients = React.useMemo(() => getScopedEmployees(currentUser, employees).filter(e => e.name !== currentUser?.name), [currentUser, employees]);
 
     const handleSubmit = () => {
         if (!form.toId || !form.message.trim()) return;
@@ -6267,7 +7356,7 @@ const FeedbackPage = () => {
                     return (
                         <motion.div key={fb.id} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3, delay: idx * 0.05 }}
                             style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "18px 20px", boxShadow: C.shadow, position: "relative", overflow: "hidden" }}>
-                            
+
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 12 }}>
                                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                                     <div style={{ width: 40, height: 40, borderRadius: "50%", background: themeBg, border: `1.5px solid ${themeBorder}`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 900, color: themeColor }}>
@@ -6283,7 +7372,7 @@ const FeedbackPage = () => {
                                     {fb.type}
                                 </div>
                             </div>
-                            
+
                             <div style={{ background: C.bg, padding: "14px 16px", borderRadius: 12, fontSize: 13.5, color: C.textMid, lineHeight: 1.6, fontStyle: "italic", borderLeft: `3px solid ${themeColor}` }}>
                                 "{fb.message}"
                             </div>
@@ -6300,7 +7389,7 @@ const FeedbackPage = () => {
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}><div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>Give Feedback</div><button onClick={() => setShowAdd(false)} style={{ width: 28, height: 28, borderRadius: "50%", border: `1px solid ${C.border}`, background: C.bg, display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}><Lucide.X size={13} color={C.textMid} /></button></div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 14 }}>
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
-                                    <div><label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>To *</label><select value={form.toId} onChange={e => setF("toId", e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: form.toId ? C.text : C.textMuted, outline: "none", fontFamily: "inherit" }}><option value="">Select employee…</option>{(employees || []).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
+                                    <div><label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>To *</label><select value={form.toId} onChange={e => setF("toId", e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: form.toId ? C.text : C.textMuted, outline: "none", fontFamily: "inherit" }}><option value="">Select employee…</option>{(feedbackRecipients || []).map(e => <option key={e.id} value={e.id}>{e.name}</option>)}</select></div>
                                     <div><label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>Type</label><select value={form.type} onChange={e => setF("type", e.target.value)} style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit" }}>{["Praise", "Development", "Concern", "Recognition"].map(t => <option key={t}>{t}</option>)}</select></div>
                                 </div>
                                 <div><label style={{ fontSize: 12, fontWeight: 700, color: C.text, display: "block", marginBottom: 5 }}>Message *</label><textarea value={form.message} onChange={e => setF("message", e.target.value)} rows={3} placeholder="Be specific and constructive…" style={{ width: "100%", padding: "9px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: C.text, outline: "none", fontFamily: "inherit", resize: "vertical", boxSizing: "border-box" }} /></div>
@@ -6829,6 +7918,8 @@ const ReviewsPage = () => {
    ═══════════════════════════════════════════════════════════════ */
 const SuccessionPage = () => {
     const { employees, jobFamilies, successionPlans: plans, setSuccessionPlans: setPlans } = React.useContext(DataCtx);
+    const currentUser = React.useContext(UserCtx);
+    const canManageSuccession = hasCapability(currentUser, "viewSuccession");
     const RISK_COLORS = { Low: C.success, Medium: C.warning, High: C.danger };
     const READY_COLORS = { "Ready Now": C.success, "1-2 Years": C.info, "2-3 Years": C.warning, "3+ Years": C.danger };
 
@@ -6896,88 +7987,187 @@ const SuccessionPage = () => {
 
     const INP = { padding: "8px 11px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, background: C.bg, color: C.text, fontFamily: "inherit", outline: "none", width: "100%", boxSizing: "border-box" };
 
+    const sucCardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+    const highRiskCount = plans.filter(p => p.risk === "High").length;
+    const readyNowCount = plans.reduce((a, p) => a + p.successors.filter(s => s.readiness === "Ready Now").length, 0);
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 22 }}>
-                <div><h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Backup Plans</h1><p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Who's ready to step in if someone in a key role leaves</p></div>
-                <Btn variant="primary" onClick={() => setShowAddPlan(true)}><Icon n="plus" size={13} color="#fff" />Add Plan</Btn>
-            </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 14, marginBottom: 22 }}>
-                {[["Key Roles Mapped", plans.length], ["High Risk Roles", plans.filter(p => p.risk === "High").length], ["Ready Now", plans.reduce((a, p) => a + p.successors.filter(s => s.readiness === "Ready Now").length, 0)]].map(([l, v]) => (
-                    <div key={l} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 16px", boxShadow: C.shadow }}>
-                        <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, marginBottom: 4 }}>{l}</div>
-                        <div style={{ fontSize: 24, fontWeight: 900, color: C.text }}>{v}</div>
+        <div style={{ padding: "32px", flex: 1 }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                <div>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Succession Planning</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Identify who's ready to step into key roles when the time comes</p>
+                </div>
+                {canManageSuccession && (
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <motion.button whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            <Lucide.SlidersHorizontal size={16} color={_darkMode ? C.text : T.onSurface} />Filters
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={() => setShowAddPlan(true)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                            <Lucide.Plus size={16} color="#fff" />Add Plan
+                        </motion.button>
                     </div>
+                )}
+            </div>
+
+            {/* ── Metric Cards ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 24, marginBottom: 32 }}>
+                {[
+                    { label: "Key Roles Mapped", value: plans.length, extra: null },
+                    { label: "High Risk Roles", value: highRiskCount, extra: highRiskCount > 0 ? <span style={{ fontSize: 11.5, fontWeight: 700, color: "#ba1a1a", background: "#ffdad6", padding: "4px 10px", borderRadius: 999 }}>Urgent</span> : <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center" }}><Lucide.CheckCircle2 size={16} color="#16a34a" /></div> },
+                    { label: "Ready Now", value: readyNowCount, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "#f0fdf4", padding: "4px 10px", borderRadius: 999 }}>Bench strength</span> },
+                ].map((m, i) => (
+                    <motion.div key={m.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} style={sucCardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>{m.label}</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: i === 1 && highRiskCount > 0 ? "#ba1a1a" : (_darkMode ? C.text : T.onSurface), lineHeight: 1 }}>{String(m.value).padStart(2, "0")}</span>
+                                {m.extra}
+                            </div>
+                        </div>
+                    </motion.div>
                 ))}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                {plans.map(plan => (
-                    <div key={plan.id} style={{ background: C.white, border: `2px solid ${plan.risk === "High" ? C.dangerBorder : C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
-                        <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}`, background: plan.risk === "High" ? C.dangerBg : C.bg, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+
+            {/* ── Plans List ── */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 16, marginBottom: 32 }}>
+                {plans.map((plan, pi) => (
+                    <motion.div key={plan.id} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.1 + pi * 0.05 }}
+                        style={{ ...sucCardStyle, overflow: "hidden", border: plan.risk === "High" ? `1px solid #ffdad6` : sucCardStyle.border }}>
+                        {/* Plan header */}
+                        <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.outlineVar}20`, background: plan.risk === "High" ? (_darkMode ? "rgba(255,100,100,0.08)" : "#fff8f7") : "transparent", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                             <div>
-                                <div style={{ fontSize: 15, fontWeight: 800, color: C.text }}>{plan.role}</div>
-                                <div style={{ fontSize: 12, color: C.textMuted }}>Incumbent: {plan.incumbentName} · {plan.dept}</div>
+                                <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, marginBottom: 3 }}>{plan.role}</div>
+                                <div style={{ fontSize: 12, color: T.onSurfaceVar }}>Incumbent: <strong>{plan.incumbentName}</strong> · {plan.dept}</div>
                             </div>
-                            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 10px", borderRadius: 20, background: `${RISK_COLORS[plan.risk]}18`, color: RISK_COLORS[plan.risk] }}>Risk: {plan.risk}</span>
-                                <span style={{ fontSize: 12, fontWeight: 600, color: C.textMuted }}>{plan.successors.length} successor{plan.successors.length !== 1 ? "s" : ""}</span>
-                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} onClick={() => { setEditRiskPlanId(plan.id); setEditRiskValue(plan.risk); }}
-                                    style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${C.border}`, background: C.white, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                                    title="Edit risk level">
-                                    <Lucide.Pencil size={12} color={C.textMid} />
+                            <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, padding: "4px 12px", borderRadius: 999, background: `${RISK_COLORS[plan.risk]}18`, color: RISK_COLORS[plan.risk], border: `1px solid ${RISK_COLORS[plan.risk]}30` }}>Risk: {plan.risk}</span>
+                                <span style={{ fontSize: 12, fontWeight: 600, color: T.onSurfaceVar }}>{plan.successors.length} successor{plan.successors.length !== 1 ? "s" : ""}</span>
+                                <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} whileTap={{ scale: 0.95 }} onClick={() => { setEditRiskPlanId(plan.id); setEditRiskValue(plan.risk); }}
+                                    style={{ width: 32, height: 32, borderRadius: 8, border: `1px solid ${T.outlineVar}50`, background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Lucide.Pencil size={13} color={T.onSurfaceVar} />
                                 </motion.button>
-                                <motion.button whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.95 }} onClick={() => setPlans(prev => prev.filter(p => p.id !== plan.id))}
-                                    style={{ width: 28, height: 28, borderRadius: 7, border: `1px solid ${C.dangerBorder}`, background: C.dangerBg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
-                                    title="Delete plan">
-                                    <Icon n="trash" size={12} color={C.danger} />
+                                <motion.button whileHover={{ backgroundColor: "#fef2f2" }} whileTap={{ scale: 0.95 }} onClick={() => setPlans(prev => prev.filter(p => p.id !== plan.id))}
+                                    style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                    <Lucide.Trash2 size={13} color="#ef4444" />
                                 </motion.button>
                             </div>
                         </div>
+                        {/* Successors */}
                         {plan.successors.length === 0 ? (
-                            <div style={{ padding: "20px 18px", display: "flex", alignItems: "center", gap: 10 }}>
-                                <Lucide.AlertTriangle size={16} color={C.danger} />
-                                <span style={{ fontSize: 13, color: C.danger, fontWeight: 600 }}>No successors identified — this is a critical gap.</span>
-                                <Btn variant="outline" size="sm" style={{ marginLeft: "auto" }} onClick={() => { setAddSuccessorForPlan(plan.id); setSuccessorForm({ empId: "", readiness: "1-2 Years", rating: 3 }); }}><Icon n="plus" size={12} />Add Successor</Btn>
+                            <div style={{ padding: "20px 24px", display: "flex", alignItems: "center", gap: 12 }}>
+                                <div style={{ width: 36, height: 36, borderRadius: 10, background: "#ffdad6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <Lucide.AlertTriangle size={16} color="#ba1a1a" />
+                                </div>
+                                <span style={{ fontSize: 13.5, color: "#ba1a1a", fontWeight: 600, flex: 1 }}>No successors identified — this is a critical coverage gap.</span>
+                                <motion.button whileHover={{ scale: 1.02 }} onClick={() => { setAddSuccessorForPlan(plan.id); setSuccessorForm({ empId: "", readiness: "1-2 Years", rating: 3 }); }}
+                                    style={{ padding: "7px 16px", borderRadius: 9, border: `1px solid ${T.outlineVar}50`, background: "transparent", color: _darkMode ? C.text : T.onSurface, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+                                    <Lucide.Plus size={13} />Add Successor
+                                </motion.button>
                             </div>
                         ) : (
-                            <div style={{ padding: "14px 18px" }}>
-                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 10 }}>
+                            <div style={{ padding: "18px 24px" }}>
+                                <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 14 }}>
                                     {plan.successors.map((s, i) => (
-                                        <motion.div key={i} whileHover={{ y: -2, boxShadow: C.shadowMd }} onClick={() => openSuccessorDetail(plan.id, s.empId)}
-                                            style={{ flex: "0 0 auto", minWidth: 210, padding: "12px 14px", background: C.bg, borderRadius: 10, border: `1px solid ${C.border}`, position: "relative", cursor: "pointer", transition: "border-color 0.15s" }}>
+                                        <motion.div key={i} whileHover={{ y: -2, boxShadow: "0 4px 16px rgba(0,0,0,0.10)" }} onClick={() => openSuccessorDetail(plan.id, s.empId)}
+                                            style={{ flex: "0 0 auto", minWidth: 215, padding: "14px 16px", background: _darkMode ? "rgba(255,255,255,0.04)" : T.surfaceLow, borderRadius: 12, border: `1px solid ${T.outlineVar}30`, position: "relative", cursor: "pointer" }}>
                                             <button onClick={e => { e.stopPropagation(); removeSuccessor(plan.id, s.empId); }}
-                                                style={{ position: "absolute", top: 8, right: 8, width: 18, height: 18, borderRadius: "50%", border: `1px solid ${C.border}`, background: C.white, cursor: "pointer", fontSize: 12, color: C.textMuted, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>×</button>
-                                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8, paddingRight: 20 }}>
-                                                <Avatar name={s.name} size={28} />
+                                                style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%", border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, cursor: "pointer", fontSize: 13, color: T.outline, display: "flex", alignItems: "center", justifyContent: "center", lineHeight: 1 }}>×</button>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10, paddingRight: 22 }}>
+                                                <Avatar name={s.name} size={32} />
                                                 <div>
-                                                    <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{s.name}</div>
-                                                    <div style={{ fontSize: 10, color: C.textMuted }}>Click to view skills</div>
+                                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{s.name}</div>
+                                                    <div style={{ fontSize: 10.5, color: T.outline }}>Click to view profile</div>
                                                 </div>
                                             </div>
-                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 6 }}>
-                                                <span style={{ fontSize: 11, fontWeight: 600, padding: "2px 8px", borderRadius: 20, background: `${READY_COLORS[s.readiness]}18`, color: READY_COLORS[s.readiness] }}>{s.readiness}</span>
-                                                <span style={{ fontSize: 11, fontWeight: 700, color: C.text }}>{s.rating}/5</span>
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+                                                <span style={{ fontSize: 11, fontWeight: 700, padding: "3px 9px", borderRadius: 999, background: `${READY_COLORS[s.readiness]}18`, color: READY_COLORS[s.readiness], border: `1px solid ${READY_COLORS[s.readiness]}30` }}>{s.readiness}</span>
+                                                <span style={{ fontSize: 12, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>{s.rating}/5</span>
                                             </div>
                                             {s.duration && (
-                                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-                                                    <Lucide.Clock size={10} color={C.primary} />
-                                                    <span style={{ fontSize: 10, fontWeight: 700, color: C.primary }}>{s.duration}</span>
+                                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                                    <Lucide.Clock size={11} color={T.onSurfaceVar} />
+                                                    <span style={{ fontSize: 11, fontWeight: 600, color: T.onSurfaceVar }}>{s.duration}</span>
                                                 </div>
                                             )}
-                                            <div style={{ display: "flex", gap: 4 }} onClick={e => e.stopPropagation()}>
+                                            <div style={{ display: "flex", gap: 3 }} onClick={e => e.stopPropagation()}>
                                                 {["Ready Now", "1-2 Years", "2-3 Years", "3+ Years"].map(r => (
                                                     <button key={r} onClick={() => setPlans(prev => prev.map(p => p.id === plan.id ? { ...p, successors: p.successors.map((sx, xi) => xi === i ? { ...sx, readiness: r } : sx) } : p))}
-                                                        style={{ flex: 1, padding: "2px 0", fontSize: 8, fontWeight: 700, borderRadius: 4, border: s.readiness === r ? `1.5px solid ${READY_COLORS[r]}` : `1px solid ${C.border}`, background: s.readiness === r ? `${READY_COLORS[r]}18` : "transparent", color: s.readiness === r ? READY_COLORS[r] : C.textMuted, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden" }}>{r}</button>
+                                                        style={{ flex: 1, padding: "3px 0", fontSize: 8, fontWeight: 700, borderRadius: 5, border: s.readiness === r ? `1.5px solid ${READY_COLORS[r]}` : `1px solid ${T.outlineVar}40`, background: s.readiness === r ? `${READY_COLORS[r]}18` : "transparent", color: s.readiness === r ? READY_COLORS[r] : T.outline, cursor: "pointer", whiteSpace: "nowrap", overflow: "hidden", fontFamily: "inherit" }}>{r}</button>
                                                 ))}
                                             </div>
                                         </motion.div>
                                     ))}
                                 </div>
-                                <Btn variant="outline" size="sm" onClick={() => { setAddSuccessorForPlan(plan.id); setSuccessorForm({ empId: "", readiness: "1-2 Years", rating: 3 }); }}><Icon n="plus" size={12} />Add Successor</Btn>
+                                <motion.button whileHover={{ scale: 1.02 }} onClick={() => { setAddSuccessorForPlan(plan.id); setSuccessorForm({ empId: "", readiness: "1-2 Years", rating: 3 }); }}
+                                    style={{ padding: "7px 16px", borderRadius: 9, border: `1px solid ${T.outlineVar}50`, background: "transparent", color: _darkMode ? C.text : T.onSurface, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6 }}>
+                                    <Lucide.Plus size={13} />Add Successor
+                                </motion.button>
                             </div>
                         )}
-                    </div>
+                    </motion.div>
                 ))}
+            </div>
+
+            {/* ── Bottom: Risk Distribution + AI Insight ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 32 }}>
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                    style={{ ...sucCardStyle, padding: "32px" }}>
+                    <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontSize: 19, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Readiness Distribution</div>
+                        <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginTop: 4 }}>Successors by readiness level across all mapped roles</div>
+                    </div>
+                    {(() => {
+                        const readinessBuckets = ["Ready Now", "1-2 Years", "2-3 Years", "3+ Years"];
+                        const readinessCounts = readinessBuckets.map(r => plans.reduce((a, p) => a + p.successors.filter(s => s.readiness === r).length, 0));
+                        const maxCount = Math.max(...readinessCounts, 1);
+                        const barColors = ["#16a34a", _darkMode ? C.primary : T.primary, T.tertiary, "#ba1a1a"];
+                        return (
+                            <>
+                                <div style={{ height: 128, display: "flex", alignItems: "flex-end", gap: 16 }}>
+                                    {readinessBuckets.map((r, i) => {
+                                        const fillH = Math.round((readinessCounts[i] / maxCount) * 100);
+                                        return (
+                                            <motion.div key={r} style={{ flex: 1, background: barColors[i] + "18", borderRadius: "6px 6px 0 0", height: "100%", position: "relative", overflow: "hidden" }} whileHover="hovered">
+                                                <motion.div initial={{ height: 0 }} animate={{ height: `${fillH}%` }}
+                                                    variants={{ hovered: { height: `${Math.min(fillH + 10, 100)}%` } }}
+                                                    transition={{ duration: 0.4, delay: 0.2 + i * 0.07, ease: "easeOut" }}
+                                                    style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: barColors[i], borderRadius: "6px 6px 0 0" }} />
+                                            </motion.div>
+                                        );
+                                    })}
+                                </div>
+                                <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
+                                    {readinessBuckets.map(r => (
+                                        <div key={r} style={{ flex: 1, textAlign: "center", fontSize: 9, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r}</div>
+                                    ))}
+                                </div>
+                            </>
+                        );
+                    })()}
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                    style={{ background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)", padding: "32px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                        <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                        <Lucide.Zap size={18} color={_darkMode ? C.primary : T.primary} />
+                        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: _darkMode ? C.primary : T.primary }}>Nexis AI Insight</span>
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Bench Strength</div>
+                    <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                        <strong style={{ color: _darkMode ? C.text : T.onSurface }}>{highRiskCount} high-risk role{highRiskCount !== 1 ? "s" : ""}</strong> {highRiskCount !== 1 ? "have" : "has"} limited succession coverage. Focus on building bench depth for these critical positions first.
+                    </p>
+                    <motion.button whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                        style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>
+                        View Full Report
+                    </motion.button>
+                </motion.div>
             </div>
 
             {/* Successor Detail Modal */}
@@ -9369,14 +10559,89 @@ const WorkSchedulePage = () => {
         setTimeout(() => setSavedFlash(false), 2200);
     };
 
+    // ── Schedule stats for KPI cards ──────────────────────────────
+    const scheduleStats = React.useMemo(() => {
+        const counts = { Onsite: 0, Remote: 0, Hybrid: 0, Unscheduled: 0 };
+        employees.forEach(e => {
+            const s = (schedules || {})[e.id];
+            if (!s || Object.keys(s).length === 0) { counts.Unscheduled++; return; }
+            const freq = {};
+            DAYS.forEach(d => { const m = s[d] || "Onsite"; if (m !== "Day Off") freq[m] = (freq[m] || 0) + 1; });
+            const top = Object.entries(freq).sort((a, b) => b[1] - a[1])[0]?.[0] || "Onsite";
+            if (counts[top] !== undefined) counts[top]++;
+        });
+        return counts;
+    }, [employees, schedules]);
+
+    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+
     return (
         <React.Fragment>
-            <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
+            <div style={{ padding: "32px", overflowY: "auto", flex: 1, background: _darkMode ? C.bg : T.surface }}>
 
-                {/* ── Employee sidebar ── */}
-                <div style={{ width: 240, background: _darkMode ? C.white : T.surfaceCard, borderRight: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, display: "flex", flexDirection: "column", flexShrink: 0 }}>
-                    <div style={{ padding: "10px 14px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, flexShrink: 0 }}>
-                        <div style={{ position: "relative" }}>
+                {/* ── Page Header ── */}
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
+                    <div>
+                        <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+                            Schedule Management
+                        </h1>
+                        <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>
+                            Configure work arrangements and shift patterns for your team
+                        </p>
+                    </div>
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <motion.button whileHover={{ backgroundColor: _darkMode ? C.bg : T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                            onClick={() => { setTplForm(blankTplForm); setShowCreateTpl(true); }}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${_darkMode ? C.border : T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            <Lucide.Plus size={16} color={_darkMode ? C.text : T.onSurface} />
+                            Create Template
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+                            onClick={handleSave}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                            <AnimatePresence mode="wait">
+                                {savedFlash
+                                    ? <motion.span key="done" initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }} style={{ display: "flex", alignItems: "center", gap: 6 }}><Lucide.Check size={16} color="#fff" />Saved!</motion.span>
+                                    : <motion.span key="save" initial={{ scale: 0.8 }} animate={{ scale: 1 }} exit={{ scale: 0.8 }} style={{ display: "flex", alignItems: "center", gap: 6 }}><Lucide.Save size={16} color="#fff" />Save Schedule</motion.span>
+                                }
+                            </AnimatePresence>
+                        </motion.button>
+                    </div>
+                </div>
+
+                {/* ── KPI Cards ── */}
+                <div style={{ display: "grid", gridTemplateColumns: "repeat(5, 1fr)", gap: 24, marginBottom: 32 }}>
+                    {[
+                        { label: "Total Employees", value: employees.length, extra: <div style={{ background: _darkMode ? C.primaryLight : T.primaryFixed, borderRadius: 6, padding: "4px 6px", display: "flex", alignItems: "center" }}><Lucide.TrendingUp size={16} color={_darkMode ? C.primary : T.primary} /></div> },
+                        { label: "Onsite", value: scheduleStats.Onsite, pct: employees.length ? Math.round((scheduleStats.Onsite / employees.length) * 100) : 0, pctColor: "#16a34a", pctBg: "#f0fdf4" },
+                        { label: "Remote", value: scheduleStats.Remote, pct: employees.length ? Math.round((scheduleStats.Remote / employees.length) * 100) : 0, pctColor: _darkMode ? C.primary : T.primary, pctBg: _darkMode ? C.primaryLight : T.primaryFixed },
+                        { label: "Hybrid", value: scheduleStats.Hybrid, pct: employees.length ? Math.round((scheduleStats.Hybrid / employees.length) * 100) : 0, pctColor: "#b45309", pctBg: "#fffbeb" },
+                        { label: "Unscheduled", value: scheduleStats.Unscheduled, extra: <div style={{ width: 32, height: 32, borderRadius: "50%", background: scheduleStats.Unscheduled > 0 ? "#ffdad6" : (_darkMode ? C.bg : T.surfaceLow), display: "flex", alignItems: "center", justifyContent: "center" }}><Lucide.AlertCircle size={16} color={scheduleStats.Unscheduled > 0 ? "#ba1a1a" : (_darkMode ? C.textMuted : T.outline)} /></div> },
+                    ].map((s, idx) => (
+                        <motion.div key={s.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: idx * 0.07 }} style={cardStyle}>
+                            <div style={{ padding: "24px" }}>
+                                <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: _darkMode ? C.textMuted : T.outline, marginBottom: 16, margin: "0 0 16px" }}>{s.label}</p>
+                                <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                    <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{String(s.value).padStart(2, "0")}</span>
+                                    {s.extra || (s.pct !== undefined && <span style={{ fontSize: 11.5, fontWeight: 700, color: s.pctColor, background: s.pctBg, padding: "4px 10px", borderRadius: 999 }}>{s.pct}%</span>)}
+                                </div>
+                            </div>
+                        </motion.div>
+                    ))}
+                </div>
+
+                {/* ── Main card: employee list + content ── */}
+                <div style={{ ...cardStyle, display: "flex", overflow: "hidden", minHeight: 480 }}>
+
+                    {/* Employee list column */}
+                    <div style={{ width: 260, flexShrink: 0, borderRight: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, display: "flex", flexDirection: "column", maxHeight: "calc(100vh - 370px)", position: "sticky", top: 0, alignSelf: "flex-start" }}>
+                        {/* Column header */}
+                        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "20"}` }}>
+                            <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Employees</span>
+                        </div>
+                        {/* Search */}
+                        <div style={{ padding: "12px 16px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "18"}` }}>
+                            <div style={{ position: "relative" }}>
                             <Icon n="search" size={13} color={_darkMode ? C.textMuted : T.outline} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)" }} />
                             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
                                 style={{ width: "100%", padding: "7px 9px 7px 30px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 12, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
@@ -9427,26 +10692,19 @@ const WorkSchedulePage = () => {
                                     </button>
                                 ))}
                             </div>
-                            {activeTab === "schedule" && (
-                                <>
-                                    <AnimatePresence>
-                                        {savedFlash && (
-                                            <motion.span key="sf" initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
-                                                style={{ fontSize: 12, color: C.success, fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
-                                                <Icon n="check" size={14} color={C.success} />Saved
-                                            </motion.span>
-                                        )}
-                                    </AnimatePresence>
-                                    <Btn variant="primary" size="sm" onClick={handleSave}>
-                                        <Icon n="check" size={13} color="#fff" />Save Schedule
-                                    </Btn>
-                                </>
-                            )}
+                            <AnimatePresence>
+                                {savedFlash && (
+                                    <motion.span key="sf" initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                                        style={{ fontSize: 12, color: C.success, fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
+                                        <Icon n="check" size={14} color={C.success} />Saved
+                                    </motion.span>
+                                )}
+                            </AnimatePresence>
                         </div>
                     </div>
 
                     {activeTab === "schedule" ? (
-                        <div style={{ flex: 1, overflowY: "auto", padding: "22px 28px", display: "flex", flexDirection: "column", gap: 22, background: _darkMode ? C.bg : T.surface }}>
+                        <div style={{ flex: 1, padding: "22px 28px", display: "flex", flexDirection: "column", gap: 22, background: _darkMode ? C.bg : T.surface }}>
 
                             {/* Mode summary pills */}
                             <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
@@ -9464,18 +10722,11 @@ const WorkSchedulePage = () => {
 
                             {/* ── Schedule Templates ── */}
                             <div style={{ flexShrink: 0, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
-                                <div style={{ padding: "12px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                    <div>
-                                        <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Schedule Templates</div>
-                                        <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 1 }}>
-                                            Click to apply to current employee · ⋯ applies to multiple · custom templates can be deleted
-                                        </div>
+                                <div style={{ padding: "12px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Schedule Templates</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 1 }}>
+                                        Click to apply · use ⋯ to apply to multiple employees
                                     </div>
-                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                                        onClick={() => { setTplForm(blankTplForm); setShowCreateTpl(true); }}
-                                        style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${_darkMode ? C.primary : T.primary}`, background: _darkMode ? C.primaryLight : T.primaryFixed, color: _darkMode ? C.primary : T.primary, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
-                                        <Icon n="plus" size={13} color={_darkMode ? C.primary : T.primary} />Create Template
-                                    </motion.button>
                                 </div>
 
                                 <div style={{ padding: "14px 24px", display: "flex", gap: 10, flexWrap: "wrap" }}>
@@ -9553,10 +10804,13 @@ const WorkSchedulePage = () => {
                             </div>
 
                             {/* ── Team Schedule Overview ── */}
+                            {(() => {
+                                const teamMembers = employees.filter(e => e.dept === emp?.dept);
+                                return (
                             <div style={{ flexShrink: 0, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
                                 <div style={{ padding: "14px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                                     <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Team Schedule Overview</div>
-                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>All {employees.length} team members — click a row to edit</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{teamMembers.length} member{teamMembers.length !== 1 ? "s" : ""} in {emp?.dept || "—"} — click a row to edit</div>
                                 </div>
                                 <div style={{ overflowX: "auto" }}>
                                     <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 700 }}>
@@ -9567,7 +10821,7 @@ const WorkSchedulePage = () => {
                                             </tr>
                                         </thead>
                                         <tbody>
-                                            {employees.map((e, i) => {
+                                            {teamMembers.map((e, i) => {
                                                 const s = (schedules || {})[e.id] || {};
                                                 return (
                                                     <tr key={e.id} onClick={() => setSelectedId(e.id)}
@@ -9597,11 +10851,13 @@ const WorkSchedulePage = () => {
                                     </table>
                                 </div>
                             </div>
+                                );
+                            })()}
 
                         </div>
                     ) : (
                         /* ── Shifts tab ── */
-                        <div style={{ flex: 1, overflowY: "auto", padding: "22px 28px", display: "flex", gap: 20, alignItems: "flex-start", background: _darkMode ? C.bg : T.surface }}>
+                        <div style={{ flex: 1, padding: "22px 28px", display: "flex", gap: 20, alignItems: "flex-start", background: _darkMode ? C.bg : T.surface }}>
                             <div style={{ width: 300, flexShrink: 0 }}>
                                 <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
                                     <div style={{ padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
@@ -9778,6 +11034,7 @@ const WorkSchedulePage = () => {
                     )}
                 </div>
             </div>
+        </div>
 
             {/* ══ Bulk apply modal ══ */}
             <AnimatePresence>
@@ -10220,6 +11477,7 @@ const SettingsPageInner = () => {
                                     { key: "teal", name: "Teal", color: "#0d9488" },
                                     { key: "indigo", name: "Indigo", color: "#6366f1" },
                                     { key: "blue", name: "Blue", color: "#3b82f6" },
+                                    { key: "green", name: "Green", color: "#10B981" },
                                     { key: "purple", name: "Purple", color: "#8b5cf6" },
                                     { key: "rose", name: "Rose", color: "#f43f5e" },
                                 ].map(t => (
@@ -10279,7 +11537,7 @@ const OrgPage = () => {
     const [dragId, setDragId] = useState(null);
     const [moveLog, setMoveLog] = useState(null);
 
-    // ── Legal Entities state ──────────────────────────────────────
+    // ── Organizations state ───────────────────────────────────────
     const configEntities = companyConfig?.entities || [];
     const saveEntities = (ents) => {
         const updated = { ...(companyConfig || {}), entities: ents };
@@ -10718,7 +11976,7 @@ const OrgPage = () => {
                             <Btn variant="outline" onClick={() => { setDupSelected(mergedDepts.map(d => d.name)); setDupModal(true); }}><Icon n="org" size={13} />Duplicate Structure</Btn>
                         </>
                     ) : view === "entities" ? (
-                        <Btn variant="primary" onClick={() => setShowAddEntity(true)}><Icon n="plus" size={13} />{configEntities.length === 0 ? "Add First Entity" : "Add Entity"}</Btn>
+                        <Btn variant="primary" onClick={() => setShowAddEntity(true)}><Icon n="plus" size={13} />{configEntities.length === 0 ? "Add First Organization" : "Add Organization"}</Btn>
                     ) : (
                         <>
                             <Btn variant="outline" onClick={expandAll}><Icon n="plus" size={13} />Expand All</Btn>
@@ -10726,7 +11984,7 @@ const OrgPage = () => {
                         </>
                     )}
                     <div style={{ display: "flex", gap: 0, border: `1px solid ${C.border}`, borderRadius: 9, overflow: "hidden" }}>
-                        {[["chart", "Chart"], ["list", "List"], ["matrix", "Matrix"], ["departments", "Departments"], ["entities", "Entities"]].map(([v, label]) => (
+                        {[["chart", "Chart"], ["list", "List"], ["matrix", "Matrix"], ["departments", "Departments"], ["entities", "Organizations"]].map(([v, label]) => (
                             <button key={v} onClick={() => setView(v)} style={{ padding: "7px 14px", border: "none", background: view === v ? C.primary : C.white, color: view === v ? "#fff" : C.textMid, fontSize: 12, fontWeight: view === v ? 700 : 500, cursor: "pointer", fontFamily: "inherit" }}>{label}</button>
                         ))}
                     </div>
@@ -10794,11 +12052,11 @@ const OrgPage = () => {
                             </div>
                             {configEntities.length > 0 && (
                                 <div style={{ marginTop: 10 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>Legal Entity <span style={{ fontWeight: 400, color: C.textMuted }}>(optional)</span></div>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>Organization <span style={{ fontWeight: 400, color: C.textMuted }}>(optional)</span></div>
                                     <select value={newDeptForm.entityId} onChange={e => setNewDeptForm(p => ({ ...p, entityId: e.target.value }))}
                                         style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.text, background: C.bg, outline: "none", fontFamily: "inherit" }}>
-                                        <option value="">— No entity —</option>
-                                        {configEntities.map(e => <option key={e.id} value={e.id}>{e.name || `Entity`}</option>)}
+                                        <option value="">— No organization —</option>
+                                        {configEntities.map(e => <option key={e.id} value={e.id}>{e.name || `Organization`}</option>)}
                                     </select>
                                 </div>
                             )}
@@ -10821,7 +12079,7 @@ const OrgPage = () => {
                             onClick={e => e.stopPropagation()}
                             style={{ background: C.white, borderRadius: 20, padding: 28, width: 480, boxShadow: C.shadowLg }}>
                             <div style={{ fontSize: 17, fontWeight: 800, color: C.text, marginBottom: 4 }}>Duplicate Structure</div>
-                            <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 16 }}>Select which departments to copy to the new entity or location.</div>
+                            <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 16 }}>Select which departments to copy into a target Organization.</div>
 
                             {/* Department selection checklist */}
                             <div style={{ marginBottom: 16 }}>
@@ -10859,7 +12117,7 @@ const OrgPage = () => {
                                 const FLAGS = { "Sri Lanka": "🇱🇰", "United Kingdom": "🇬🇧", "United States": "🇺🇸", "Australia": "🇦🇺", "India": "🇮🇳", "Singapore": "🇸🇬", "UAE": "🇦🇪", "Germany": "🇩🇪", "Canada": "🇨🇦" };
                                 return (
                                     <div>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 8 }}>Copy Into Entity</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 8 }}>Copy Into Organization</div>
                                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                             {configEntities.map((ent, ei) => {
                                                 const ec = ENT_COLORS_DUP[ei % ENT_COLORS_DUP.length];
@@ -10872,7 +12130,7 @@ const OrgPage = () => {
                                                             {FLAGS[ent.country] || "🌍"}
                                                         </div>
                                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? C.text : C.textMid }}>{ent.name || `Entity ${ei + 1}`}</div>
+                                                            <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? C.text : C.textMid }}>{ent.name || `Organization ${ei + 1}`}</div>
                                                             <div style={{ fontSize: 11, color: C.textMuted }}>{ent.country} · {ent.currency}{alreadyCount > 0 ? ` · ${alreadyCount} dept${alreadyCount !== 1 ? "s" : ""} already here` : ""}</div>
                                                         </div>
                                                         <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${active ? ec : C.border}`, background: active ? ec : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.12s" }}>
@@ -11653,7 +12911,7 @@ const TimesheetPage = ({ pageKey }) => {
                             const url = URL.createObjectURL(blob);
                             const a = document.createElement("a"); a.href = url; a.download = "attendance.csv"; a.click(); URL.revokeObjectURL(url);
                         }}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: `linear-gradient(to right, ${T.primary}, #2563eb)`, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${T.primary}50` }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}
                     >
                         <Lucide.Download size={16} color="#fff" />
                         Export Report
@@ -12830,7 +14088,7 @@ const DocumentsPage = () => {
 
 /* ─── PAGE: TEAMS ─────────────────────────────────────────────── */
 const TeamsPage = () => {
-    const { teams, setTeams, employees } = React.useContext(DataCtx);
+    const { teams, setTeams, employees, navigate, companyConfig } = React.useContext(DataCtx);
     const [showModal, setShowModal] = useState(false);
     const [viewTeam, setViewTeam] = useState(null);
     const [editTeam, setEditTeam] = useState(null);
@@ -12839,7 +14097,11 @@ const TeamsPage = () => {
     const BLANK = { name: "", dept: "Engineering", lead: "", projects: "", members: [] };
     const [form, setForm] = useState(BLANK);
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design", "Marketing"];
+    const configDepts = companyConfig?.departments?.map(d => d.name) || [];
+    const liveDepts = employees.map(e => e.dept).filter(Boolean);
+    const DEPTS = [...new Set([...configDepts, ...liveDepts])].length > 0
+        ? [...new Set([...configDepts, ...liveDepts])]
+        : ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design", "Marketing"];
 
     const toggleMember = (empId) => setForm(p => ({
         ...p, members: p.members.includes(empId) ? p.members.filter(m => m !== empId) : [...p.members, empId]
@@ -12954,11 +14216,18 @@ const TeamsPage = () => {
                         <h1 style={{ fontSize: 30, fontWeight: 800, color: txt, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Teams</h1>
                         <p style={{ fontSize: 14, color: muted, margin: "8px 0 0" }}>Manage and orchestrate your organizational units.</p>
                     </div>
-                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowModal(true)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
-                        <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
-                        Create Team
-                    </motion.button>
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => navigate("org")}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: surf, color: txt, border: `1px solid ${bdr}`, borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+                            <Lucide.GitBranch size={16} color={txt} strokeWidth={2} />
+                            Organization Structure
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowModal(true)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                            <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
+                            Create Team
+                        </motion.button>
+                    </div>
                 </div>
 
                 {/* ── Stat Cards ── */}
@@ -13305,24 +14574,7 @@ const SkillsTabbedPage = ({ pageKey }) => {
     ];
 
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 700, color: C.text, margin: "0 0 4px" }}>Skills</h1>
-            <p style={{ fontSize: 13, color: C.textMuted, margin: "0 0 20px" }}>Skill tracking, development, and gap analysis</p>
-
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 20 }}>
-                {tabs.map(t => (
-                    <div key={t.key} onClick={() => setTab(t.key)}
-                        style={{
-                            padding: "10px 18px", fontSize: 13, fontWeight: tab === t.key ? 600 : 500,
-                            color: tab === t.key ? C.primary : C.textMid,
-                            borderBottom: tab === t.key ? `2px solid ${C.primary}` : "2px solid transparent",
-                            cursor: "pointer", transition: "color 0.15s",
-                        }}>
-                        {t.label}
-                    </div>
-                ))}
-            </div>
-
+        <div style={{ display: "flex", flex: 1, flexDirection: "column", overflowY: "auto", background: _darkMode ? C.bg : T.surface }}>
             {tab === "library" && <SkillLibraryPage />}
             {tab === "development" && <SkillDevelopmentPage />}
             {tab === "gaps" && <GapAnalysisPage />}
@@ -13421,72 +14673,183 @@ const SkillLibraryPage = () => {
         setNewSkill(prev => ({ ...prev, resources: res }));
     };
 
+    const skLibCardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+    const catCounts = {};
+    skills.forEach(s => { catCounts[s.category] = (catCounts[s.category] || 0) + 1; });
+    const catList = Object.entries(catCounts).sort((a, b) => b[1] - a[1]);
+    const catBarColors = [T.primary, "#0ea5e9", "#10b981", "#f59e0b", "#8b5cf6"];
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", flex: 1 }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>All Skills</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Every skill tracked across your company, pulled from roles and profiles</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Skills Library</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Every skill tracked across your organisation, linked to roles and profiles</p>
                 </div>
-                <Btn variant="primary" onClick={() => setShowAdd(true)} style={{ background: C.primary, borderColor: C.primary }}><Icon n="plus" size={13} color="#fff" />Add Skill</Btn>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                <StatCard label="Total Skills" value={String(skills.length)} variant="primary" />
-                <StatCard label="Categories" value={String(new Set(skills.map(s => s.category)).size)} variant="info" />
-                <StatCard label="Employees With Skills" value={String(employees.filter(e => (e.skills || []).length > 0).length)} variant="success" />
-                <StatCard label="Required by Roles" value={String(skills.filter(s => s.requiredBy.length > 0).length)} variant="warning" />
-            </div>
-
-            <div style={{ display: "flex", gap: 12, marginBottom: 16, alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px", flex: 1, maxWidth: 300 }}>
-                    <Icon n="search" size={14} color={C.textMuted} />
-                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search skills…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: C.text, width: "100%", fontFamily: "inherit" }} />
-                </div>
-                <div style={{ display: "flex", gap: 3, background: C.bg, borderRadius: 8, padding: 3, flexWrap: "wrap" }}>
-                    {categories.map(cat => (
-                        <button key={cat} onClick={() => setCatFilter(cat)} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: catFilter === cat ? C.primary : "transparent", color: catFilter === cat ? "#fff" : C.textMid, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{cat}</button>
-                    ))}
+                <div style={{ display: "flex", gap: 12 }}>
+                    <motion.button whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                        <Lucide.SlidersHorizontal size={16} color={_darkMode ? C.text : T.onSurface} />Filters
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={() => setShowAdd(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                        <Lucide.Plus size={16} color="#fff" />Add Skill
+                    </motion.button>
                 </div>
             </div>
 
-            <Card>
+            {/* ── Metric Cards ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+                {[
+                    { label: "Total Skills", value: skills.length, extra: null },
+                    { label: "Categories", value: new Set(skills.map(s => s.category)).size, extra: null },
+                    { label: "Employees with Skills", value: employees.filter(e => (e.skills || []).length > 0).length, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "#f0fdf4", padding: "4px 10px", borderRadius: 999 }}>{employees.length > 0 ? Math.round(employees.filter(e => (e.skills || []).length > 0).length / employees.length * 100) : 0}%</span> },
+                    { label: "Required by Roles", value: skills.filter(s => s.requiredBy.length > 0).length, extra: <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}><Lucide.Star size={16} color={T.primary} /></div> },
+                ].map((m, i) => (
+                    <motion.div key={m.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} style={skLibCardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>{m.label}</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{String(m.value).padStart(2, "0")}</span>
+                                {m.extra}
+                            </div>
+                        </div>
+                    </motion.div>
+                ))}
+            </div>
+
+            {/* ── Skills Table ── */}
+            <div style={{ ...skLibCardStyle, overflow: "hidden", marginBottom: 32 }}>
+                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Skill Catalogue</span>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                        <div style={{ position: "relative" }}>
+                            <Lucide.Search size={14} color={T.outline} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                            <input placeholder="Search skills…" value={search} onChange={e => setSearch(e.target.value)}
+                                style={{ paddingLeft: 34, paddingRight: 12, height: 36, border: "none", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", background: _darkMode ? "rgba(255,255,255,0.06)" : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, width: 220 }} />
+                        </div>
+                        <div style={{ display: "flex", gap: 3, background: _darkMode ? "rgba(255,255,255,0.04)" : T.surfaceLow, borderRadius: 8, padding: 3 }}>
+                            {categories.map(cat => (
+                                <button key={cat} onClick={() => setCatFilter(cat)}
+                                    style={{ padding: "4px 11px", borderRadius: 6, border: "none", background: catFilter === cat ? (_darkMode ? C.primary : T.primary) : "transparent", color: catFilter === cat ? "#fff" : (_darkMode ? C.textMuted : T.onSurfaceVar), fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{cat}</button>
+                            ))}
+                        </div>
+                    </div>
+                </div>
                 <div style={{ overflowX: "auto" }}>
                     <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                        <TableHead cols={["Skill Name", "Category", "Dev Steps", "Employees", "Required By", "Status", ""]} />
+                        <thead>
+                            <tr style={{ background: _darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow + "80" }}>
+                                {["Skill Name", "Category", "Dev Steps", "Employees", "Required By", "Status", ""].map((h, hi) => (
+                                    <th key={h} style={{ padding: "14px 24px", textAlign: hi === 6 ? "right" : "left", fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
                         <tbody>
                             {filtered.map((s, i) => {
                                 const totalSteps = Array.isArray(s.steps?.[0]) ? s.steps.flat().length : (s.steps || []).length;
                                 const empsBySk = employees.filter(e => (e.skills || []).some(sk => skName(sk) === s.name));
                                 return (
-                                    <tr key={s.name + i} onClick={() => setViewSkill(s)} style={{ background: i % 2 === 0 ? C.white : C.tableRow, cursor: "pointer" }}
-                                        onMouseEnter={e => e.currentTarget.style.background = C.primaryLight}
-                                        onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : C.tableRow}>
-                                        <Td><span style={{ fontWeight: 700, color: C.text }}>{s.name}</span></Td>
-                                        <Td><Badge label={s.category} variant={s.category === "Technical" ? "primary" : "default"} /></Td>
-                                        <Td><span style={{ color: totalSteps > 0 ? C.primary : C.textMuted, fontWeight: 600 }}>{totalSteps} steps</span></Td>
-                                        <Td>
+                                    <motion.tr key={s.name + i} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+                                        onClick={() => setViewSkill(s)}
+                                        whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                        style={{ borderBottom: `1px solid ${T.outlineVar}20`, cursor: "pointer" }}>
+                                        <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{s.name}</td>
+                                        <td style={{ padding: "16px 24px" }}><Badge label={s.category} variant={s.category === "Technical" ? "primary" : "default"} /></td>
+                                        <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 600, color: totalSteps > 0 ? (_darkMode ? C.primary : T.primary) : T.outline }}>{totalSteps} steps</td>
+                                        <td style={{ padding: "16px 24px" }}>
                                             <button onClick={e => { e.stopPropagation(); setEmpListSkill({ skill: s.name, emps: empsBySk }); }}
-                                                style={{ fontWeight: 700, color: s.empCount > 0 ? C.primary : C.textMuted, background: "none", border: "none", cursor: "pointer", fontSize: 13, fontFamily: "inherit", padding: 0 }}>
-                                                {s.empCount} <span style={{ fontWeight: 400, color: C.textMuted }}>people</span>
+                                                style={{ fontWeight: 700, color: s.empCount > 0 ? (_darkMode ? C.primary : T.primary) : T.outline, background: "none", border: "none", cursor: "pointer", fontSize: 13.5, fontFamily: "inherit", padding: 0 }}>
+                                                {s.empCount} <span style={{ fontWeight: 400, color: T.onSurfaceVar }}>people</span>
                                             </button>
-                                        </Td>
-                                        <Td>{(s.requiredBy || []).length > 0 ? (s.requiredBy || []).map(f => <span key={f} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, background: C.successBg, border: `1px solid ${C.successBorder}`, color: C.success, fontWeight: 600, marginRight: 4 }}>{f}</span>) : <span style={{ fontSize: 11, color: C.textMuted }}>—</span>}</Td>
-                                        <Td><Badge label={s.archived ? "Archived" : "Active"} variant={s.archived ? "default" : "success"} /></Td>
-                                        <Td>
-                                            <div style={{ display: "flex", gap: 4 }} onClick={e => e.stopPropagation()}>
-                                                <Btn variant="ghost" size="sm" onClick={() => setViewSkill(s)}><Icon n="edit" size={12} /></Btn>
-                                                <Btn variant="ghost" size="sm" onClick={() => setSkillLibrary(prev => prev.filter(sk => sk.name !== s.name))} style={{ color: C.danger }}><Icon n="trash" size={12} /></Btn>
+                                        </td>
+                                        <td style={{ padding: "16px 24px" }}>
+                                            {(s.requiredBy || []).length > 0
+                                                ? (s.requiredBy || []).map(f => <span key={f} style={{ fontSize: 10, padding: "2px 7px", borderRadius: 20, background: T.primaryFixed, color: T.primaryFixedText, fontWeight: 700, marginRight: 4 }}>{f}</span>)
+                                                : <span style={{ fontSize: 13, color: T.outline }}>—</span>}
+                                        </td>
+                                        <td style={{ padding: "16px 24px" }}><Badge label={s.archived ? "Archived" : "Active"} variant={s.archived ? "default" : "success"} /></td>
+                                        <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                            <div style={{ display: "flex", gap: 4, justifyContent: "flex-end" }} onClick={e => e.stopPropagation()}>
+                                                <motion.button whileHover={{ backgroundColor: T.surfaceHigh }}
+                                                    style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                                    onClick={() => setViewSkill(s)}>
+                                                    <Lucide.Pencil size={14} color={T.onSurfaceVar} />
+                                                </motion.button>
+                                                <motion.button whileHover={{ backgroundColor: "#fef2f2" }}
+                                                    style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                                    onClick={() => setSkillLibrary(prev => prev.filter(sk => sk.name !== s.name))}>
+                                                    <Lucide.Trash2 size={14} color="#ef4444" />
+                                                </motion.button>
                                             </div>
-                                        </Td>
-                                    </tr>
+                                        </td>
+                                    </motion.tr>
                                 );
                             })}
                         </tbody>
                     </table>
                 </div>
-                <div style={{ padding: "12px 16px", borderTop: `1px solid ${C.borderLight}`, fontSize: 12, color: C.textMuted }}>Showing {filtered.length} of {skills.length}</div>
-            </Card>
+                <div style={{ padding: "14px 24px", background: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50", borderTop: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>Showing {filtered.length} of {skills.length} skills</span>
+                    <div style={{ display: "flex", gap: 4 }}>
+                        {[1, 2, 3].map(p => (
+                            <button key={p} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: p === 1 ? (_darkMode ? C.primary : T.primary) : "transparent", color: p === 1 ? "#fff" : T.onSurfaceVar, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+
+            {/* ── Bottom: Category Distribution + AI Insight ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 32 }}>
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                    style={{ ...skLibCardStyle, padding: "32px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 24 }}>
+                        <div>
+                            <div style={{ fontSize: 19, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Category Distribution</div>
+                            <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginTop: 4 }}>Skill count per category across the library</div>
+                        </div>
+                    </div>
+                    <div style={{ height: 128, display: "flex", alignItems: "flex-end", gap: 16 }}>
+                        {catList.slice(0, 5).map(([ cat, count ], i) => {
+                            const maxCount = catList[0]?.[1] || 1;
+                            const fillPct = Math.round((count / maxCount) * 100);
+                            return (
+                                <motion.div key={cat} style={{ flex: 1, background: catBarColors[i % catBarColors.length] + "18", borderRadius: "6px 6px 0 0", height: "100%", position: "relative", overflow: "hidden" }} whileHover="hovered">
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${fillPct}%` }}
+                                        variants={{ hovered: { height: `${Math.min(fillPct + 10, 100)}%` } }}
+                                        transition={{ duration: 0.4, delay: 0.2 + i * 0.07, ease: "easeOut" }}
+                                        style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: catBarColors[i % catBarColors.length], borderRadius: "6px 6px 0 0" }} />
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                    <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
+                        {catList.slice(0, 5).map(([cat], i) => (
+                            <div key={cat} style={{ flex: 1, textAlign: "center", fontSize: 10, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.6px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{cat}</div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                    style={{ background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)", padding: "32px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                        <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                        <Lucide.Zap size={18} color={_darkMode ? C.primary : T.primary} />
+                        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: _darkMode ? C.primary : T.primary }}>Nexis AI Insight</span>
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Skill Momentum</div>
+                    <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                        <strong style={{ color: _darkMode ? C.text : T.onSurface }}>{skills.filter(s => s.requiredBy?.length > 0).length} skills</strong> are role-required but <strong style={{ color: _darkMode ? C.text : T.onSurface }}>{skills.filter(s => s.requiredBy?.length > 0 && s.empCount === 0).length}</strong> have zero coverage. Consider adding learning resources to accelerate adoption.
+                    </p>
+                    <motion.button whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                        style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>
+                        View Gap Analysis
+                    </motion.button>
+                </motion.div>
+            </div>
 
             {/* Skill Detail / Edit Modal */}
             {viewSkill && (
@@ -13954,86 +15317,110 @@ const SkillDevelopmentPage = () => {
 
         const requiresApproval = selectedSkillDef?.approvalRequired || false;
 
+        const detailCardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+        const covColor = emp.coverage >= 75 ? "#16a34a" : emp.coverage >= 50 ? T.tertiary : "#ba1a1a";
+
         return (
-            <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-                <Btn variant="outline" onClick={() => setSelectedEmp(null)} style={{ marginBottom: 16 }}><Icon n="chevRight" size={12} style={{ transform: "rotate(180deg)" }} />Back</Btn>
+            <div style={{ padding: "32px", flex: 1 }}>
+                {/* ── Back + Header ── */}
+                <motion.button whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }} onClick={() => setSelectedEmp(null)}
+                    style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 16px", borderRadius: 10, border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", marginBottom: 24 }}>
+                    <Lucide.ArrowLeft size={14} />Back to Team
+                </motion.button>
 
-                <Card style={{ padding: "20px 24px", marginBottom: 16 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 16 }}>
-                        <Avatar name={emp.name} size={56} />
+                {/* ── Employee Hero Card ── */}
+                <div style={{ ...detailCardStyle, padding: "24px 28px", marginBottom: 24 }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+                        <Avatar name={emp.name} size={60} />
                         <div style={{ flex: 1 }}>
-                            <h2 style={{ fontSize: 18, fontWeight: 800, color: C.text, margin: 0 }}>{emp.name}</h2>
-                            <div style={{ fontSize: 13, color: C.primary, fontWeight: 600 }}>{emp.level} · {emp.dept}</div>
-                            <div style={{ fontSize: 12, color: C.textMuted }}>Job Family: {emp.familyName}</div>
+                            <h2 style={{ fontSize: 22, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: "0 0 4px", fontFamily: "Manrope, sans-serif" }}>{emp.name}</h2>
+                            <div style={{ fontSize: 13.5, color: _darkMode ? C.primary : T.primary, fontWeight: 600 }}>{emp.level} · {emp.dept}</div>
+                            <div style={{ fontSize: 12, color: T.onSurfaceVar, marginTop: 2 }}>Job Family: {emp.familyName}</div>
                         </div>
-                        <div style={{ textAlign: "center", padding: "12px 20px", background: C.bg, borderRadius: 14 }}>
-                            <div style={{ fontSize: 32, fontWeight: 900, color: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger }}>{emp.coverage}%</div>
-                            <div style={{ fontSize: 11, color: C.textMuted }}>Role Coverage</div>
+                        <div style={{ textAlign: "center", padding: "16px 24px", background: covColor + "10", borderRadius: 14, border: `1px solid ${covColor}20` }}>
+                            <div style={{ fontSize: 36, fontWeight: 900, color: covColor, fontFamily: "Manrope, sans-serif", lineHeight: 1 }}>{emp.coverage}%</div>
+                            <div style={{ fontSize: 11, fontWeight: 700, color: T.onSurfaceVar, marginTop: 4, textTransform: "uppercase", letterSpacing: "0.8px" }}>Role Coverage</div>
                         </div>
-                        <Btn variant="primary" onClick={() => setShowAddSkill(true)} style={{ background: C.primary, borderColor: C.primary }}>
-                            <Icon n="plus" size={14} color="#fff" />Add Skill
-                        </Btn>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={() => setShowAddSkill(true)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                            <Lucide.Plus size={16} color="#fff" />Add Skill
+                        </motion.button>
                     </div>
-                </Card>
+                </div>
 
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 16 }}>
-                    <div>
-                        <Card>
-                            <CardHeader title={`Skills Profile (${empSkills.length})`} subtitle="Click proficiency dots to change level · Use dropdown to update validation" />
-                            {empSkills.length === 0 ? <div style={{ padding: 30, textAlign: "center", color: C.textMuted, fontSize: 13 }}>No skills recorded yet — click \"Add Skill\" to start building this employee's profile</div> :
-                                empSkills.map((sk, i) => {
-                                    const isRequired = (fam?.requiredSkills || []).includes(sk.name);
-                                    const prof = PROFICIENCY_LEVELS.find(p => p.value === sk.proficiency) || PROFICIENCY_LEVELS[2];
-                                    return (
-                                        <div key={sk.name} style={{ padding: "14px 20px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", alignItems: "flex-start", gap: 14 }}>
-                                            <div style={{ flex: 1 }}>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                                                    <span style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{sk.name}</span>
-                                                    {isRequired && <span style={{ fontSize: 9, padding: "2px 6px", borderRadius: 20, background: C.successBg, border: `1px solid ${C.successBorder}`, color: C.success, fontWeight: 700 }}>REQUIRED</span>}
-                                                </div>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 6 }}>
-                                                    {PROFICIENCY_LEVELS.map(p => (
-                                                        <div key={p.value} onClick={() => updateSkillProficiency(emp.id, sk.name, p.value)}
-                                                            style={{ width: 22, height: 22, borderRadius: "50%", background: sk.proficiency >= p.value ? C.primary : C.borderLight, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: "#fff", transition: "all 0.2s" }}>{p.value}</div>
-                                                    ))}
-                                                    <span style={{ fontSize: 11, fontWeight: 600, color: C.primary, marginLeft: 6 }}>{prof.label}</span>
-                                                </div>
-                                                <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-                                                    <select value={sk.validation} onChange={e => updateSkillValidation(emp.id, sk.name, e.target.value)}
-                                                        style={{ padding: "3px 8px", border: `1px solid ${C.border}`, borderRadius: 6, fontSize: 11, fontWeight: 600, background: C.white, cursor: "pointer" }}>
-                                                        {VALIDATION_STATUSES.map(v => <option key={v} value={v}>{v}</option>)}
-                                                    </select>
-                                                </div>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 340px", gap: 20 }}>
+                    {/* ── Skills Profile Card ── */}
+                    <div style={{ ...detailCardStyle, overflow: "hidden" }}>
+                        <div style={{ padding: "18px 24px", borderBottom: `1px solid ${T.outlineVar}20` }}>
+                            <div style={{ fontSize: 16, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Skills Profile ({empSkills.length})</div>
+                            <div style={{ fontSize: 12, color: T.onSurfaceVar, marginTop: 2 }}>Click proficiency dots to adjust level · Use dropdown to update validation</div>
+                        </div>
+                        {empSkills.length === 0
+                            ? <div style={{ padding: 36, textAlign: "center", color: T.outline, fontSize: 14 }}>No skills recorded yet — click "Add Skill" to start building this profile</div>
+                            : empSkills.map((sk, i) => {
+                                const isRequired = (fam?.requiredSkills || []).includes(sk.name);
+                                const prof = PROFICIENCY_LEVELS.find(p => p.value === sk.proficiency) || PROFICIENCY_LEVELS[2];
+                                return (
+                                    <motion.div key={sk.name} whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                        style={{ padding: "14px 24px", borderBottom: `1px solid ${T.outlineVar}20`, display: "flex", alignItems: "flex-start", gap: 14 }}>
+                                        <div style={{ flex: 1 }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 8 }}>
+                                                <span style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{sk.name}</span>
+                                                {isRequired && <span style={{ fontSize: 9, padding: "2px 7px", borderRadius: 20, background: T.primaryFixed, color: T.primaryFixedText, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.4px" }}>Required</span>}
                                             </div>
-                                            <Btn variant="ghost" size="sm" onClick={() => removeSkill(emp.id, sk.name)} style={{ color: C.danger }}><Icon n="trash" size={12} /></Btn>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 4, marginBottom: 8 }}>
+                                                {PROFICIENCY_LEVELS.map(p => (
+                                                    <div key={p.value} onClick={() => updateSkillProficiency(emp.id, sk.name, p.value)}
+                                                        style={{ width: 22, height: 22, borderRadius: "50%", background: sk.proficiency >= p.value ? (_darkMode ? C.primary : T.primary) : (_darkMode ? "rgba(255,255,255,0.1)" : T.surfaceHigh), cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 9, fontWeight: 800, color: sk.proficiency >= p.value ? "#fff" : T.outline, transition: "all 0.2s" }}>{p.value}</div>
+                                                ))}
+                                                <span style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.primary : T.primary, marginLeft: 8 }}>{prof.label}</span>
+                                            </div>
+                                            <select value={sk.validation} onChange={e => updateSkillValidation(emp.id, sk.name, e.target.value)}
+                                                style={{ padding: "4px 10px", border: `1px solid ${T.outlineVar}50`, borderRadius: 7, fontSize: 11, fontWeight: 700, background: _darkMode ? "rgba(255,255,255,0.06)" : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, cursor: "pointer", fontFamily: "inherit", outline: "none" }}>
+                                                {VALIDATION_STATUSES.map(v => <option key={v} value={v}>{v}</option>)}
+                                            </select>
                                         </div>
-                                    );
-                                })}
-                        </Card>
+                                        <motion.button whileHover={{ backgroundColor: "#fef2f2" }}
+                                            style={{ width: 30, height: 30, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}
+                                            onClick={() => removeSkill(emp.id, sk.name)}>
+                                            <Lucide.Trash2 size={13} color="#ef4444" />
+                                        </motion.button>
+                                    </motion.div>
+                                );
+                            })}
                     </div>
 
-                    <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-                        <Card style={{ padding: 20 }}>
-                            <div style={{ fontSize: 14, fontWeight: 700, color: C.text, marginBottom: 12 }}>Required for {fam?.name || "Role"}</div>
+                    {/* ── Required Skills Sidebar ── */}
+                    <div style={{ ...detailCardStyle, overflow: "hidden" }}>
+                        <div style={{ padding: "18px 20px", borderBottom: `1px solid ${T.outlineVar}20` }}>
+                            <div style={{ fontSize: 15, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Required for {fam?.name || "Role"}</div>
+                        </div>
+                        <div style={{ padding: "12px 20px" }}>
                             {emp.required.map(sk => {
                                 const hasSk = emp.has.includes(sk);
                                 return (
-                                    <div key={sk} style={{ display: "flex", alignItems: "center", gap: 8, padding: "7px 0", borderBottom: `1px solid ${C.borderLight}` }}>
-                                        <span style={{ width: 20, height: 20, borderRadius: "50%", background: hasSk ? C.success : C.danger, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: "#fff", flexShrink: 0 }}>{hasSk ? "✓" : "✗"}</span>
-                                        <span style={{ fontSize: 12, fontWeight: 600, color: hasSk ? C.text : C.danger, flex: 1 }}>{sk}</span>
-                                        {!hasSk && <Btn variant="ghost" size="sm" onClick={() => { setAddForm(p => ({ ...p, name: sk })); setShowAddSkill(true); }} style={{ fontSize: 10 }}>+ Add</Btn>}
+                                    <div key={sk} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: `1px solid ${T.outlineVar}15` }}>
+                                        <div style={{ width: 22, height: 22, borderRadius: "50%", background: hasSk ? "#f0fdf4" : "#ffdad6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <span style={{ fontSize: 11, fontWeight: 800, color: hasSk ? "#16a34a" : "#ba1a1a" }}>{hasSk ? "✓" : "✗"}</span>
+                                        </div>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: hasSk ? (_darkMode ? C.text : T.onSurface) : "#ba1a1a", flex: 1 }}>{sk}</span>
+                                        {!hasSk && (
+                                            <motion.button whileHover={{ scale: 1.04 }} onClick={() => { setAddForm(p => ({ ...p, name: sk })); setShowAddSkill(true); }}
+                                                style={{ fontSize: 11, fontWeight: 700, padding: "4px 10px", borderRadius: 8, border: `1px solid ${T.outlineVar}50`, background: "transparent", color: _darkMode ? C.text : T.onSurface, cursor: "pointer", fontFamily: "inherit" }}>+ Add</motion.button>
+                                        )}
                                     </div>
                                 );
                             })}
                             {emp.missing.length > 0 && (
-                                <div style={{ marginTop: 12, padding: "10px 12px", background: C.warningBg, border: `1px solid ${C.warningBorder}`, borderRadius: 10 }}>
-                                    <div style={{ fontSize: 11, color: C.warning, fontWeight: 700, marginBottom: 8 }}>{emp.missing.length} skill gap{emp.missing.length > 1 ? "s" : ""} identified</div>
-                                    <Btn variant="primary" size="sm" style={{ width: "100%" }} onClick={() => navigate && navigate("skills_Dev_Plans")}>
-                                        <Icon n="plus" size={12} color="#fff" />Create Dev Plan for Gaps
-                                    </Btn>
+                                <div style={{ marginTop: 14, padding: "12px 14px", background: "#fffbeb", border: "1px solid #fde68a", borderRadius: 10 }}>
+                                    <div style={{ fontSize: 11, color: "#b45309", fontWeight: 700, marginBottom: 10 }}>{emp.missing.length} skill gap{emp.missing.length > 1 ? "s" : ""} identified</div>
+                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={() => navigate && navigate("skills_Dev_Plans")}
+                                        style={{ width: "100%", padding: "9px 0", borderRadius: 9, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer", fontFamily: "inherit" }}>
+                                        Create Dev Plan for Gaps
+                                    </motion.button>
                                 </div>
                             )}
-                        </Card>
+                        </div>
                     </div>
                 </div>
 
@@ -14261,24 +15648,36 @@ const SkillDevelopmentPage = () => {
         _toast(`Skill "${req.skillName}" rejected for ${req.empName}`, "error");
     };
 
+    const devCardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills", onClick: () => navigate("skills") }, { label: "Development" }]} />
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", flex: 1 }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.4px" }}>Development</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Track skill levels, review evidence, and approve requests</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Skill Development</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Track skill levels, review evidence, and approve skill requests</p>
+                </div>
+                <div style={{ display: "flex", gap: 12 }}>
+                    <motion.button whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                        <Lucide.SlidersHorizontal size={16} color={_darkMode ? C.text : T.onSurface} />Filters
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                        <Lucide.Download size={16} color="#fff" />Export Report
+                    </motion.button>
                 </div>
             </div>
 
-            {/* Tab bar */}
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 22 }}>
+            {/* ── Tab bar ── */}
+            <div style={{ display: "flex", gap: 3, background: _darkMode ? "rgba(255,255,255,0.04)" : T.surfaceLow, borderRadius: 10, padding: 3, marginBottom: 32, width: "fit-content" }}>
                 {[
                     { key: "employees", label: "Employee Skills" },
                     { key: "requests", label: `Skill Requests${pendingRequests.length > 0 ? ` (${pendingRequests.length})` : ""}` },
                 ].map(t => (
                     <button key={t.key} onClick={() => setActiveSkillTab(t.key)}
-                        style={{ padding: "7px 18px", background: "none", border: "none", borderBottom: activeSkillTab === t.key ? `2px solid ${C.primary}` : "2px solid transparent", color: activeSkillTab === t.key ? C.primary : C.textMuted, fontWeight: activeSkillTab === t.key ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginBottom: -1 }}>
+                        style={{ padding: "6px 18px", borderRadius: 8, border: "none", background: activeSkillTab === t.key ? (_darkMode ? C.primary : T.primary) : "transparent", color: activeSkillTab === t.key ? "#fff" : (_darkMode ? C.textMuted : T.onSurfaceVar), fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
                         {t.label}
                     </button>
                 ))}
@@ -14374,45 +15773,146 @@ const SkillDevelopmentPage = () => {
                 </div>
             ) : (
                 <div>
-                    {/* existing employee skills tab content begins below — close this div at the very end of the page */}
-                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                        <StatCard label="Avg Coverage" value={`${avgCoverage}%`} variant={avgCoverage >= 70 ? "success" : "warning"} />
-                        <StatCard label="Fully Covered" value={String(empSkillData.filter(e => e.coverage === 100).length)} variant="success" />
-                        <StatCard label="With Gaps" value={String(empSkillData.filter(e => e.missing.length > 0).length)} variant="danger" />
-                        <StatCard label="No Skills Yet" value={String(empSkillData.filter(e => e.skillCount === 0).length)} variant="default" />
+                    {/* ── Metric Cards ── */}
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+                        {[
+                            { label: "Avg Coverage", value: `${avgCoverage}%`, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: avgCoverage >= 70 ? "#16a34a" : T.tertiary, background: avgCoverage >= 70 ? "#f0fdf4" : T.tertiaryFixed, padding: "4px 10px", borderRadius: 999 }}>{avgCoverage >= 70 ? "Healthy" : "Needs work"}</span> },
+                            { label: "Fully Covered", value: empSkillData.filter(e => e.coverage === 100).length, extra: <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#f0fdf4", display: "flex", alignItems: "center", justifyContent: "center" }}><Lucide.CheckCircle2 size={16} color="#16a34a" /></div> },
+                            { label: "With Gaps", value: empSkillData.filter(e => e.missing.length > 0).length, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: "#ba1a1a", background: "#ffdad6", padding: "4px 10px", borderRadius: 999 }}>Action needed</span> },
+                            { label: "No Skills Yet", value: empSkillData.filter(e => e.skillCount === 0).length, extra: <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}><Lucide.AlertCircle size={16} color={T.primary} /></div> },
+                        ].map((m, i) => (
+                            <motion.div key={m.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} style={devCardStyle}>
+                                <div style={{ padding: "24px" }}>
+                                    <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>{m.label}</p>
+                                    <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                        <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{typeof m.value === "number" ? String(m.value).padStart(2, "0") : m.value}</span>
+                                        {m.extra}
+                                    </div>
+                                </div>
+                            </motion.div>
+                        ))}
                     </div>
 
-                    <div style={{ marginBottom: 16 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px", maxWidth: 300 }}>
-                            <Icon n="search" size={14} color={C.textMuted} />
-                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, width: "100%", fontFamily: "inherit" }} />
+                    {/* ── Employee Skills Table ── */}
+                    <div style={{ ...devCardStyle, overflow: "hidden", marginBottom: 32 }}>
+                        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Employee Skill Profiles</span>
+                            <div style={{ position: "relative" }}>
+                                <Lucide.Search size={14} color={T.outline} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+                                <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees…"
+                                    style={{ paddingLeft: 34, paddingRight: 12, height: 36, border: "none", borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", background: _darkMode ? "rgba(255,255,255,0.06)" : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, width: 220 }} />
+                            </div>
+                        </div>
+                        <div style={{ overflowX: "auto" }}>
+                            <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                                <thead>
+                                    <tr style={{ background: _darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow + "80" }}>
+                                        {["Employee", "Job Family", "Skills", "Coverage", "Gaps", ""].map((h, hi) => (
+                                            <th key={h} style={{ padding: "14px 24px", textAlign: hi === 5 ? "right" : "left", fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>{h}</th>
+                                        ))}
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {filteredEmployees.sort((a, b) => a.coverage - b.coverage).map((emp, i) => {
+                                        const covColor = emp.coverage >= 75 ? "#16a34a" : emp.coverage >= 50 ? T.tertiary : "#ba1a1a";
+                                        return (
+                                            <motion.tr key={emp.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+                                                onClick={() => setSelectedEmp(emp.id)}
+                                                whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                                style={{ borderBottom: `1px solid ${T.outlineVar}20`, cursor: "pointer" }}>
+                                                <td style={{ padding: "16px 24px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                                        <Avatar name={emp.name} size={36} />
+                                                        <div>
+                                                            <div style={{ fontWeight: 700, fontSize: 13.5, color: _darkMode ? C.text : T.onSurface }}>{emp.name}</div>
+                                                            <div style={{ fontSize: 11, color: T.onSurfaceVar, marginTop: 2 }}>{emp.level}</div>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: "16px 24px" }}><Badge label={emp.familyName} variant="primary" /></td>
+                                                <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>{emp.skillCount}</td>
+                                                <td style={{ padding: "16px 24px" }}>
+                                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                        <div style={{ width: 70, height: 6, background: _darkMode ? "rgba(255,255,255,0.08)" : T.surfaceHigh, borderRadius: 3, overflow: "hidden" }}>
+                                                            <div style={{ height: "100%", width: `${emp.coverage}%`, background: covColor, borderRadius: 3 }} />
+                                                        </div>
+                                                        <span style={{ fontSize: 12, fontWeight: 800, color: covColor }}>{emp.coverage}%</span>
+                                                    </div>
+                                                </td>
+                                                <td style={{ padding: "16px 24px" }}>
+                                                    {emp.missing.length > 0
+                                                        ? <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", background: "#ffdad6", color: "#ba1a1a" }}>{emp.missing.length} gaps</span>
+                                                        : <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 999, fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.5px", background: "#f0fdf4", color: "#16a34a" }}>All met</span>}
+                                                </td>
+                                                <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                                    <motion.button whileHover={{ backgroundColor: T.surfaceHigh }}
+                                                        style={{ width: 34, height: 34, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", marginLeft: "auto" }}>
+                                                        <Lucide.MoreVertical size={18} color={T.outline} />
+                                                    </motion.button>
+                                                </td>
+                                            </motion.tr>
+                                        );
+                                    })}
+                                </tbody>
+                            </table>
+                        </div>
+                        <div style={{ padding: "14px 24px", background: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50", borderTop: `1px solid ${T.outlineVar}20`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>Showing {filteredEmployees.length} of {empSkillData.length} employees</span>
+                            <div style={{ display: "flex", gap: 4 }}>
+                                {[1, 2, 3].map(p => (
+                                    <button key={p} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: p === 1 ? (_darkMode ? C.primary : T.primary) : "transparent", color: p === 1 ? "#fff" : T.onSurfaceVar, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
+                                ))}
+                            </div>
                         </div>
                     </div>
 
-                    <Card>
-                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                            <TableHead cols={["Employee", "Job Family", "Skills", "Coverage", "Gaps", ""]} />
-                            <tbody>
-                                {filteredEmployees.sort((a, b) => a.coverage - b.coverage).map((emp, i) => (
-                                    <tr key={emp.id} style={{ background: i % 2 === 0 ? C.white : C.tableRow, cursor: "pointer" }} onClick={() => setSelectedEmp(emp.id)}>
-                                        <Td><div style={{ display: "flex", alignItems: "center", gap: 9 }}><Avatar name={emp.name} size={30} /><div><span style={{ fontWeight: 600 }}>{emp.name}</span><div style={{ fontSize: 11, color: C.textMuted }}>{emp.level}</div></div></div></Td>
-                                        <Td><Badge label={emp.familyName} variant="primary" /></Td>
-                                        <Td><span style={{ fontWeight: 700 }}>{emp.skillCount}</span></Td>
-                                        <Td>
-                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                                <div style={{ width: 60, height: 6, background: C.borderLight, borderRadius: 3, overflow: "hidden" }}>
-                                                    <div style={{ height: "100%", width: `${emp.coverage}%`, background: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger, borderRadius: 3 }} />
-                                                </div>
-                                                <span style={{ fontSize: 12, fontWeight: 700, color: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger }}>{emp.coverage}%</span>
-                                            </div>
-                                        </Td>
-                                        <Td>{emp.missing.length > 0 ? <Badge label={`${emp.missing.length} gaps`} variant="danger" /> : <Badge label="All met" variant="success" />}</Td>
-                                        <Td><Btn variant="outline" size="sm">View →</Btn></Td>
-                                    </tr>
+                    {/* ── Bottom: Coverage Distribution + AI Insight ── */}
+                    <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 32 }}>
+                        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                            style={{ ...devCardStyle, padding: "32px" }}>
+                            <div style={{ marginBottom: 24 }}>
+                                <div style={{ fontSize: 19, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Coverage by Employee</div>
+                                <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginTop: 4 }}>Role skill coverage for each team member</div>
+                            </div>
+                            <div style={{ height: 128, display: "flex", alignItems: "flex-end", gap: 12 }}>
+                                {empSkillData.slice(0, 7).map((emp, i) => {
+                                    const barColor = emp.coverage >= 75 ? "#16a34a" : emp.coverage >= 50 ? T.tertiary : "#ba1a1a";
+                                    return (
+                                        <motion.div key={emp.id} style={{ flex: 1, background: barColor + "18", borderRadius: "6px 6px 0 0", height: "100%", position: "relative", overflow: "hidden" }} whileHover="hovered">
+                                            <motion.div initial={{ height: 0 }} animate={{ height: `${emp.coverage}%` }}
+                                                variants={{ hovered: { height: `${Math.min(emp.coverage + 8, 100)}%` } }}
+                                                transition={{ duration: 0.4, delay: 0.2 + i * 0.06, ease: "easeOut" }}
+                                                style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: barColor, borderRadius: "6px 6px 0 0" }} />
+                                        </motion.div>
+                                    );
+                                })}
+                            </div>
+                            <div style={{ display: "flex", gap: 12, marginTop: 16 }}>
+                                {empSkillData.slice(0, 7).map(emp => (
+                                    <div key={emp.id} style={{ flex: 1, textAlign: "center", fontSize: 9, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.3px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp.name.split(" ")[0]}</div>
                                 ))}
-                            </tbody>
-                        </table>
-                    </Card>
+                            </div>
+                        </motion.div>
+
+                        <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                            style={{ background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)", padding: "32px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                            <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                                <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                            </div>
+                            <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                                <Lucide.Zap size={18} color={_darkMode ? C.primary : T.primary} />
+                                <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: _darkMode ? C.primary : T.primary }}>Nexis AI Insight</span>
+                            </div>
+                            <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Skill Velocity</div>
+                            <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                                Average role coverage is <strong style={{ color: _darkMode ? C.text : T.onSurface }}>{avgCoverage}%</strong>. Employees with coverage below 50% could benefit from targeted development plans tied to their job family requirements.
+                            </p>
+                            <motion.button whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                                style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>
+                                View Gap Analysis
+                            </motion.button>
+                        </motion.div>
+                    </div>
                 </div>
             )}
         </div>
@@ -14424,7 +15924,10 @@ const SkillDevelopmentPage = () => {
    ═══════════════════════════════════════════════════════════════════════════ */
 const GapAnalysisPage = () => {
     const { employees, jobFamilies, skillLibrary, navigate } = React.useContext(DataCtx);
-    const [deptFilter, setDeptFilter] = useState("All");
+    const currentUser = React.useContext(UserCtx);
+    // dept_manager is auto-locked to their department; other roles can toggle freely
+    const lockedDept = currentUser?.role === "dept_manager" ? (currentUser.managedDept || currentUser.dept || "All") : null;
+    const [deptFilter, setDeptFilter] = useState(lockedDept || "All");
     const [severityFilter, setSeverityFilter] = useState("All");
     const [resourcePopup, setResourcePopup] = useState(null);
     const [trainingModal, setTrainingModal] = useState(null);
@@ -14450,74 +15953,187 @@ const GapAnalysisPage = () => {
     gapRows.sort((a, b) => a.pct - b.pct);
     const filtered = gapRows.filter(g => (deptFilter === "All" || g.dept === deptFilter) && (severityFilter === "All" || g.severity === severityFilter));
 
+    const gapCardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+    const severityCounts = { Critical: gapRows.filter(g => g.severity === "Critical").length, Moderate: gapRows.filter(g => g.severity === "Moderate").length, Low: gapRows.filter(g => g.severity === "Low").length };
+    const gapExport = () => { const csv = "Skill,Department,Have,Total,Gap,Coverage%,Severity\n" + gapRows.map(g => `${g.skill},${g.dept},${g.have},${g.total},${g.gap},${g.pct}%,${g.severity}`).join("\n"); const b = new Blob([csv], { type: "text/csv" }); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "gap_analysis.csv"; a.click(); };
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", flex: 1 }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Skill Gaps</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Where team skills fall short of what each role needs</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Skill Gap Analysis</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Where team capabilities fall short of role requirements</p>
                 </div>
-                <Btn variant="outline" onClick={() => {
-                    const csv = "Skill,Department,Have,Total,Gap,Coverage%,Severity\n" + gapRows.map(g => `${g.skill},${g.dept},${g.have},${g.total},${g.gap},${g.pct}%,${g.severity}`).join("\n");
-                    const b = new Blob([csv], { type: "text/csv" }); const u = URL.createObjectURL(b); const a = document.createElement("a"); a.href = u; a.download = "gap_analysis.csv"; a.click();
-                }}><Icon n="export" size={13} />Export CSV</Btn>
+                <div style={{ display: "flex", gap: 12 }}>
+                    <motion.button whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                        <Lucide.SlidersHorizontal size={16} color={_darkMode ? C.text : T.onSurface} />Filters
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={gapExport}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                        <Lucide.Download size={16} color="#fff" />Export Report
+                    </motion.button>
+                </div>
             </div>
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                <StatCard label="Total Gaps" value={String(gapRows.length)} variant="primary" />
-                <StatCard label="Critical" value={String(gapRows.filter(g => g.severity === "Critical").length)} variant="danger" />
-                <StatCard label="Moderate" value={String(gapRows.filter(g => g.severity === "Moderate").length)} variant="warning" />
-                <StatCard label="Low" value={String(gapRows.filter(g => g.severity === "Low").length)} variant="success" />
+
+            {/* ── Metric Cards ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+                {[
+                    { label: "Total Gaps", value: gapRows.length, extra: null },
+                    { label: "Critical", value: severityCounts.Critical, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: "#ba1a1a", background: "#ffdad6", padding: "4px 10px", borderRadius: 999 }}>High Risk</span> },
+                    { label: "Moderate", value: severityCounts.Moderate, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: T.tertiary, background: T.tertiaryFixed, padding: "4px 10px", borderRadius: 999 }}>Watch</span> },
+                    { label: "Low Risk", value: severityCounts.Low, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "#f0fdf4", padding: "4px 10px", borderRadius: 999 }}>On Track</span> },
+                ].map((m, i) => (
+                    <motion.div key={m.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} style={gapCardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>{m.label}</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: i === 1 ? "#ba1a1a" : i === 2 ? T.tertiary : (_darkMode ? C.text : T.onSurface), lineHeight: 1 }}>{String(m.value).padStart(2, "0")}</span>
+                                {m.extra}
+                            </div>
+                        </div>
+                    </motion.div>
+                ))}
             </div>
-            <div style={{ display: "flex", gap: 8, marginBottom: 16 }}>
-                <Select options={["All", ...depts]} value={deptFilter} onChange={e => setDeptFilter(e.target.value)} />
-                <div style={{ display: "flex", gap: 3, background: C.bg, borderRadius: 8, padding: 3 }}>
-                    {["All", "Critical", "Moderate", "Low"].map(s => (
-                        <button key={s} onClick={() => setSeverityFilter(s)} style={{ padding: "5px 12px", borderRadius: 6, border: "none", background: severityFilter === s ? (s === "Critical" ? C.danger : s === "Moderate" ? C.warning : s === "Low" ? C.success : C.primary) : "transparent", color: severityFilter === s ? "#fff" : C.textMid, fontSize: 12, fontWeight: 600, cursor: "pointer" }}>{s}</button>
+
+            {/* ── Filter Row ── */}
+            <div style={{ display: "flex", gap: 8, marginBottom: 24, alignItems: "center" }}>
+                {lockedDept
+                    ? <div style={{ padding: "8px 14px", borderRadius: 10, border: `1px solid ${T.outlineVar}40`, background: _darkMode ? C.white : T.surfaceCard, fontSize: 13, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, display: "flex", alignItems: "center", gap: 6, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                        <Lucide.Lock size={12} color={T.outline} strokeWidth={2} />{lockedDept}
+                    </div>
+                    : <select value={deptFilter} onChange={e => setDeptFilter(e.target.value)}
+                        style={{ padding: "8px 14px", borderRadius: 10, border: `1px solid ${T.outlineVar}40`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontSize: 13, fontWeight: 600, fontFamily: "inherit", outline: "none", cursor: "pointer" }}>
+                        {["All", ...depts].map(d => <option key={d} value={d}>{d}</option>)}
+                    </select>
+                }
+                <div style={{ display: "flex", gap: 3, background: _darkMode ? "rgba(255,255,255,0.04)" : T.surfaceLow, borderRadius: 10, padding: 3 }}>
+                    {[["All", null], ["Critical", "#ba1a1a"], ["Moderate", T.tertiary], ["Low", "#16a34a"]].map(([s, col]) => (
+                        <button key={s} onClick={() => setSeverityFilter(s)}
+                            style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: severityFilter === s ? (col || (_darkMode ? C.primary : T.primary)) : "transparent", color: severityFilter === s ? "#fff" : (_darkMode ? C.textMuted : T.onSurfaceVar), fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{s}</button>
                     ))}
                 </div>
             </div>
-            <Card>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <TableHead cols={["Skill", "Department", "Have / Need", "Coverage", "Severity", "Actions"]} />
-                    <tbody>
-                        {filtered.map((g, i) => {
-                            const libSk = skillLibrary.find(s => s.name === g.skill);
-                            const resCount = libSk?.resources?.length || 0;
+
+            {/* ── Gaps Table ── */}
+            <div style={{ ...gapCardStyle, overflow: "hidden", marginBottom: 32 }}>
+                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.outlineVar}20` }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Identified Skill Gaps</span>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                            <tr style={{ background: _darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow + "80" }}>
+                                {["Skill", "Department", "Have / Need", "Coverage", "Severity", "Actions"].map((h, hi) => (
+                                    <th key={h} style={{ padding: "14px 24px", textAlign: "left", fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>{h}</th>
+                                ))}
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.map((g, i) => {
+                                const libSk = skillLibrary.find(s => s.name === g.skill);
+                                const resCount = libSk?.resources?.length || 0;
+                                const sevColor = g.severity === "Critical" ? "#ba1a1a" : g.severity === "Moderate" ? T.tertiary : "#16a34a";
+                                return (
+                                    <motion.tr key={`${g.skill}-${g.dept}`} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.03 }}
+                                        whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                        style={{ borderBottom: `1px solid ${T.outlineVar}20` }}>
+                                        <td style={{ padding: "16px 24px", fontSize: 13.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{g.skill}</td>
+                                        <td style={{ padding: "16px 24px", fontSize: 13.5, color: T.onSurfaceVar, fontWeight: 500 }}>{g.dept}</td>
+                                        <td style={{ padding: "16px 24px" }}>
+                                            <span style={{ fontSize: 13.5, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>{g.have}</span>
+                                            <span style={{ fontSize: 13.5, color: T.outline }}> / {g.total}</span>
+                                        </td>
+                                        <td style={{ padding: "16px 24px" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                <div style={{ width: 80, height: 6, background: _darkMode ? "rgba(255,255,255,0.08)" : T.surfaceHigh, borderRadius: 3, overflow: "hidden" }}>
+                                                    <div style={{ height: "100%", width: `${g.pct}%`, background: sevColor, borderRadius: 3 }} />
+                                                </div>
+                                                <span style={{ fontSize: 12, fontWeight: 800, color: sevColor }}>{g.pct}%</span>
+                                            </div>
+                                        </td>
+                                        <td style={{ padding: "16px 24px" }}><Badge label={g.severity} variant={g.severity === "Critical" ? "danger" : g.severity === "Moderate" ? "warning" : "success"} /></td>
+                                        <td style={{ padding: "16px 24px" }}>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                                {resCount > 0 && (
+                                                    <motion.button whileHover={{ scale: 1.04 }} onClick={() => setResourcePopup({ skill: g.skill, resources: libSk.resources })}
+                                                        style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11.5, color: _darkMode ? C.primary : T.primary, fontWeight: 700, padding: "5px 10px", background: _darkMode ? "rgba(255,255,255,0.06)" : T.primaryFixed, borderRadius: 8, border: "none", cursor: "pointer", fontFamily: "inherit" }}>
+                                                        <Lucide.BookOpen size={12} />{resCount} Resources
+                                                    </motion.button>
+                                                )}
+                                                <motion.button whileHover={{ scale: 1.04 }} onClick={() => setTrainingModal({ skill: g.skill, dept: g.dept, gap: g.gap, missingEmps: g.missingEmps })}
+                                                    style={{ fontSize: 11.5, fontWeight: 700, padding: "5px 12px", borderRadius: 8, border: `1px solid ${T.outlineVar}50`, background: "transparent", color: _darkMode ? C.text : T.onSurface, cursor: "pointer", fontFamily: "inherit" }}>
+                                                    Assign Training
+                                                </motion.button>
+                                                <motion.button whileHover={{ scale: 1.04 }} onClick={() => setGapPlanModal({ skill: g.skill, dept: g.dept, missingEmps: g.missingEmps })}
+                                                    style={{ fontSize: 11.5, fontWeight: 700, padding: "5px 12px", borderRadius: 8, border: "none", background: C.mainGradient, color: "#fff", cursor: "pointer", fontFamily: "inherit" }}>
+                                                    Dev Plan
+                                                </motion.button>
+                                            </div>
+                                        </td>
+                                    </motion.tr>
+                                );
+                            })}
+                        </tbody>
+                    </table>
+                </div>
+                {filtered.length === 0 && <div style={{ padding: 40, textAlign: "center", color: T.outline, fontSize: 14 }}>No gaps found matching the current filters</div>}
+                <div style={{ padding: "14px 24px", background: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50", borderTop: `1px solid ${T.outlineVar}20` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>Showing {filtered.length} of {gapRows.length} identified gaps</span>
+                </div>
+            </div>
+
+            {/* ── Bottom: Severity Distribution + AI Insight ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 32 }}>
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                    style={{ ...gapCardStyle, padding: "32px" }}>
+                    <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontSize: 19, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Severity Breakdown</div>
+                        <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginTop: 4 }}>Distribution of gaps by risk level across departments</div>
+                    </div>
+                    <div style={{ height: 128, display: "flex", alignItems: "flex-end", gap: 16 }}>
+                        {depts.slice(0, 5).map((dept, i) => {
+                            const deptCrit = gapRows.filter(g => g.dept === dept && g.severity === "Critical").length;
+                            const deptAll = gapRows.filter(g => g.dept === dept).length;
+                            const maxDept = Math.max(...depts.map(d => gapRows.filter(g => g.dept === d).length), 1);
+                            const fillH = Math.round((deptAll / maxDept) * 100);
                             return (
-                                <tr key={`${g.skill}-${g.dept}`} style={{ background: i % 2 === 0 ? C.white : C.tableRow }}>
-                                    <Td><span style={{ fontWeight: 600 }}>{g.skill}</span></Td>
-                                    <Td>{g.dept}</Td>
-                                    <Td><span style={{ fontWeight: 700 }}>{g.have}</span> / {g.total}</Td>
-                                    <Td><div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                        <div style={{ width: 80, height: 8, background: C.borderLight, borderRadius: 4, overflow: "hidden" }}>
-                                            <div style={{ height: "100%", width: `${g.pct}%`, background: g.severity === "Critical" ? C.danger : g.severity === "Moderate" ? C.warning : C.success, borderRadius: 4 }} />
-                                        </div>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: g.severity === "Critical" ? C.danger : g.severity === "Moderate" ? C.warning : C.success }}>{g.pct}%</span>
-                                    </div></Td>
-                                    <Td><Badge label={g.severity} variant={g.severity === "Critical" ? "danger" : g.severity === "Moderate" ? "warning" : "success"} /></Td>
-                                    <Td>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 5, flexWrap: "wrap" }}>
-                                            {resCount > 0 && (
-                                                <button onClick={() => setResourcePopup({ skill: g.skill, resources: libSk.resources })}
-                                                    style={{ display: "flex", alignItems: "center", gap: 3, fontSize: 11, color: C.primary, fontWeight: 700, padding: "3px 8px", background: C.primaryLight, borderRadius: 12, border: `1px solid ${C.primaryMid}`, cursor: "pointer" }}>
-                                                    <Icon n="globe" size={10} color={C.primary} />{resCount} Resources
-                                                </button>
-                                            )}
-                                            <Btn variant="outline" size="sm" onClick={() => setTrainingModal({ skill: g.skill, dept: g.dept, gap: g.gap, missingEmps: g.missingEmps })}>
-                                                Assign Training
-                                            </Btn>
-                                            <Btn variant="primary" size="sm" onClick={() => setGapPlanModal({ skill: g.skill, dept: g.dept, missingEmps: g.missingEmps })}>
-                                                Dev Plan
-                                            </Btn>
-                                        </div>
-                                    </Td>
-                                </tr>
+                                <motion.div key={dept} style={{ flex: 1, background: "#ba1a1a18", borderRadius: "6px 6px 0 0", height: "100%", position: "relative", overflow: "hidden" }} whileHover="hovered">
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${fillH}%` }}
+                                        variants={{ hovered: { height: `${Math.min(fillH + 8, 100)}%` } }}
+                                        transition={{ duration: 0.4, delay: 0.2 + i * 0.07, ease: "easeOut" }}
+                                        style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: deptCrit > 0 ? "#ba1a1a" : "#16a34a", borderRadius: "6px 6px 0 0" }} />
+                                </motion.div>
                             );
                         })}
-                    </tbody>
-                </table>
-                {filtered.length === 0 && <div style={{ padding: 30, textAlign: "center", color: C.textMuted }}>No gaps found</div>}
-            </Card>
+                    </div>
+                    <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
+                        {depts.slice(0, 5).map(dept => (
+                            <div key={dept} style={{ flex: 1, textAlign: "center", fontSize: 10, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{dept}</div>
+                        ))}
+                    </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                    style={{ background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)", padding: "32px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                        <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                        <Lucide.Zap size={18} color={_darkMode ? C.primary : T.primary} />
+                        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: _darkMode ? C.primary : T.primary }}>Nexis AI Insight</span>
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Priority Gaps</div>
+                    <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                        <strong style={{ color: _darkMode ? C.text : T.onSurface }}>{severityCounts.Critical} critical gaps</strong> across your organisation require immediate attention. Focus on role-required skills with zero or single coverage first.
+                    </p>
+                    <motion.button whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                        style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>
+                        Generate Training Plan
+                    </motion.button>
+                </motion.div>
+            </div>
 
             {/* Resources Popup */}
             {resourcePopup && (
@@ -14745,95 +16361,181 @@ const DevPlansPageEnhanced = () => {
 
     const INP = { padding: "8px 11px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, background: C.bg, color: C.text, fontFamily: "inherit", outline: "none", width: "100%", boxSizing: "border-box" };
 
+    const dpCardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
+    const onTrackCount = planData.filter(p => p.status === "On Track").length;
+    const atRiskCount = planData.filter(p => p.status === "At Risk").length;
+    const completedCount = planData.filter(p => p.status === "Completed").length;
+
     return (
-        <div style={{ padding: "32px", overflowY: "auto", flex: 1 }}>
-            <Breadcrumb items={[{ label: "Dashboard", onClick: () => navigate("dashboard") }, { label: "Skills", onClick: () => navigate("skills") }, { label: "Growth Plans" }]} />
-            {/* Header */}
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 22 }}>
+        <div style={{ padding: "32px", flex: 1 }}>
+            {/* ── Page Header ── */}
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
                 <div>
-                    <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Development Plans</h1>
-                    <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>Structured employee growth roadmaps with milestone tracking</p>
+                    <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Development Plans</h1>
+                    <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>Structured employee growth roadmaps with milestone tracking</p>
                 </div>
-                <Btn variant="primary" onClick={() => setShowCreate(true)}><Icon n="plus" size={14} color="#fff" />New Plan</Btn>
+                <div style={{ display: "flex", gap: 12 }}>
+                    <motion.button whileHover={{ backgroundColor: T.surfaceLow }} whileTap={{ scale: 0.96 }}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: `1px solid ${T.outlineVar}50`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                        <Lucide.SlidersHorizontal size={16} color={_darkMode ? C.text : T.onSurface} />Filters
+                    </motion.button>
+                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={() => setShowCreate(true)}
+                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: C.mainGradient, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+                        <Lucide.Plus size={16} color="#fff" />New Plan
+                    </motion.button>
+                </div>
             </div>
 
-            {/* Summary stats */}
-            <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
+            {/* ── Metric Cards ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
                 {[
-                    ["Total Plans", planData.length, "default"],
-                    ["On Track", planData.filter(p => p.status === "On Track").length, "success"],
-                    ["At Risk", planData.filter(p => p.status === "At Risk").length, "warning"],
-                    ["Completed", planData.filter(p => p.status === "Completed").length, "info"],
-                ].map(([l, v]) => (
-                    <div key={l} style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, padding: "14px 16px", boxShadow: C.shadow }}>
-                        <div style={{ fontSize: 11, color: C.textMuted, fontWeight: 600, marginBottom: 4 }}>{l}</div>
-                        <div style={{ fontSize: 24, fontWeight: 900, color: C.text }}>{v}</div>
-                    </div>
+                    { label: "Total Plans", value: planData.length, extra: null },
+                    { label: "On Track", value: onTrackCount, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: "#16a34a", background: "#f0fdf4", padding: "4px 10px", borderRadius: 999 }}>{planData.length > 0 ? Math.round(onTrackCount / planData.length * 100) : 0}%</span> },
+                    { label: "At Risk", value: atRiskCount, extra: <span style={{ fontSize: 11.5, fontWeight: 700, color: T.tertiary, background: T.tertiaryFixed, padding: "4px 10px", borderRadius: 999 }}>Needs Attention</span> },
+                    { label: "Completed", value: completedCount, extra: <div style={{ width: 32, height: 32, borderRadius: "50%", background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}><Lucide.CheckCircle2 size={16} color={T.primary} /></div> },
+                ].map((m, i) => (
+                    <motion.div key={m.label} initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.07 }} style={dpCardStyle}>
+                        <div style={{ padding: "24px" }}>
+                            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: T.outline, marginBottom: 16 }}>{m.label}</p>
+                            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+                                <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, lineHeight: 1 }}>{String(m.value).padStart(2, "0")}</span>
+                                {m.extra}
+                            </div>
+                        </div>
+                    </motion.div>
                 ))}
             </div>
 
-            {/* Filter tabs */}
-            <div style={{ display: "flex", gap: 0, borderBottom: `1px solid ${C.border}`, marginBottom: 18 }}>
+            {/* ── Filter tabs ── */}
+            <div style={{ display: "flex", gap: 3, background: _darkMode ? "rgba(255,255,255,0.04)" : T.surfaceLow, borderRadius: 10, padding: 3, marginBottom: 24, width: "fit-content" }}>
                 {["All", "On Track", "At Risk", "Completed"].map(f => (
-                    <button key={f} onClick={() => setFilter(f)} style={{ padding: "7px 16px", background: "none", border: "none", borderBottom: filter === f ? `2px solid ${C.primary}` : "2px solid transparent", color: filter === f ? C.primary : C.textMuted, fontWeight: filter === f ? 700 : 500, fontSize: 13, cursor: "pointer", fontFamily: "inherit", marginBottom: -1 }}>{f}</button>
+                    <button key={f} onClick={() => setFilter(f)}
+                        style={{ padding: "6px 16px", borderRadius: 8, border: "none", background: filter === f ? (_darkMode ? C.primary : T.primary) : "transparent", color: filter === f ? "#fff" : (_darkMode ? C.textMuted : T.onSurfaceVar), fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{f}</button>
                 ))}
             </div>
 
-            {/* Plans table */}
-            <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, overflow: "hidden", boxShadow: C.shadow }}>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <thead>
-                        <tr style={{ background: C.tableHead }}>
-                            {["Employee", "Plan Name", "Milestones", "Progress", "Status", "Target Date", "Actions"].map(h => (
-                                <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>{h}</th>
-                            ))}
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {filtered.map((p, i) => (
-                            <tr key={p.id} style={{ background: i % 2 === 0 ? C.white : C.tableHead }}>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                                        {p.emp ? <Avatar name={p.emp.name} size={28} /> : <div style={{ width: 28, height: 28, borderRadius: 7, background: C.border }} />}
-                                        <div>
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{p.emp?.name || "Unassigned"}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{p.emp?.dept || "—"}</div>
-                                        </div>
-                                    </div>
-                                </td>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                                    <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{p.name}</div>
-                                    <div style={{ fontSize: 11, color: C.textMuted, marginTop: 2, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.description}</div>
-                                </td>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, color: C.text, whiteSpace: "nowrap" }}>
-                                    <span style={{ fontWeight: 700 }}>{p.completed}</span><span style={{ color: C.textMuted }}>/{p.milestones.length}</span>
-                                </td>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}`, minWidth: 120 }}>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                        <div style={{ flex: 1, height: 6, background: C.borderLight, borderRadius: 3, overflow: "hidden" }}>
-                                            <div style={{ height: "100%", width: `${p.progress}%`, background: p.progress >= 100 ? C.success : C.primary, borderRadius: 3, transition: "width 0.4s" }} />
-                                        </div>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: C.text, minWidth: 32 }}>{p.progress}%</span>
-                                    </div>
-                                </td>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                                    <Badge label={p.status} variant={statusVariant(p.status)} />
-                                </td>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 12, color: C.textMid, whiteSpace: "nowrap" }}>{p.due}</td>
-                                <td style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                                    <div style={{ display: "flex", gap: 6 }}>
-                                        <Btn variant="primary" size="sm" onClick={() => setViewPlan(p.id)}>View</Btn>
-                                        <Btn variant="ghost" size="sm" onClick={() => openEdit(p)}><Icon n="edit" size={12} />Edit</Btn>
-                                        <Btn variant="ghost" size="sm" onClick={() => handleDeletePlan(p.id)} style={{ color: C.danger }}><Icon n="trash" size={12} /></Btn>
-                                    </div>
-                                </td>
+            {/* ── Plans Table ── */}
+            <div style={{ ...dpCardStyle, overflow: "hidden", marginBottom: 32 }}>
+                <div style={{ padding: "20px 24px", borderBottom: `1px solid ${T.outlineVar}20` }}>
+                    <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Active Growth Roadmaps</span>
+                </div>
+                <div style={{ overflowX: "auto" }}>
+                    <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                        <thead>
+                            <tr style={{ background: _darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow + "80" }}>
+                                {["Employee", "Plan Name", "Milestones", "Progress", "Status", "Target Date", ""].map((h, hi) => (
+                                    <th key={h} style={{ padding: "14px 24px", textAlign: hi === 6 ? "right" : "left", fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "1px", whiteSpace: "nowrap" }}>{h}</th>
+                                ))}
                             </tr>
+                        </thead>
+                        <tbody>
+                            {filtered.map((p, i) => (
+                                <motion.tr key={p.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.04 }}
+                                    whileHover={{ backgroundColor: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50" }}
+                                    style={{ borderBottom: `1px solid ${T.outlineVar}20` }}>
+                                    <td style={{ padding: "16px 24px" }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                                            {p.emp ? <Avatar name={p.emp.name} size={36} /> : <div style={{ width: 36, height: 36, borderRadius: 10, background: _darkMode ? C.border : T.surfaceHigh }} />}
+                                            <div>
+                                                <div style={{ fontWeight: 700, fontSize: 13.5, color: _darkMode ? C.text : T.onSurface }}>{p.emp?.name || "Unassigned"}</div>
+                                                <div style={{ fontSize: 11, color: T.onSurfaceVar, marginTop: 2 }}>{p.emp?.dept || "—"}</div>
+                                            </div>
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: "16px 24px" }}>
+                                        <div style={{ fontSize: 13.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{p.name}</div>
+                                        <div style={{ fontSize: 11, color: T.onSurfaceVar, marginTop: 2, maxWidth: 220, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.description}</div>
+                                    </td>
+                                    <td style={{ padding: "16px 24px", whiteSpace: "nowrap" }}>
+                                        <span style={{ fontSize: 13.5, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>{p.completed}</span>
+                                        <span style={{ fontSize: 13.5, color: T.outline }}>/{p.milestones.length}</span>
+                                    </td>
+                                    <td style={{ padding: "16px 24px", minWidth: 130 }}>
+                                        <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                            <div style={{ flex: 1, height: 6, background: _darkMode ? "rgba(255,255,255,0.08)" : T.surfaceHigh, borderRadius: 3, overflow: "hidden" }}>
+                                                <div style={{ height: "100%", width: `${p.progress}%`, background: p.progress >= 100 ? "#16a34a" : (_darkMode ? C.primary : T.primary), borderRadius: 3, transition: "width 0.4s" }} />
+                                            </div>
+                                            <span style={{ fontSize: 12, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, minWidth: 36 }}>{p.progress}%</span>
+                                        </div>
+                                    </td>
+                                    <td style={{ padding: "16px 24px" }}>
+                                        <Badge label={p.status} variant={statusVariant(p.status)} />
+                                    </td>
+                                    <td style={{ padding: "16px 24px", fontSize: 13, color: T.onSurfaceVar, fontWeight: 500, whiteSpace: "nowrap" }}>{p.due}</td>
+                                    <td style={{ padding: "16px 24px", textAlign: "right" }}>
+                                        <div style={{ display: "flex", gap: 6, justifyContent: "flex-end" }}>
+                                            <motion.button whileHover={{ backgroundColor: _darkMode ? C.primary : T.primary, color: "#fff" }} onClick={() => setViewPlan(p.id)}
+                                                style={{ padding: "5px 14px", borderRadius: 8, border: `1px solid ${_darkMode ? C.primary : T.primary}`, background: "transparent", color: _darkMode ? C.primary : T.primary, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>View</motion.button>
+                                            <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} onClick={() => openEdit(p)}
+                                                style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                                <Lucide.Pencil size={14} color={T.onSurfaceVar} />
+                                            </motion.button>
+                                            <motion.button whileHover={{ backgroundColor: "#fef2f2" }} onClick={() => handleDeletePlan(p.id)}
+                                                style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                                <Lucide.Trash2 size={14} color="#ef4444" />
+                                            </motion.button>
+                                        </div>
+                                    </td>
+                                </motion.tr>
+                            ))}
+                            {filtered.length === 0 && (
+                                <tr><td colSpan={7} style={{ padding: "40px 24px", textAlign: "center", color: T.outline, fontSize: 14 }}>No plans found. Click "New Plan" to get started.</td></tr>
+                            )}
+                        </tbody>
+                    </table>
+                </div>
+                <div style={{ padding: "14px 24px", background: _darkMode ? "rgba(255,255,255,0.02)" : T.surfaceLow + "50", borderTop: `1px solid ${T.outlineVar}20` }}>
+                    <span style={{ fontSize: 11, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.8px" }}>Showing {filtered.length} of {planData.length} plans</span>
+                </div>
+            </div>
+
+            {/* ── Bottom: Progress Distribution + AI Insight ── */}
+            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr", gap: 32, marginBottom: 32 }}>
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.2 }}
+                    style={{ ...dpCardStyle, padding: "32px" }}>
+                    <div style={{ marginBottom: 24 }}>
+                        <div style={{ fontSize: 19, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface }}>Plan Progress</div>
+                        <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginTop: 4 }}>Milestone completion across active development plans</div>
+                    </div>
+                    <div style={{ height: 128, display: "flex", alignItems: "flex-end", gap: 16 }}>
+                        {planData.slice(0, 5).map((p, i) => {
+                            const fillH = p.progress;
+                            const barColor = p.status === "Completed" ? "#16a34a" : p.status === "At Risk" ? T.tertiary : (_darkMode ? C.primary : T.primary);
+                            return (
+                                <motion.div key={p.id} style={{ flex: 1, background: barColor + "18", borderRadius: "6px 6px 0 0", height: "100%", position: "relative", overflow: "hidden" }} whileHover="hovered">
+                                    <motion.div initial={{ height: 0 }} animate={{ height: `${fillH}%` }}
+                                        variants={{ hovered: { height: `${Math.min(fillH + 8, 100)}%` } }}
+                                        transition={{ duration: 0.4, delay: 0.2 + i * 0.07, ease: "easeOut" }}
+                                        style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: barColor, borderRadius: "6px 6px 0 0" }} />
+                                </motion.div>
+                            );
+                        })}
+                    </div>
+                    <div style={{ display: "flex", gap: 16, marginTop: 16 }}>
+                        {planData.slice(0, 5).map(p => (
+                            <div key={p.id} style={{ flex: 1, textAlign: "center", fontSize: 10, fontWeight: 700, color: T.outline, textTransform: "uppercase", letterSpacing: "0.5px", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{p.emp?.name?.split(" ")[0] || "—"}</div>
                         ))}
-                        {filtered.length === 0 && (
-                            <tr><td colSpan={7} style={{ padding: "32px 16px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No plans found. Click "New Plan" to get started.</td></tr>
-                        )}
-                    </tbody>
-                </table>
+                    </div>
+                </motion.div>
+
+                <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.28 }}
+                    style={{ background: _darkMode ? "rgba(255,255,255,0.06)" : "rgba(255,255,255,0.8)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: 16, border: "1px solid rgba(255,255,255,0.25)", boxShadow: "0 8px 32px rgba(0,0,0,0.12)", padding: "32px", position: "relative", overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                    <div style={{ position: "absolute", top: 0, right: 0, padding: 16, opacity: 0.10, pointerEvents: "none" }}>
+                        <Lucide.Sparkles size={64} color={_darkMode ? "#fff" : T.onSurface} />
+                    </div>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                        <Lucide.Zap size={18} color={_darkMode ? C.primary : T.primary} />
+                        <span style={{ fontSize: 11, fontWeight: 800, textTransform: "uppercase", letterSpacing: "1px", color: _darkMode ? C.primary : T.primary }}>Nexis AI Insight</span>
+                    </div>
+                    <div style={{ fontSize: 20, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: _darkMode ? C.text : T.onSurface, marginBottom: 16, letterSpacing: "-0.3px" }}>Plan Health</div>
+                    <p style={{ fontSize: 13.5, color: T.onSurfaceVar, lineHeight: 1.7, margin: 0, flex: 1 }}>
+                        <strong style={{ color: _darkMode ? C.text : T.onSurface }}>{atRiskCount} plan{atRiskCount !== 1 ? "s" : ""}</strong> {atRiskCount !== 1 ? "are" : "is"} at risk of missing target dates. Review milestones and consider adjusting timelines or adding support resources.
+                    </p>
+                    <motion.button whileHover={{ opacity: 0.88 }} whileTap={{ scale: 0.97 }}
+                        style={{ marginTop: 24, width: "100%", padding: "13px 0", borderRadius: 10, border: "none", background: T.inverseS, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit" }}>
+                        View At-Risk Plans
+                    </motion.button>
+                </motion.div>
             </div>
 
             {/* View Plan Modal */}
@@ -15118,7 +16820,7 @@ const TalentDNAPage = () => {
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: C.text, margin: 0 }}>Team Readiness</h1>
                     <p style={{ fontSize: 13, color: C.textMuted, margin: "4px 0 0" }}>How ready each person is — based on skills, attendance, and role fit</p>
                 </div>
-                <Btn variant="outline" onClick={handleExport}><Icon n="export" size={13} />Export CSV</Btn>
+                <Btn variant="primary" onClick={handleExport}><Icon n="export" size={13} color="#fff" />Export CSV</Btn>
             </div>
             <div style={{ display: "flex", gap: 20 }}>
                 <div style={{ width: 280, flexShrink: 0 }}>
@@ -16156,6 +17858,8 @@ const INTEGRATION_LOGOS = {
 
 const IntegrationsPage = () => {
     const [activeGroup, setActiveGroup] = useState("All");
+    const currentUser = React.useContext(UserCtx);
+    const canConnectProviders = hasCapability(currentUser, "connectPayrollProvider");
     const { connectedPayrollId, setConnectedPayrollId } = React.useContext(PayrollIntegrationCtx);
     const [connectingItem, setConnectingItem] = useState(null);
     const [authMethod, setAuthMethod] = useState(null);
@@ -16245,7 +17949,9 @@ const IntegrationsPage = () => {
                     return (
                         <IntegrationCard key={item.id} item={item} isConnected={isConnected} isPayroll={isPayroll}
                             isThisPayrollConnected={isThisPayrollConnected}
-                            onConnect={() => openConnect(item)} onDisconnect={() => handleDisconnect(item)} C={C} />
+                            onConnect={canConnectProviders ? () => openConnect(item) : null}
+                            onDisconnect={canConnectProviders ? () => handleDisconnect(item) : null}
+                            C={C} />
                     );
                 })}
             </div>
@@ -16404,7 +18110,13 @@ const IntegrationCard = ({ item, isConnected, isPayroll, isThisPayrollConnected,
 
             {/* Action footer */}
             <div style={{ padding: "10px 16px", borderTop: `1px solid ${_darkMode ? C.border : T.outlineVar + "25"}`, background: _darkMode ? C.bg + "80" : T.surfaceLow + "80" }}>
-                {isConnected ? (
+                {!onConnect && !onDisconnect ? (
+                    /* View-only state — role lacks connect permission */
+                    <div style={{ textAlign: "center", padding: "6px 0", fontSize: 12, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500, display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
+                        <Lucide.Lock size={11} color={_darkMode ? C.textMuted : T.outline} strokeWidth={2} />
+                        {isConnected ? "Connected · View Only" : "View Only — Contact Admin to connect"}
+                    </div>
+                ) : isConnected ? (
                     <div style={{ display: "flex", gap: 7 }}>
                         <button style={{ flex: 1, padding: "8px", borderRadius: 8, border: `1px solid ${T.outlineVar}40`, background: _darkMode ? C.white : "#fff", color: _darkMode ? C.textMid : T.onSurface, fontWeight: 600, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>Manage</button>
                         <button onClick={onDisconnect} title="Disconnect" style={{ width: 34, height: 34, borderRadius: 8, border: `1px solid ${T.outlineVar}40`, background: _darkMode ? C.white : "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
@@ -16422,7 +18134,14 @@ const IntegrationCard = ({ item, isConnected, isPayroll, isThisPayrollConnected,
 };
 /* ─── PAGE: JOB FAMILIES ─────────────────────────────────────── */
 const JobFamiliesPage = () => {
-    const { jobFamilies, setJobFamilies, employees } = React.useContext(DataCtx);
+    const { jobFamilies, setJobFamilies, employees, companyConfig, setCompanyConfig } = React.useContext(DataCtx);
+    const [showDeptModal, setShowDeptModal] = useState(false);
+    const [newDeptName, setNewDeptName] = useState("");
+    const [newDeptParent, setNewDeptParent] = useState("");
+    const [newDeptColor, setNewDeptColor] = useState("#6366F1");
+    const [newDeptLocation, setNewDeptLocation] = useState("");
+    const [newDeptCountry, setNewDeptCountry] = useState("Sri Lanka");
+    const [newDeptEntityId, setNewDeptEntityId] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editingFamily, setEditingFamily] = useState(null);
     const [viewingFamily, setViewingFamily] = useState(null);
@@ -16433,8 +18152,44 @@ const JobFamiliesPage = () => {
     const [modalRoleInput, setModalRoleInput] = useState({});
     const [modalExpandedRole, setModalExpandedRole] = useState({});
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design"];
-    const DEPT_COLORS = { Engineering: "#6366F1", "HR & Admin": "#10B981", DevOps: "#8B5CF6", Sales: "#F59E0B", Product: "#3B82F6", QA: "#EF4444", Finance: "#059669", Operations: "#64748B", Design: "#EC4899" };
+    const configDepts = companyConfig?.departments?.map(d => d.name) || [];
+    const liveDepts = employees.map(e => e.dept).filter(Boolean);
+    const DEPTS = [...new Set([...configDepts, ...liveDepts])].length > 0
+        ? [...new Set([...configDepts, ...liveDepts])]
+        : ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design"];
+
+    const DEPT_COLORS = React.useMemo(() => {
+        const base = { Engineering: "#6366F1", "HR & Admin": "#10B981", DevOps: "#8B5CF6", Sales: "#F59E0B", Product: "#3B82F6", QA: "#EF4444", Finance: "#059669", Operations: "#64748B", Design: "#EC4899" };
+        const fromConfig = (companyConfig?.departments || []).reduce((acc, d) => {
+            if (d.color) acc[d.name] = d.color;
+            return acc;
+        }, {});
+        return { ...base, ...fromConfig };
+    }, [companyConfig]);
+
+    const handleSaveNewDept = () => {
+        const name = newDeptName.trim();
+        if (!name) return;
+        const newDept = {
+            id: `d_${Date.now()}`,
+            name,
+            parent: newDeptParent || null,
+            color: newDeptColor,
+            location: newDeptLocation || "HQ",
+            locations: [newDeptLocation || "HQ"],
+            country: newDeptCountry,
+            entityId: newDeptEntityId || null
+        };
+        const updatedDepts = [...(companyConfig?.departments || []), newDept];
+        const updatedConfig = { ...(companyConfig || {}), departments: updatedDepts };
+        setCompanyConfig(updatedConfig);
+        try { localStorage.setItem(LS_CONFIG_KEY, JSON.stringify(updatedConfig)); } catch (e) { }
+
+        setF("dept", name);
+        setNewDeptName(""); setNewDeptParent(""); setNewDeptColor("#6366F1");
+        setNewDeptLocation(""); setNewDeptCountry("Sri Lanka"); setNewDeptEntityId("");
+        setShowDeptModal(false);
+    };
 
     React.useEffect(() => {
         if (!openMenuId) return;
@@ -16778,9 +18533,15 @@ const JobFamiliesPage = () => {
                                                 </div>
                                                 <div>
                                                     <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Department</label>
-                                                    <select value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
-                                                        {DEPTS.map(d => <option key={d}>{d}</option>)}
-                                                    </select>
+                                                    <div style={{ display: "flex", gap: 8 }}>
+                                                        <select value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ ...inpSt, cursor: "pointer", flex: 1 }}>
+                                                            {DEPTS.map(d => <option key={d}>{d}</option>)}
+                                                        </select>
+                                                        <button onClick={() => setShowDeptModal(true)}
+                                                            style={{ width: 38, height: 38, borderRadius: 9, border: "none", background: T.primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: `0 2px 8px ${T.primary}40` }}>
+                                                            <Lucide.Plus size={18} color="#fff" strokeWidth={3} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div>
@@ -16878,6 +18639,83 @@ const JobFamiliesPage = () => {
                                         {editingFamily ? <Lucide.Save size={14} color="#fff" strokeWidth={2} /> : <Lucide.Plus size={14} color="#fff" strokeWidth={2.5} />}
                                         {editingFamily ? "Save Changes" : "Create Job Family"}
                                     </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* ── Mini-Modal for Adding Department ── */}
+                <AnimatePresence>
+                    {showDeptModal && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                onClick={() => setShowDeptModal(false)}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 400, background: surf, borderRadius: 18, boxShadow: "0 20px 40px rgba(0,0,0,0.30)", overflow: "hidden" }}>
+                                <div style={{ padding: "16px 20px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                            <Lucide.GitBranch size={16} color={T.primary} strokeWidth={2} />
+                                        </div>
+                                        <div style={{ fontSize: 15, fontWeight: 800, color: txt }}>New Department</div>
+                                    </div>
+                                    <button onClick={() => setShowDeptModal(false)} style={{ border: "none", background: low, borderRadius: "50%", width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Lucide.X size={14} color={muted} />
+                                    </button>
+                                </div>
+                                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Department Name <span style={{ color: "#ef4444" }}>*</span></label>
+                                        <input autoFocus placeholder="e.g. Growth & Marketing" value={newDeptName} onChange={e => setNewDeptName(e.target.value)} style={inpSt} />
+                                    </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Location</label>
+                                            <input placeholder="e.g. HQ, London" value={newDeptLocation} onChange={e => setNewDeptLocation(e.target.value)} style={inpSt} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Country</label>
+                                            <select value={newDeptCountry} onChange={e => setNewDeptCountry(e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                                {["Sri Lanka", "India", "United Kingdom", "United States", "Singapore", "Australia", "Germany"].map(c => <option key={c}>{c}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Organization <span style={{ fontSize: 11, fontWeight: 400 }}>(optional)</span></label>
+                                        <select value={newDeptEntityId} onChange={e => setNewDeptEntityId(e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                            <option value="">— No organization —</option>
+                                            {(companyConfig?.entities || []).map(ent => <option key={ent.id} value={ent.id}>{ent.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Parent Department <span style={{ fontSize: 11, fontWeight: 400 }}>(optional)</span></label>
+                                        <select value={newDeptParent} onChange={e => setNewDeptParent(e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                            <option value="">— None (Top Level) —</option>
+                                            {DEPTS.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Color Theme</label>
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                            {["#6366F1", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4", "#64748B"].map(c => (
+                                                <motion.button key={c} onClick={() => setNewDeptColor(c)}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: newDeptColor === c ? `3px solid ${txt}` : "2px solid transparent", cursor: "pointer", padding: 0, transition: "transform 0.1s" }} />
+                                            ))}
+                                            <div style={{ position: "relative", width: 28, height: 28, borderRadius: "50%", overflow: "hidden", border: !["#6366F1", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4", "#64748B"].includes(newDeptColor) ? `3px solid ${txt}` : `1px solid ${bdrSm}` }}>
+                                                <input type="color" value={newDeptColor} onChange={e => setNewDeptColor(e.target.value)} style={{ position: "absolute", inset: -5, width: 40, height: 40, cursor: "pointer" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+                                        <button onClick={() => setShowDeptModal(false)} style={{ padding: "8px 16px", borderRadius: 9, border: `1px solid ${bdrSm}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                                        <button onClick={handleSaveNewDept} disabled={!newDeptName.trim()}
+                                            style={{ padding: "8px 20px", borderRadius: 9, border: "none", background: T.primary, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: !newDeptName.trim() ? 0.5 : 1 }}>
+                                            Save Department
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         </div>
@@ -17897,7 +19735,7 @@ const EmployeeSkillsPage = ({ empRecord, setEmpRecord }) => {
                             <div style={{ display: "flex", gap: 10 }}>
                                 <button onClick={() => setAddingSkill(false)} style={{ flex: 1, padding: "10px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Cancel</button>
                                 <motion.button whileHover={{ scale: newSkillName ? 1.01 : 1 }} whileTap={{ scale: newSkillName ? 0.98 : 1 }} onClick={handleAddSkill} disabled={!newSkillName}
-                                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: newSkillName ? C.primary : C.border, color: "#fff", fontSize: 13, fontWeight: 700, cursor: newSkillName ? "pointer" : "not-allowed", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 7 }}>
+                                    style={{ flex: 2, padding: "10px", borderRadius: 9, border: "none", background: newSkillName ? C.mainGradient : C.border, color: "#fff", fontSize: 13, fontWeight: 700, cursor: newSkillName ? "pointer" : "not-allowed", fontFamily: "inherit", display: "flex", alignItems: "center", justifyContent: "center", gap: 7, boxShadow: newSkillName ? `0 4px 12px ${C.primary}30` : "none" }}>
                                     <Icon n="plus" size={13} color="#fff" />Add to Profile
                                 </motion.button>
                             </div>
@@ -18310,6 +20148,7 @@ const EmployeeDocumentsPage = ({ user }) => {
 /* ─── FULL EMPLOYEE PROFILE PAGE ────────────────────────────── */
 const FullEmployeeProfile = () => {
     const { employees, selectedEmpId, navigate, leaveRequests, reviews, goals, recognitions } = React.useContext(DataCtx);
+    const currentUser = React.useContext(UserCtx);
     const emp = (employees || []).find(e => e.id === selectedEmpId);
     if (!emp) return <div style={{ padding: 40, textAlign: "center" }}><Btn onClick={() => navigate("people_Directory")}><Icon n="arrow-left" size={13} />Back to People</Btn><p style={{ marginTop: 20 }}>Employee not found.</p></div>;
 
@@ -18323,7 +20162,23 @@ const FullEmployeeProfile = () => {
     const myGoals = (goals || []).filter(g => g.empId === emp.id);
     const myRecognitions = (recognitions || []).filter(r => r.empId === emp.id);
 
-    const TABS = [
+    // ── Profile tab security matrix ──────────────────────────────
+    // Tab visibility: super_admin/hr roles see all; dept_manager/team_lead see overview only;
+    // employee sees own overview + documents only.
+    const role = currentUser?.role;
+    const isViewingOwn = currentUser?.email === emp.email || currentUser?.name === emp.name;
+    const isHRRole = ["super_admin", "head_of_hr", "hr_manager", "hr_admin"].includes(role);
+    const TAB_VISIBILITY = {
+        overview: true,
+        history: isHRRole,
+        leave: isHRRole || isViewingOwn,
+        performance: isHRRole || role === "dept_manager",
+        skills: isHRRole || role === "dept_manager" || role === "team_lead",
+        documents: isHRRole || isViewingOwn,
+    };
+    const canManageProfile = isHRRole; // Only HR roles see the Manage dropdown
+
+    const ALL_TABS = [
         { key: "overview", label: "Overview", icon: "user" },
         { key: "history", label: "History", icon: "clock" },
         { key: "leave", label: "Leave", icon: "calendar" },
@@ -18331,6 +20186,7 @@ const FullEmployeeProfile = () => {
         { key: "skills", label: "Skills", icon: "star" },
         { key: "documents", label: "Documents", icon: "invoices" },
     ];
+    const TABS = ALL_TABS.filter(t => TAB_VISIBILITY[t.key]);
 
     const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
     const cardHeaderStyle = { padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface };
@@ -18373,12 +20229,12 @@ const FullEmployeeProfile = () => {
                                 <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{emp.id} · {emp.email} · {emp.type || "Full-time"}</div>
                             </div>
                         </div>
-                        {/* Manage button */}
+                        {/* Manage button — HR roles only */}
                         <div style={{ position: "relative", paddingTop: 44 }}>
-                            <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowActions(!showActions)}
+                            {canManageProfile && <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowActions(!showActions)}
                                 style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 9, border: "none", background: primaryColor, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 2px 10px ${primaryColor}40` }}>
                                 Manage <Lucide.ChevronDown size={13} color="#fff" strokeWidth={2.5} />
-                            </motion.button>
+                            </motion.button>}
                             <AnimatePresence>
                                 {showActions && (
                                     <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
