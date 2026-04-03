@@ -354,7 +354,8 @@ export default function PayrollPage({ C, employees = [], pageKey = "payroll", on
     const map = {
       payroll: "overview", payroll_Overview: "overview", payroll_Salaries: "salaries",
       payroll_Payslips: "payslips", "payroll_Tax_Tables": "compliance",
-      payroll_Sync_History: "history", payroll_Settings: "settings"
+      payroll_Sync_History: "history", payroll_Settings: "settings",
+      payroll_integrations: "overview"
     };
     if (map[pageKey]) setSubPage(map[pageKey]);
   }, [pageKey]);
@@ -394,18 +395,21 @@ export default function PayrollPage({ C, employees = [], pageKey = "payroll", on
     return (
       <div style={{ display: "flex", flexDirection: "column", flex: 1, overflow: "hidden" }}>
         <div style={{ flex: 1, overflowY: "auto", padding: "28px 28px" }}>
-          {/* Always-visible salary table */}
-          <StandaloneSalaryTable C={C} data={allPayrollData} onViewPayslip={setPayslipEmp} deptCountries={deptCountries} />
+          {pageKey !== "payroll_integrations" && (
+            <StandaloneSalaryTable C={C} data={allPayrollData} onViewPayslip={setPayslipEmp} deptCountries={deptCountries} />
+          )}
 
           {/* Connect a provider section */}
-          <div style={{ marginTop: 32 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
-              <div style={{ flex: 1, height: 1, background: C.border }} />
-              <span style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Connect a Payroll Provider for automated tax &amp; compliance</span>
-              <div style={{ flex: 1, height: 1, background: C.border }} />
+          {pageKey === "payroll_integrations" && (
+            <div style={{ marginTop: 0 }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 18 }}>
+                <div style={{ flex: 1, height: 1, background: C.border }} />
+                <span style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", whiteSpace: "nowrap" }}>Connect a Payroll Provider for automated tax &amp; compliance</span>
+                <div style={{ flex: 1, height: 1, background: C.border }} />
+              </div>
+              <EmptyState C={C} onConnect={(id) => { const p = PROVIDERS.find(pr => pr.id === id); setConnectingId(id); setWizardStep(1); setApiKey(""); setConnError(""); setAuthMethod((p?.authMethods || ["oauth"])[0]); }} />
             </div>
-            <EmptyState C={C} onConnect={(id) => { const p = PROVIDERS.find(pr => pr.id === id); setConnectingId(id); setWizardStep(1); setApiKey(""); setConnError(""); setAuthMethod((p?.authMethods || ["oauth"])[0]); }} />
-          </div>
+          )}
         </div>
 
         <AnimatePresence>
@@ -789,137 +793,188 @@ function StandaloneSalaryTable({ C, data, onViewPayslip, inConnectedMode, deptCo
     return matchCountry && matchSearch;
   });
 
+  const totals = React.useMemo(() => {
+    let gross = 0;
+    let net = 0;
+    let empDeductions = 0;
+    filtered.forEach(e => {
+      gross += e.calc.gross || 0;
+      net += e.calc.netPay || 0;
+      empDeductions += e.calc.totalDeductionsEmp || 0;
+    });
+    const currency = filtered[0]?.calc?.currency || "LKR";
+    return { gross, net, empDeductions, currency };
+  }, [filtered]);
+
   const handleExportAll = () => {
     exportToCSV(filtered.map(buildPayrollRow), `payroll-export-march2026.csv`);
   };
 
-  const wrapStyle = inConnectedMode
-    ? { padding: "22px 28px", overflowY: "auto", flex: 1 }
-    : {};
-
-  const hasDeptCountries = Object.keys(deptCountries).length > 0;
+  const wrapStyle = { padding: inConnectedMode ? "22px 28px" : "32px", overflowY: "auto", flex: 1, background: C.bg };
+  const cardStyle = { background: C.white, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
 
   return (
     <div style={wrapStyle}>
       {/* Manual payroll modal */}
       {payrollEmp && <ManualPayrollModal C={C} emp={payrollEmp} onClose={() => setPayrollEmp(null)} />}
 
-      {/* Header */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: hasDeptCountries && !inConnectedMode ? 14 : 16 }}>
+      {/* ── Page Header ── */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 32 }}>
         <div>
-          <h1 style={{ fontSize: inConnectedMode ? 20 : 18, fontWeight: 800, color: C.text, margin: "0 0 3px", letterSpacing: "-0.3px" }}>
-            Employee Salaries — March 2026
+          <h1 style={{ fontSize: 30, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+            Payroll Dashboard
           </h1>
-          <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>
-            {data.length} employees · Gross &amp; net calculated per department compliance country
+          <p style={{ fontSize: 14, color: C.textMuted, margin: "8px 0 0" }}>
+            {data.length} employees · Real-time salary calculations for March 2026
           </p>
         </div>
-        <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleExportAll}
-          style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-          <Lucide.Download size={13} />Export All CSV
-        </motion.button>
+        <div style={{ display: "flex", gap: 12 }}>
+          <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.96 }} onClick={handleExportAll}
+            style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: `linear-gradient(to right, ${C.primary}, #2563eb)`, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+            <Lucide.Download size={16} color="#fff" />
+            Export Report
+          </motion.button>
+        </div>
       </div>
 
-      {/* Dept countries panel — manual mode only */}
-      {hasDeptCountries && !inConnectedMode && (
-        <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 11, padding: "12px 16px", marginBottom: 16, boxShadow: C.shadow }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 9 }}>
-            Department Compliance Countries
+      {/* ── Metric Cards — 4 columns ── */}
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 24, marginBottom: 32 }}>
+        {/* Total Employees */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0 }} style={cardStyle}>
+          <div style={{ padding: "24px" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: C.textMid, marginBottom: 16 }}>Total Employees</p>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 38, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.text, lineHeight: 1 }}>{filtered.length}</span>
+              <div style={{ background: C.primaryLight, borderRadius: 6, padding: "4px 6px", display: "flex", alignItems: "center" }}>
+                <Lucide.Users size={16} color={C.primary} />
+              </div>
+            </div>
           </div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: 7 }}>
-            {Object.entries(deptCountries).map(([dept, country]) => {
-              const code = toCountryCode(country);
-              return (
-                <span key={dept} style={{ display: "flex", alignItems: "center", gap: 5, padding: "4px 10px", borderRadius: 20, background: C.bg, border: `1px solid ${C.border}`, fontSize: 12, color: C.textMid, fontWeight: 500 }}>
-                  <span style={{ fontWeight: 700, color: C.text }}>{dept}</span>
-                  <span style={{ color: C.textMuted }}>·</span>
-                  <span>{COUNTRY_FLAGS[code] || "🌐"} {country}</span>
-                  <span style={{ fontSize: 10.5, color: C.textMuted, fontStyle: "italic" }}>{COUNTRY_REGIMES[code]}</span>
-                </span>
-              );
-            })}
-          </div>
-        </div>
-      )}
+        </motion.div>
 
-      {/* Filters */}
-      <div style={{ display: "flex", gap: 10, marginBottom: 14, alignItems: "center" }}>
-        <div style={{ position: "relative", flex: 1, maxWidth: 280 }}>
-          <Lucide.Search size={13} color={C.textMuted} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)" }} />
-          <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search by name, ID, department…"
-            style={{ width: "100%", padding: "8px 12px 8px 30px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 12.5, outline: "none", background: C.bg, color: C.text, fontFamily: "inherit", boxSizing: "border-box" }} />
-        </div>
-        <div style={{ display: "flex", gap: 0, border: `1px solid ${C.border}`, borderRadius: 9, overflow: "hidden" }}>
-          {filterButtons.map(([key, label]) => (
-            <button key={key} onClick={() => setFilter(key)}
-              style={{ padding: "7px 14px", background: filter === key ? C.primary : C.white, border: "none", color: filter === key ? "#fff" : C.textMid, fontWeight: filter === key ? 700 : 500, fontSize: 12.5, cursor: "pointer", fontFamily: "inherit" }}>{label}</button>
-          ))}
-        </div>
-        <span style={{ fontSize: 12, color: C.textMuted }}>{filtered.length} of {data.length}</span>
+        {/* Total Gross Pay */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.07 }} style={cardStyle}>
+          <div style={{ padding: "24px" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: C.textMid, marginBottom: 16 }}>Total Gross Pay</p>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 32, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.text, lineHeight: 1.1 }}>{fmtNum(totals.gross, totals.currency)}</span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: C.primary, background: C.primaryLight, padding: "4px 10px", borderRadius: 999 }}>Gross</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Total Net Pay */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.14 }} style={cardStyle}>
+          <div style={{ padding: "24px" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: C.textMid, marginBottom: 16 }}>Total Net Pay</p>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 32, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.success, lineHeight: 1.1 }}>{fmtNum(totals.net, totals.currency)}</span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: C.success, background: C.successBg, padding: "4px 10px", borderRadius: 999 }}>Actual</span>
+            </div>
+          </div>
+        </motion.div>
+
+        {/* Total Deductions */}
+        <motion.div initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.21 }} style={cardStyle}>
+          <div style={{ padding: "24px" }}>
+            <p style={{ fontSize: 11, fontWeight: 700, textTransform: "uppercase", letterSpacing: "1.2px", color: C.textMid, marginBottom: 16 }}>Total Deductions</p>
+            <div style={{ display: "flex", alignItems: "flex-end", justifyContent: "space-between" }}>
+              <span style={{ fontSize: 32, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.danger, lineHeight: 1.1 }}>{fmtNum(totals.empDeductions, totals.currency)}</span>
+              <span style={{ fontSize: 11.5, fontWeight: 700, color: C.danger, background: C.dangerBg, padding: "4px 10px", borderRadius: 999 }}>Taxes/Fees</span>
+            </div>
+          </div>
+        </motion.div>
       </div>
 
-      {/* Table */}
-      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 13, overflow: "hidden", boxShadow: C.shadow }}>
+      {/* ── Salary Table ── */}
+      <div style={{ ...cardStyle, overflow: "hidden", marginBottom: 32 }}>
+        {/* Table header bar (search + filters) */}
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.text }}>Employee Payroll Log</span>
+          <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+            <div style={{ display: "flex", gap: 6, border: `1px solid ${C.border}`, borderRadius: 8, padding: 3, background: C.bg }}>
+              {filterButtons.map(([key, label]) => (
+                <button key={key} onClick={() => setFilter(key)}
+                  style={{ padding: "6px 12px", background: filter === key ? C.white : "transparent", border: "none", borderRadius: 6, color: filter === key ? C.text : C.textMid, fontWeight: filter === key ? 700 : 500, fontSize: 12, cursor: "pointer", fontFamily: "inherit", boxShadow: filter === key ? "0 1px 3px rgba(0,0,0,0.06)" : "none" }}>
+                  {label}
+                </button>
+              ))}
+            </div>
+            <div style={{ position: "relative" }}>
+              <Lucide.Search size={14} color={C.textMuted} style={{ position: "absolute", left: 10, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
+              <input
+                placeholder="Search employees..."
+                value={search}
+                onChange={e => setSearch(e.target.value)}
+                style={{ paddingLeft: 34, paddingRight: 12, height: 36, border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, fontFamily: "inherit", outline: "none", background: C.bg, color: C.text, width: 220 }}
+              />
+            </div>
+          </div>
+        </div>
+
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: C.tableHead }}>
-              {["Employee", "Country / Regime", "Basic Salary", "Gross Pay", "Deductions", "Net Pay", ""].map(h => (
-                <th key={h} style={{ padding: "10px 14px", textAlign: "left", fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>{h}</th>
+              {["Employee", "Country & Regime", "Basic Salary", "Gross Pay", "Deductions", "Net Pay", "Actions"].map(h => (
+                <th key={h} style={{ padding: "14px 24px", textAlign: "left", fontSize: 11, fontWeight: 800, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${C.border}`, whiteSpace: "nowrap" }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {filtered.length === 0 && (
               <tr>
-                <td colSpan={7} style={{ padding: "28px 14px", textAlign: "center", color: C.textMuted, fontSize: 13 }}>No employees match your filter.</td>
+                <td colSpan={7} style={{ padding: "32px 24px", textAlign: "center", color: C.textMuted, fontSize: 14 }}>No employees match your filter.</td>
               </tr>
             )}
             {filtered.map((emp, i) => {
               const c = emp.calc;
+              const isManual = COUNTRY_REGIMES[emp.country] === undefined;
               return (
                 <motion.tr key={emp.id} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: i * 0.02 }}
-                  style={{ background: i % 2 === 0 ? C.white : C.tableHead, cursor: "pointer" }}
+                  style={{ cursor: "pointer", transition: "background 0.2s" }}
                   onMouseEnter={e => e.currentTarget.style.background = C.navHover}
-                  onMouseLeave={e => e.currentTarget.style.background = i % 2 === 0 ? C.white : C.tableHead}
+                  onMouseLeave={e => e.currentTarget.style.background = "transparent"}
                   onClick={() => setPayrollEmp(emp)}>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}` }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
-                      <div style={{ width: 32, height: 32, borderRadius: 9, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, fontWeight: 800, color: C.primary, flexShrink: 0 }}>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                      <div style={{ width: 36, height: 36, borderRadius: 10, background: C.primaryLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12, fontWeight: 800, color: C.primary, flexShrink: 0 }}>
                         {emp.name?.split(" ").map(w => w[0]).join("").slice(0, 2)}
                       </div>
                       <div>
-                        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{emp.name}</div>
-                        <div style={{ fontSize: 11, color: C.textMuted }}>{emp.id} · {emp.dept}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: C.text }}>{emp.name}</div>
+                        <div style={{ fontSize: 12, color: C.textMuted, marginTop: 2 }}>{emp.id} · {emp.dept}</div>
                       </div>
                     </div>
                   </td>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}` }}>
-                    <div>
-                      <div style={{ fontSize: 12 }}>{COUNTRY_FLAGS[emp.country] || "🌐"} {COUNTRY_LABELS[emp.country] || emp.country}</div>
-                      <div style={{ fontSize: 10.5, color: C.textMuted, marginTop: 1 }}>{COUNTRY_REGIMES[emp.country] || "Manual"}</div>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}` }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                      <span style={{ fontSize: 13 }}>{COUNTRY_FLAGS[emp.country] || "🌐"}</span>
+                      <span style={{ fontSize: 11.5, fontWeight: 700, padding: "4px 8px", borderRadius: 6, background: isManual ? C.warningBg : C.infoBg, color: isManual ? C.warning : C.info }}>
+                        {isManual ? "Manual" : COUNTRY_REGIMES[emp.country]}
+                      </span>
                     </div>
                   </td>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 600, color: C.text }}>{fmtNum(c.baseSalary, c.currency)}</td>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 600, color: C.text }}>{fmtNum(c.gross, c.currency)}</td>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 600, color: C.danger }}>−{fmtNum(c.totalDeductionsEmp, c.currency)}</td>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 13, fontWeight: 800, color: C.success }}>{fmtNum(c.netPay, c.currency)}</td>
-                  <td style={{ padding: "11px 14px", borderBottom: `1px solid ${C.borderLight}` }}>
-                    <div style={{ display: "flex", gap: 6 }}>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 14, fontWeight: 600, color: C.text }}>{fmtNum(c.baseSalary, c.currency)}</td>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 14, fontWeight: 600, color: C.text }}>{fmtNum(c.gross, c.currency)}</td>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 14, fontWeight: 600, color: C.danger }}>−{fmtNum(c.totalDeductionsEmp, c.currency)}</td>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 15, fontWeight: 800, color: C.success }}>{fmtNum(c.netPay, c.currency)}</td>
+                  <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}` }}>
+                    <div style={{ display: "flex", gap: 8 }}>
                       {!inConnectedMode && (
                         <button onClick={e => { e.stopPropagation(); setPayrollEmp(emp); }}
-                          style={{ padding: "4px 10px", borderRadius: 7, border: `1px solid ${C.primaryMid}`, background: C.primaryLight, color: C.primary, fontSize: 11, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
-                          Run Payroll
+                          style={{ padding: "6px 14px", borderRadius: 8, border: "none", background: C.primaryLight, color: C.primary, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", whiteSpace: "nowrap" }}>
+                          Run
                         </button>
                       )}
                       {inConnectedMode && (
                         <button onClick={e => { e.stopPropagation(); onViewPayslip && onViewPayslip(emp); }}
-                          style={{ padding: "4px 10px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.textMid, fontSize: 11, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
+                          style={{ padding: "6px 14px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.bg, color: C.textMid, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
                           View
                         </button>
                       )}
                       <button onClick={e => { e.stopPropagation(); exportToCSV([buildPayrollRow(emp)], `payslip-${emp.id}-mar2026.csv`); }}
-                        style={{ padding: "4px 8px", borderRadius: 7, border: `1px solid ${C.border}`, background: C.bg, color: C.textMuted, fontSize: 11, cursor: "pointer", display: "flex", alignItems: "center", gap: 4, fontFamily: "inherit" }}>
-                        <Lucide.Download size={11} />
+                        style={{ padding: "6px 10px", borderRadius: 8, border: `1px solid ${C.border}`, background: C.bg, color: C.textMuted, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "inherit" }}>
+                        <Lucide.Download size={14} />
                       </button>
                     </div>
                   </td>
@@ -936,24 +991,24 @@ function StandaloneSalaryTable({ C, data, onViewPayslip, inConnectedMode, deptCo
 /* ─ Empty state / provider picker ───────────────────────────── */
 function EmptyState({ C, onConnect }) {
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto" }}>
-      <div style={{ maxWidth: 700, margin: "0 auto 20px", padding: "14px 18px", background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: C.shadow }}>
-        <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>How it works</div>
-        <div style={{ display: "flex", alignItems: "center", gap: 10, flexWrap: "wrap" }}>
+    <div style={{ width: "100%" }}>
+      <div style={{ width: "100%", margin: "0 auto 24px", padding: "16px 20px", background: C.white, border: `1px solid ${C.border}`, borderRadius: 12, boxShadow: C.shadow }}>
+        <div style={{ fontSize: 11, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>How it works</div>
+        <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "nowrap", overflowX: "auto" }}>
           {[{ icon: Lucide.Users, title: "Selfvora", sub: "Employee data, hours, leave" }, null,
             { icon: Lucide.Calculator, title: "Payroll Provider", sub: "Tax calc, net pay, compliance" }, null,
             { icon: Lucide.Receipt, title: "Back to Selfvora", sub: "Payslips, pay history" }].map((item, i) =>
             item === null
-              ? <Lucide.ArrowRight key={i} size={14} color={C.textMuted} />
-              : <div key={i} style={{ display: "flex", alignItems: "center", gap: 8, padding: "8px 12px", background: C.bg, borderRadius: 9, border: `1px solid ${C.border}` }}>
-                  <item.icon size={14} color={C.textMid} />
-                  <div><div style={{ fontSize: 12, fontWeight: 700, color: C.text }}>{item.title}</div><div style={{ fontSize: 11, color: C.textMuted }}>{item.sub}</div></div>
+              ? <Lucide.ArrowRight key={i} size={16} color={C.textMuted} style={{ flexShrink: 0 }} />
+              : <div key={i} style={{ flex: 1, minWidth: 200, display: "flex", alignItems: "center", gap: 10, padding: "12px 14px", background: C.bg, borderRadius: 10, border: `1px solid ${C.border}` }}>
+                  <item.icon size={16} color={C.textMid} strokeWidth={2.5} />
+                  <div><div style={{ fontSize: 12.5, fontWeight: 700, color: C.text }}>{item.title}</div><div style={{ fontSize: 11.5, color: C.textMuted }}>{item.sub}</div></div>
                 </div>
           )}
         </div>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(360px, 1fr))", gap: 16 }}>
         {PROVIDERS.map((p, i) => (
           <ProviderCard key={p.id} C={C} p={p} i={i} onConnect={onConnect} />
         ))}
@@ -1157,11 +1212,15 @@ function OverviewSub({ C, provider, lastSync, payrollData, syncing, syncPct, syn
   const slData = payrollData.filter(e => e.country === "LK");
   const ukData = payrollData.filter(e => e.country === "GB");
   return (
-    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 20 }}>
+    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, background: C.bg }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Payroll Overview — March 2026</h1>
-          <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Last synced {lastSync} · via {provider?.name} API</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+            Payroll Overview
+          </h1>
+          <p style={{ fontSize: 14, color: C.textMuted, margin: "8px 0 0" }}>
+            Last synced {lastSync} · via {provider?.name} API
+          </p>
         </div>
         <motion.button whileHover={!syncing ? { scale: 1.01 } : {}} whileTap={!syncing ? { scale: 0.98 } : {}}
           onClick={onSync} disabled={syncing}
@@ -1211,7 +1270,7 @@ function OverviewSub({ C, provider, lastSync, payrollData, syncing, syncPct, syn
           </div>
         ))}
       </div>
-      <div style={{ marginTop: 14, padding: "11px 16px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 11, display: "flex", gap: 8 }}>
+      <div style={{ marginTop: 14, padding: "11px 16px", background: C.white, border: `1px solid ${C.border}`, borderRadius: 11, display: "flex", gap: 8 }}>
         <Lucide.RefreshCw size={13} color={C.success} style={{ flexShrink: 0, marginTop: 1 }} />
         <span style={{ fontSize: 12.5, color: C.textMid, lineHeight: 1.5 }}>
           <strong>{provider?.name}</strong> auto-updates all tax tables when governments announce changes. Currently active: <strong>Sri Lanka FY 2025/26 · Budget Amendment No.2</strong> and <strong>UK 2025/26 Tax Year</strong>.
@@ -1231,11 +1290,15 @@ function PayslipsSub({ C, provider, payrollData, onOpen }) {
   };
 
   return (
-    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, background: C.bg }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Payslips — March 2026</h1>
-          <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Click any row to see the full salary breakdown</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+            Payslips — March 2026
+          </h1>
+          <p style={{ fontSize: 14, color: C.textMuted, margin: "8px 0 0" }}>
+            Click any row to see the full salary breakdown
+          </p>
         </div>
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }} onClick={handleExportAll}
           style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 16px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
@@ -1404,12 +1467,16 @@ function DrawerTotal({ label, amount, currency, C, negative }) {
 function ComplianceSub({ C, provider }) {
   const [country, setCountry] = useState("SL");
   return (
-    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
-      <div style={{ marginBottom: 16 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Tax & Compliance Tables</h1>
-        <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>Managed and auto-updated by {provider?.name}. You never update these manually.</p>
+    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, background: C.bg }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+          Tax & Compliance Tables
+        </h1>
+        <p style={{ fontSize: 14, color: C.textMuted, margin: "8px 0 0" }}>
+          Managed and auto-updated by {provider?.name}. You never update these manually.
+        </p>
       </div>
-      <div style={{ padding: "10px 14px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, marginBottom: 18, display: "flex", gap: 8 }}>
+      <div style={{ padding: "10px 14px", background: C.white, border: `1px solid ${C.border}`, borderRadius: 10, marginBottom: 18, display: "flex", gap: 8 }}>
         <Lucide.RefreshCw size={13} color={C.success} style={{ flexShrink: 0, marginTop: 1 }} />
         <span style={{ fontSize: 12.5, color: C.textMid, lineHeight: 1.5 }}>{provider?.name} pushes updated compliance data when governments publish budget amendments. HR Admin receives an in-app alert.</span>
       </div>
@@ -1429,7 +1496,7 @@ function ComplianceSub({ C, provider }) {
           <TaxCard title="APIT Income Tax Slabs" version="Budget Amend. No.2" C={C}>
             {SL.apit.map(row => <TaxRow key={row.range} label={`LKR ${row.range}`} value={row.rate === 0 ? "Exempt" : `${row.rate}%`} C={C} highlight={row.rate > 24} />)}
           </TaxCard>
-          <div style={{ gridColumn: "1 / -1", padding: "11px 14px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, display: "flex", gap: 8 }}>
+          <div style={{ gridColumn: "1 / -1", padding: "11px 14px", background: C.white, border: `1px solid ${C.border}`, borderRadius: 10, display: "flex", gap: 8 }}>
             <Lucide.Clock size={13} color={C.textMuted} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontSize: 12.5, color: C.textMid }}>Last updated: {SL.updated} — {SL.version}. Next review expected April 2026.</span>
           </div>
@@ -1446,7 +1513,7 @@ function ComplianceSub({ C, provider }) {
           <TaxCard title="National Minimum Wage" version={UK.version} C={C}>
             {[["National Living Wage (21+)", `£${UK.nmw}/hr`]].map(([l, v]) => <TaxRow key={l} label={l} value={v} C={C} />)}
           </TaxCard>
-          <div style={{ padding: "11px 14px", background: C.bg, border: `1px solid ${C.border}`, borderRadius: 10, display: "flex", gap: 8, alignItems: "flex-start" }}>
+          <div style={{ padding: "11px 14px", background: C.white, border: `1px solid ${C.border}`, borderRadius: 10, display: "flex", gap: 8, alignItems: "flex-start" }}>
             <Lucide.Clock size={13} color={C.textMuted} style={{ flexShrink: 0, marginTop: 1 }} />
             <span style={{ fontSize: 12.5, color: C.textMid }}>Last updated: {UK.updated} — {UK.version}.</span>
           </div>
@@ -1483,43 +1550,55 @@ function TaxRow({ label, value, note, C, highlight }) {
 /* ─ Sync History ─────────────────────────────────────────────── */
 function HistorySub({ C, syncLog }) {
   return (
-    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
+    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, background: C.bg }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 24 }}>
         <div>
-          <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Sync History</h1>
-          <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>{syncLog.length} sync events logged</p>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+            Sync History
+          </h1>
+          <p style={{ fontSize: 14, color: C.textMuted, margin: "8px 0 0" }}>
+            {syncLog.length} sync events logged
+          </p>
         </div>
         <motion.button whileHover={{ scale: 1.01 }} whileTap={{ scale: 0.98 }}
           onClick={() => exportToCSV(syncLog.map(s => ({ ...s, note: s.note || "" })), "sync-history.csv")}
-          style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>
-          <Lucide.Download size={13} />Export
+          style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 12, border: "none", background: `linear-gradient(to right, ${C.primary}, #2563eb)`, color: "#fff", fontWeight: 700, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: `0 4px 14px ${C.primary}50` }}>
+          <Lucide.Download size={16} color="#fff" />
+          Export Report
         </motion.button>
       </div>
-      <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 13, overflow: "hidden", boxShadow: C.shadow }}>
+
+      <div style={{ background: C.white, borderRadius: 16, border: `1px solid ${C.border}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+        <div style={{ padding: "20px 24px", borderBottom: `1px solid ${C.borderLight}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+          <span style={{ fontSize: 17, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.text }}>Sync Events Log</span>
+        </div>
         <table style={{ width: "100%", borderCollapse: "collapse" }}>
           <thead>
             <tr style={{ background: C.tableHead }}>
               {["Timestamp", "Trigger", "Records", "Duration", "Status", "Notes"].map(h => (
-                <th key={h} style={{ padding: "10px 16px", textAlign: "left", fontSize: 10.5, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${C.border}` }}>{h}</th>
+                <th key={h} style={{ padding: "14px 24px", textAlign: "left", fontSize: 11, fontWeight: 800, color: C.textMid, textTransform: "uppercase", letterSpacing: "0.8px", borderBottom: `1px solid ${C.border}` }}>{h}</th>
               ))}
             </tr>
           </thead>
           <tbody>
             {syncLog.map((s, i) => (
-              <tr key={s.id} style={{ background: i % 2 === 0 ? C.white : C.tableHead }}>
-                <td style={{ padding: "11px 16px", fontSize: 12, fontFamily: "monospace", color: C.textMid, borderBottom: `1px solid ${C.borderLight}` }}>{s.ts}</td>
-                <td style={{ padding: "11px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                  <span style={{ padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.trigger === "Manual" ? C.primaryLight : C.bg, color: s.trigger === "Manual" ? C.primary : C.textMid, border: `1px solid ${s.trigger === "Manual" ? C.primaryMid : C.border}` }}>{s.trigger}</span>
+              <motion.tr key={s.id} 
+                style={{ cursor: "default", transition: "background 0.2s" }}
+                onMouseEnter={e => e.currentTarget.style.background = C.navHover}
+                onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
+                <td style={{ padding: "16px 24px", fontSize: 13, fontFamily: "monospace", color: C.textMid, borderBottom: `1px solid ${C.borderLight}` }}>{s.ts}</td>
+                <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}` }}>
+                  <span style={{ padding: "4px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 700, background: s.trigger === "Manual" ? C.primaryLight : C.bg, color: s.trigger === "Manual" ? C.primary : C.textMid, border: `1px solid ${s.trigger === "Manual" ? C.primaryMid : C.border}` }}>{s.trigger}</span>
                 </td>
-                <td style={{ padding: "11px 16px", fontSize: 13, color: C.textMid, borderBottom: `1px solid ${C.borderLight}` }}>{s.records} employees</td>
-                <td style={{ padding: "11px 16px", fontSize: 13, color: C.textMuted, borderBottom: `1px solid ${C.borderLight}` }}>{s.dur}</td>
-                <td style={{ padding: "11px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-                  <span style={{ display: "inline-flex", alignItems: "center", gap: 4, padding: "2px 9px", borderRadius: 20, fontSize: 11, fontWeight: 700, background: s.status === "Success" ? C.successBg : C.warningBg, color: s.status === "Success" ? C.success : C.warning, border: `1px solid ${s.status === "Success" ? C.successBorder : C.warningBorder}` }}>
-                    {s.status === "Success" ? <Lucide.CheckCircle2 size={10} /> : <Lucide.AlertTriangle size={10} />}{s.status}
+                <td style={{ padding: "16px 24px", fontSize: 14, fontWeight: 600, color: C.text, borderBottom: `1px solid ${C.borderLight}` }}>{s.records} employees</td>
+                <td style={{ padding: "16px 24px", fontSize: 13, color: C.textMuted, borderBottom: `1px solid ${C.borderLight}` }}>{s.dur}</td>
+                <td style={{ padding: "16px 24px", borderBottom: `1px solid ${C.borderLight}` }}>
+                  <span style={{ display: "inline-flex", alignItems: "center", gap: 6, padding: "4px 8px", borderRadius: 6, fontSize: 11.5, fontWeight: 700, background: s.status === "Success" ? C.successBg : C.warningBg, color: s.status === "Success" ? C.success : C.warning, border: `1px solid ${s.status === "Success" ? C.successBorder : C.warningBorder}` }}>
+                    {s.status === "Success" ? <Lucide.CheckCircle2 size={13} /> : <Lucide.AlertTriangle size={13} />}{s.status}
                   </span>
                 </td>
-                <td style={{ padding: "11px 16px", fontSize: 12, color: C.textMuted, borderBottom: `1px solid ${C.borderLight}` }}>{s.note || "—"}</td>
-              </tr>
+                <td style={{ padding: "16px 24px", fontSize: 13, color: C.textMuted, borderBottom: `1px solid ${C.borderLight}` }}>{s.note || "—"}</td>
+              </motion.tr>
             ))}
           </tbody>
         </table>
@@ -1536,49 +1615,67 @@ function SettingsSub({ C, provider, lastSync, payrollData }) {
   const [notifyTaxUpd, setNotifyTaxUpd] = useState(true);
   const [saved, setSaved] = useState(false);
   return (
-    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1 }}>
-      <div style={{ marginBottom: 18 }}>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: C.text, margin: "0 0 3px" }}>Settings</h1>
-        <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>{provider?.name} connection configuration</p>
+    <div style={{ padding: "22px 28px", overflowY: "auto", flex: 1, background: C.bg }}>
+      <div style={{ marginBottom: 24 }}>
+        <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>
+          Settings
+        </h1>
+        <p style={{ fontSize: 14, color: C.textMuted, margin: "8px 0 0" }}>
+          {provider?.name} connection configuration
+        </p>
       </div>
-      <div style={{ maxWidth: 640, display: "flex", flexDirection: "column", gap: 14 }}>
-        <SettCard title="Connection" C={C}>
-          {[["Provider", provider?.name], ["API version", "v1.14"], ["Connected since", "11 Mar 2026"], ["Last sync", lastSync], ["Employees in scope", String(payrollData.length)]].map(([l, v]) => (
-            <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "8px 0", borderBottom: `1px solid ${C.borderLight}` }}>
-              <span style={{ fontSize: 13, color: C.textMuted }}>{l}</span>
-              <span style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{v}</span>
+
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 24, alignItems: "flex-start" }}>
+        
+        {/* Left Column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <SettCard title="Connection Settings" C={C}>
+            {[["Provider", provider?.name], ["API version", "v1.14"], ["Connected since", "11 Mar 2026"], ["Last sync", lastSync], ["Employees in scope", String(payrollData.length)]].map(([l, v]) => (
+              <div key={l} style={{ display: "flex", justifyContent: "space-between", padding: "12px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <span style={{ fontSize: 13.5, color: C.textMuted }}>{l}</span>
+                <span style={{ fontSize: 13.5, fontWeight: 600, color: C.text }}>{v}</span>
+              </div>
+            ))}
+            <div style={{ paddingTop: 16 }}>
+              <div style={{ fontSize: 12.5, fontWeight: 700, color: C.text, marginBottom: 8 }}>Restricted API Key (Decrypted)</div>
+              <div style={{ display: "flex", gap: 8 }}>
+                <input type="password" value="sk_live_••••••••••••••••" readOnly style={{ flex: 1, padding: "10px 14px", border: `1px solid ${C.border}`, borderRadius: 10, fontSize: 14, background: C.bg, color: C.textMuted, fontFamily: "monospace", outline: "none" }} />
+                <button style={{ padding: "10px 18px", borderRadius: 10, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Rotate Key</button>
+              </div>
             </div>
-          ))}
-          <div style={{ paddingTop: 10 }}>
-            <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>API Key</div>
-            <div style={{ display: "flex", gap: 8 }}>
-              <input type="password" value="sk_live_••••••••••••••••" readOnly style={{ flex: 1, padding: "8px 12px", border: `1px solid ${C.border}`, borderRadius: 9, fontSize: 13, background: C.bg, color: C.textMuted, fontFamily: "monospace", outline: "none" }} />
-              <button style={{ padding: "8px 14px", borderRadius: 9, border: `1px solid ${C.border}`, background: C.white, color: C.textMid, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Rotate</button>
-            </div>
+          </SettCard>
+        </div>
+
+        {/* Right Column */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 24 }}>
+          <SettCard title="Automated Sync Schedule" C={C}>
+            {[["daily_0700", "Daily at 07:00 AM"], ["daily_2200", "Daily at 10:00 PM"], ["weekly_mon", "Weekly — Monday 07:00 AM"], ["manual", "Manual only"]].map(([val, label]) => (
+              <label key={val} style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", borderRadius: 10, border: `1.5px solid ${schedule === val ? C.primary : C.border}`, background: schedule === val ? C.primaryLight : C.white, cursor: "pointer", marginBottom: 10, transition: "all 0.15s" }}>
+                <input type="radio" value={val} checked={schedule === val} onChange={() => setSchedule(val)} style={{ accentColor: C.primary, width: 16, height: 16 }} />
+                <span style={{ fontSize: 13.5, fontWeight: schedule === val ? 700 : 500, color: schedule === val ? C.primary : C.textMid }}>{label}</span>
+              </label>
+            ))}
+          </SettCard>
+
+          <SettCard title="Alerts & Notifications" C={C}>
+            {[["Sync completed successfully", notifySyncOk, setNotifySyncOk], ["Sync errors or compliance warnings", notifySyncErr, setNotifySyncErr], ["Tax table auto-updated", notifyTaxUpd, setNotifyTaxUpd]].map(([label, val, setter]) => (
+              <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${C.borderLight}` }}>
+                <span style={{ fontSize: 13.5, color: C.textMid }}>{label}</span>
+                <motion.div whileTap={{ scale: 0.95 }} onClick={() => setter(v => !v)}
+                  style={{ width: 44, height: 24, borderRadius: 12, background: val ? C.primary : C.border, display: "flex", alignItems: "center", padding: "0 3px", cursor: "pointer", transition: "background 0.2s", justifyContent: val ? "flex-end" : "flex-start" }}>
+                  <motion.div layout style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", boxShadow: "0 1px 2px rgba(0,0,0,0.1)" }} />
+                </motion.div>
+              </div>
+            ))}
+          </SettCard>
+
+          <div style={{ display: "flex", justifyContent: "flex-end", marginTop: 8 }}>
+            <PrimaryBtn C={C} onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2500); }}>
+              {saved ? "✓ Saved successfully" : "Save Changes"}
+            </PrimaryBtn>
           </div>
-        </SettCard>
-        <SettCard title="Sync Schedule" C={C}>
-          {[["daily_0700", "Daily at 07:00 AM"], ["daily_2200", "Daily at 10:00 PM"], ["weekly_mon", "Weekly — Monday 07:00 AM"], ["manual", "Manual only"]].map(([val, label]) => (
-            <label key={val} style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 9, border: `1.5px solid ${schedule === val ? C.primary : C.border}`, background: schedule === val ? C.primaryLight : C.white, cursor: "pointer", marginBottom: 7 }}>
-              <input type="radio" value={val} checked={schedule === val} onChange={() => setSchedule(val)} style={{ accentColor: C.primary }} />
-              <span style={{ fontSize: 13, fontWeight: schedule === val ? 700 : 500, color: schedule === val ? C.primary : C.textMid }}>{label}</span>
-            </label>
-          ))}
-        </SettCard>
-        <SettCard title="Notifications" C={C}>
-          {[["Sync completed", notifySyncOk, setNotifySyncOk], ["Sync errors or warnings", notifySyncErr, setNotifySyncErr], ["Tax table updated by provider", notifyTaxUpd, setNotifyTaxUpd]].map(([label, val, setter]) => (
-            <div key={label} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "9px 0", borderBottom: `1px solid ${C.borderLight}` }}>
-              <span style={{ fontSize: 13, color: C.textMid }}>{label}</span>
-              <motion.div whileTap={{ scale: 0.95 }} onClick={() => setter(v => !v)}
-                style={{ width: 40, height: 22, borderRadius: 11, background: val ? C.primary : C.border, display: "flex", alignItems: "center", padding: "0 2px", cursor: "pointer", transition: "background 0.2s", justifyContent: val ? "flex-end" : "flex-start" }}>
-                <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff" }} />
-              </motion.div>
-            </div>
-          ))}
-        </SettCard>
-        <PrimaryBtn C={C} onClick={() => { setSaved(true); setTimeout(() => setSaved(false), 2500); }}>
-          {saved ? "✓ Saved" : "Save Settings"}
-        </PrimaryBtn>
+        </div>
+
       </div>
     </div>
   );
@@ -1586,11 +1683,11 @@ function SettingsSub({ C, provider, lastSync, payrollData }) {
 
 function SettCard({ title, children, C }) {
   return (
-    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 13, overflow: "hidden", boxShadow: C.shadow }}>
-      <div style={{ padding: "12px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
-        <div style={{ fontSize: 13, fontWeight: 700, color: C.text }}>{title}</div>
+    <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+      <div style={{ padding: "16px 20px", borderBottom: `1px solid ${C.borderLight}` }}>
+        <div style={{ fontSize: 15, fontWeight: 800, fontFamily: "Manrope, sans-serif", color: C.text }}>{title}</div>
       </div>
-      <div style={{ padding: "14px 16px" }}>{children}</div>
+      <div style={{ padding: "18px 20px" }}>{children}</div>
     </div>
   );
 }
