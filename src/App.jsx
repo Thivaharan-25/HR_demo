@@ -2041,10 +2041,10 @@ const LandingNavbar = ({ onEnterApp, onScrollTo, onStartSetup }) => {
                             Sign In
                         </motion.button>
                         <motion.button
-                            whileHover={{ scale: 1.03 }}
+                            whileHover={{ scale: 1.03, boxShadow: "0 6px 20px rgba(99,102,241,0.45)" }}
                             whileTap={{ scale: 0.97 }}
                             onClick={onStartSetup}
-                            style={{ padding: "8px 22px", borderRadius: 9, border: "none", background: `${C.primary}`, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
+                            style={{ padding: "8px 22px", borderRadius: 9, border: "none", background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
                         >
                             Start Free Trial →
                         </motion.button>
@@ -15199,6 +15199,8 @@ const SkillDevelopmentPage = () => {
     const [selectedEmp, setSelectedEmp] = useState(null);
     const [showAddSkill, setShowAddSkill] = useState(false);
     const [search, setSearch] = useState("");
+    const [activeSkillTab, setActiveSkillTab] = React.useState("employees");
+    const [reqFilter, setReqFilter] = React.useState("pending");
 
     // New Add Skill Form State
     const [addForm, setAddForm] = useState({
@@ -15611,8 +15613,7 @@ const SkillDevelopmentPage = () => {
         );
     }
 
-    const [activeSkillTab, setActiveSkillTab] = React.useState("employees");
-    const [reqFilter, setReqFilter] = React.useState("pending");
+
     const pendingRequests = (skillRequests || []).filter(r => r.status === "pending");
     const filteredRequests = (skillRequests || []).filter(r => reqFilter === "all" || r.status === reqFilter);
 
@@ -21179,7 +21180,7 @@ const EmployeeApp = ({ user, onLogout, isDark, setIsDark, dataCtxValue }) => {
 
 export default function App() {
     const [isDark, setIsDark] = useState(() => localStorage.getItem("selfvora_dark") === "true");
-    const [themeKey, setThemeKey] = useState(() => localStorage.getItem("selfvora_theme") || "teal");
+    const [themeKey, setThemeKey] = useState(() => localStorage.getItem("selfvora_theme") || "blue");
     const [showLanding, setShowLanding] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
     const [showSetupWizard, setShowSetupWizard] = useState(false);
