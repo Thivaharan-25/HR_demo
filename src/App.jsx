@@ -15,101 +15,111 @@ import NexisAI from "@/components/NexisAI";
 
 /* ─── TOKENS ──────────────────────────────────────────────────── */
 const LIGHT_C = {
-    primary:        "#0d9488",
-    primaryHover:   "#0f766e",
-    primaryLight:   "#f0fdfa",
-    primaryMid:     "#99f6e4",
-    bg:             "#F4F7FB",
-    white:          "#FFFFFF",
-    sidebar:        "#FFFFFF",
-    border:         "#E2E8F0",
-    borderLight:    "#F0F4F8",
-    text:           "#0f172a",
-    textMid:        "#64748b",
-    textMuted:      "#94A3B8",
-    success:        "#10B981",
-    successBg:      "#ECFDF5",
-    successBorder:  "#A7F3D0",
-    warning:        "#B45309",
-    warningBg:      "#FFFBEB",
-    warningBorder:  "#FDE68A",
-    danger:         "#EF4444",
-    dangerBg:       "#FEF2F2",
-    dangerBorder:   "#FECACA",
-    info:           "#3B82F6",
-    infoBg:         "#EFF6FF",
-    infoBorder:     "#BFDBFE",
-    navActive:      "#f0fdfa",
-    navHover:       "#f8fffe",
-    tableHead:      "#F8FAFC",
-    tableRow:       "#FFFFFF",
-    shadow:         "0 4px 14px rgba(0,0,0,0.03)",
-    shadowMd:       "0 10px 30px rgba(0,0,0,0.04)",
-    shadowLg:       "0 20px 40px rgba(0,0,0,0.06)",
+    primary: "#0d9488",
+    primaryHover: "#0f766e",
+    primaryLight: "#f0fdfa",
+    primaryMid: "#99f6e4",
+    bg: "#F4F7FB",
+    white: "#FFFFFF",
+    sidebar: "#FFFFFF",
+    border: "#E2E8F0",
+    borderLight: "#F0F4F8",
+    text: "#0f172a",
+    textMid: "#64748b",
+    textMuted: "#94A3B8",
+    success: "#10B981",
+    successBg: "#ECFDF5",
+    successBorder: "#A7F3D0",
+    warning: "#B45309",
+    warningBg: "#FFFBEB",
+    warningBorder: "#FDE68A",
+    danger: "#EF4444",
+    dangerBg: "#FEF2F2",
+    dangerBorder: "#FECACA",
+    info: "#3B82F6",
+    infoBg: "#EFF6FF",
+    infoBorder: "#BFDBFE",
+    navActive: "#f0fdfa",
+    navHover: "#f8fffe",
+    tableHead: "#F8FAFC",
+    tableRow: "#FFFFFF",
+    shadow: "0 4px 14px rgba(0,0,0,0.03)",
+    shadowMd: "0 10px 30px rgba(0,0,0,0.04)",
+    shadowLg: "0 20px 40px rgba(0,0,0,0.06)",
 };
 
 const DARK_C = {
-    primary:        "#2dd4bf",
-    primaryHover:   "#0d9488",
-    primaryLight:   "rgba(45,212,191,0.15)",
-    primaryMid:     "rgba(45,212,191,0.30)",
-    bg:             "#06080F",
-    white:          "#101423",
-    sidebar:        "#0F1729",
-    border:         "#1E2840",
-    borderLight:    "#182035",
-    text:           "#F1F5F9",
-    textMid:        "#CBD5E1",
-    textMuted:      "#64748B",
-    success:        "#34D399",
-    successBg:      "rgba(52,211,153,0.10)",
-    successBorder:  "rgba(52,211,153,0.25)",
-    warning:        "#FBBF24",
-    warningBg:      "rgba(251,191,36,0.10)",
-    warningBorder:  "rgba(251,191,36,0.25)",
-    danger:         "#F87171",
-    dangerBg:       "rgba(248,113,113,0.10)",
-    dangerBorder:   "rgba(248,113,113,0.25)",
-    info:           "#60A5FA",
-    infoBg:         "rgba(96,165,250,0.10)",
-    infoBorder:     "rgba(96,165,250,0.25)",
-    navActive:      "rgba(45,212,191,0.18)",
-    navHover:       "#182035",
-    tableHead:      "#101423",
-    tableRow:       "#101423",
-    shadow:         "0 4px 20px rgba(0,0,0,0.35)",
-    shadowMd:       "0 12px 30px rgba(0,0,0,0.50)",
-    shadowLg:       "0 24px 50px rgba(0,0,0,0.70)",
+    primary: "#2dd4bf",
+    primaryHover: "#0d9488",
+    primaryLight: "rgba(45,212,191,0.15)",
+    primaryMid: "rgba(45,212,191,0.30)",
+    bg: "#06080F",
+    white: "#101423",
+    sidebar: "#0F1729",
+    border: "#1E2840",
+    borderLight: "#182035",
+    text: "#F1F5F9",
+    textMid: "#CBD5E1",
+    textMuted: "#64748B",
+    success: "#34D399",
+    successBg: "rgba(52,211,153,0.10)",
+    successBorder: "rgba(52,211,153,0.25)",
+    warning: "#FBBF24",
+    warningBg: "rgba(251,191,36,0.10)",
+    warningBorder: "rgba(251,191,36,0.25)",
+    danger: "#F87171",
+    dangerBg: "rgba(248,113,113,0.10)",
+    dangerBorder: "rgba(248,113,113,0.25)",
+    info: "#60A5FA",
+    infoBg: "rgba(96,165,250,0.10)",
+    infoBorder: "rgba(96,165,250,0.25)",
+    navActive: "rgba(45,212,191,0.18)",
+    navHover: "#182035",
+    tableHead: "#101423",
+    tableRow: "#101423",
+    shadow: "0 4px 20px rgba(0,0,0,0.35)",
+    shadowMd: "0 12px 30px rgba(0,0,0,0.50)",
+    shadowLg: "0 24px 50px rgba(0,0,0,0.70)",
 };
 
 // Global dark-mode + theme flags — mutated during App render, read by Proxy on every access
 let _darkMode = false;
-let _themeKey  = "teal";
+let _themeKey = "teal";
 
 // Per-theme primary color tokens (overlaid on top of LIGHT_C / DARK_C)
 const THEME_ACCENTS = {
-    teal:   { light: { primary: "#0d9488", primaryHover: "#0f766e", primaryLight: "#f0fdfa", primaryMid: "#99f6e4", navActive: "#f0fdfa" },
-               dark:  { primary: "#2dd4bf", primaryLight: "rgba(45,212,191,0.10)",  primaryMid: "rgba(45,212,191,0.25)",  navActive: "rgba(45,212,191,0.08)"  } },
-    indigo: { light: { primary: "#6366f1", primaryHover: "#4f46e5", primaryLight: "#eef2ff", primaryMid: "#c7d2fe", navActive: "#eef2ff" },
-               dark:  { primary: "#818cf8", primaryLight: "rgba(129,140,248,0.10)", primaryMid: "rgba(129,140,248,0.25)", navActive: "rgba(129,140,248,0.08)" } },
-    blue:   { light: { primary: "#3b82f6", primaryHover: "#2563eb", primaryLight: "#eff6ff", primaryMid: "#bfdbfe", navActive: "#eff6ff" },
-               dark:  { primary: "#60a5fa", primaryLight: "rgba(96,165,250,0.10)",  primaryMid: "rgba(96,165,250,0.25)",  navActive: "rgba(96,165,250,0.08)"  } },
-    purple: { light: { primary: "#8b5cf6", primaryHover: "#7c3aed", primaryLight: "#f5f3ff", primaryMid: "#ddd6fe", navActive: "#f5f3ff" },
-               dark:  { primary: "#a78bfa", primaryLight: "rgba(167,139,250,0.10)", primaryMid: "rgba(167,139,250,0.25)", navActive: "rgba(167,139,250,0.08)" } },
-    rose:   { light: { primary: "#f43f5e", primaryHover: "#e11d48", primaryLight: "#fff1f2", primaryMid: "#fecdd3", navActive: "#fff1f2" },
-               dark:  { primary: "#fb7185", primaryLight: "rgba(251,113,133,0.10)", primaryMid: "rgba(251,113,133,0.25)", navActive: "rgba(251,113,133,0.08)" } },
+    teal: {
+        light: { primary: "#0d9488", primaryHover: "#0f766e", primaryLight: "#f0fdfa", primaryMid: "#99f6e4", navActive: "#f0fdfa" },
+        dark: { primary: "#2dd4bf", primaryLight: "rgba(45,212,191,0.10)", primaryMid: "rgba(45,212,191,0.25)", navActive: "rgba(45,212,191,0.08)" }
+    },
+    indigo: {
+        light: { primary: "#6366f1", primaryHover: "#4f46e5", primaryLight: "#eef2ff", primaryMid: "#c7d2fe", navActive: "#eef2ff" },
+        dark: { primary: "#818cf8", primaryLight: "rgba(129,140,248,0.10)", primaryMid: "rgba(129,140,248,0.25)", navActive: "rgba(129,140,248,0.08)" }
+    },
+    blue: {
+        light: { primary: "#3b82f6", primaryHover: "#2563eb", primaryLight: "#eff6ff", primaryMid: "#bfdbfe", navActive: "#eff6ff" },
+        dark: { primary: "#60a5fa", primaryLight: "rgba(96,165,250,0.10)", primaryMid: "rgba(96,165,250,0.25)", navActive: "rgba(96,165,250,0.08)" }
+    },
+    purple: {
+        light: { primary: "#8b5cf6", primaryHover: "#7c3aed", primaryLight: "#f5f3ff", primaryMid: "#ddd6fe", navActive: "#f5f3ff" },
+        dark: { primary: "#a78bfa", primaryLight: "rgba(167,139,250,0.10)", primaryMid: "rgba(167,139,250,0.25)", navActive: "rgba(167,139,250,0.08)" }
+    },
+    rose: {
+        light: { primary: "#f43f5e", primaryHover: "#e11d48", primaryLight: "#fff1f2", primaryMid: "#fecdd3", navActive: "#fff1f2" },
+        dark: { primary: "#fb7185", primaryLight: "rgba(251,113,133,0.10)", primaryMid: "rgba(251,113,133,0.25)", navActive: "rgba(251,113,133,0.08)" }
+    },
 };
 
 const C = new Proxy({}, {
     get: (_, k) => {
-        const base   = (_darkMode ? DARK_C : LIGHT_C)[k];
+        const base = (_darkMode ? DARK_C : LIGHT_C)[k];
         const accent = THEME_ACCENTS[_themeKey]?.[_darkMode ? "dark" : "light"];
         return (accent && k in accent) ? accent[k] : base;
     }
 });
 
 // Theme context
-const ThemeCtx = React.createContext({ isDark: false, toggleTheme: () => {}, themeKey: "teal", setThemeKey: () => {} });
+const ThemeCtx = React.createContext({ isDark: false, toggleTheme: () => { }, themeKey: "teal", setThemeKey: () => { } });
 
 // Basic icons mapping
 const iconMap = {
@@ -187,8 +197,8 @@ const Icon = ({ n, size = 16, color = "currentColor", strokeWidth = 1.75, style 
    ─────────────────────────────────────────────────────────────── */
 const SelfvoraLogo = ({ size = 34 }) => {
     const blades = [
-        { angle: 0,   fill: "#0f4c3a" },
-        { angle: 60,  fill: "#0d9488" },
+        { angle: 0, fill: "#0f4c3a" },
+        { angle: 60, fill: "#0d9488" },
         { angle: 120, fill: "#0f4c3a" },
         { angle: 180, fill: "#0d9488" },
         { angle: 240, fill: "#0f4c3a" },
@@ -221,7 +231,7 @@ const SelfvoraLogo = ({ size = 34 }) => {
 };
 
 /* ─── TOAST CONTEXT ──────────────────────────────────────────── */
-const ToastCtx = React.createContext({ showToast: () => {} });
+const ToastCtx = React.createContext({ showToast: () => { } });
 const ToastProvider = ({ children }) => {
     const [toasts, setToasts] = React.useState([]);
     const idRef = React.useRef(0);
@@ -297,8 +307,8 @@ const Badge = ({ label, variant = "default" }) => {
     const map = {
         success: { bg: C.successBg, color: C.success, border: C.successBorder },
         warning: { bg: C.warningBg, color: C.warning, border: C.warningBorder },
-        danger:  { bg: C.dangerBg,  color: C.danger,  border: C.dangerBorder  },
-        info:    { bg: C.infoBg,    color: C.info,     border: C.infoBorder    },
+        danger: { bg: C.dangerBg, color: C.danger, border: C.dangerBorder },
+        info: { bg: C.infoBg, color: C.info, border: C.infoBorder },
         primary: { bg: C.primaryLight, color: C.primary, border: C.primaryMid },
         default: { bg: C.tableHead, color: C.textMid, border: C.border },
     };
@@ -402,7 +412,7 @@ const StatCard = ({ label, value, unit, sub, severity = "neutral", trend, trendV
     // Severity border hint (subtle, top edge only)
     const sevBorderColor = { critical: C.danger, warning: C.warning, positive: C.success, neutral: C.border }[severity] || C.border;
     const trendColor = isUp === true ? C.success : isUp === false ? C.danger : C.textMuted;
-    const trendBg   = isUp === true ? C.successBg : isUp === false ? C.dangerBg : C.tableHead;
+    const trendBg = isUp === true ? C.successBg : isUp === false ? C.dangerBg : C.tableHead;
 
     return (
         <div style={{
@@ -443,11 +453,11 @@ const TableHead = ({ cols, onSelectAll, allSelected }) => (
         <tr style={{ background: C.tableHead }}>
             {onSelectAll && (
                 <th style={{ padding: "10px 16px", width: 40, borderBottom: `1px solid ${C.border}` }}>
-                    <input 
-                        type="checkbox" 
-                        checked={allSelected} 
-                        onChange={onSelectAll} 
-                        style={{ width: 16, height: 16, cursor: "pointer", accentColor: C.primary }} 
+                    <input
+                        type="checkbox"
+                        checked={allSelected}
+                        onChange={onSelectAll}
+                        style={{ width: 16, height: 16, cursor: "pointer", accentColor: C.primary }}
                     />
                 </th>
             )}
@@ -581,25 +591,25 @@ const ALL_NAV_GROUPS = [
     {
         label: "MAIN MENU",
         items: [
-            { key: "dashboard",   label: "Dashboard",      icon: "LayoutDashboard", sub: null },
-            { key: "people",      label: "People",         icon: "Users",           sub: null },
-            { key: "time_leave",  label: "Time & Leave",   icon: "CalendarClock",   sub: null, badgeKey: "pendingLeaves" },
-            { key: "performance", label: "Performance",    icon: "TrendingUp",      sub: null },
-            { key: "skills",      label: "Skills & Talent",icon: "Sparkles",        sub: null },
-            { key: "payroll",     label: "Payroll",        icon: "DollarSign",      sub: null },
+            { key: "dashboard", label: "Dashboard", icon: "LayoutDashboard", sub: null },
+            { key: "people", label: "People", icon: "Users", sub: null },
+            { key: "time_leave", label: "Time & Leave", icon: "CalendarClock", sub: null, badgeKey: "pendingLeaves" },
+            { key: "performance", label: "Performance", icon: "TrendingUp", sub: null },
+            { key: "skills", label: "Skills & Talent", icon: "Sparkles", sub: null },
+            { key: "payroll", label: "Payroll", icon: "DollarSign", sub: null },
         ],
     },
     {
         label: "MANAGEMENT",
         items: [
-            { key: "reports",     label: "Reports",        icon: "BarChart2",       sub: null },
-            { key: "settings",    label: "Settings",       icon: "Settings",        sub: null },
+            { key: "reports", label: "Reports", icon: "BarChart2", sub: null },
+            { key: "settings", label: "Settings", icon: "Settings", sub: null },
         ],
     },
     {
         label: "AI",
         items: [
-            { key: "nexis_ai",    label: "Nexis AI",       icon: "BrainCircuit",    sub: null },
+            { key: "nexis_ai", label: "Nexis AI", icon: "BrainCircuit", sub: null },
         ],
     },
 ];
@@ -693,57 +703,72 @@ const INITIAL_SKILL_LIBRARY = [
 
 const INITIAL_EMPLOYEES = [
     // country: ISO 3166-1 alpha-2 | bankDetails: primary bank account
-    { id: "EMP001", name: "James Perera",    email: "james@company.com",   phone: "+94 771234567",  country: "LK", familyId: "jf1", level: "Staff Engineer",    dept: "Engineering", managerId: null,     type: "Full-time", startDate: "2022-01-15", status: "Active",   salary: 185000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "Node.js", "TypeScript", "AWS"],           rating: 4.5, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Colombo Fort",   accountNumber: "8001234567",           accountHolderName: "James Perera",    paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [
-        { date: "2022-01-15", type: "Joined", details: "Joined as Senior Engineer", user: "Admin", salary: 140000 },
-        { date: "2023-01-15", type: "Promotion", details: "Promoted to Lead Engineer", user: "Nimali Silva", salary: 160000 },
-        { date: "2024-03-01", type: "Promotion", details: "Promoted to Staff Engineer", user: "Nimali Silva", salary: 185000 },
-      ]
+    {
+        id: "EMP001", name: "James Perera", email: "james@company.com", phone: "+94 771234567", country: "LK", familyId: "jf1", level: "Staff Engineer", dept: "Engineering", managerId: null, type: "Full-time", startDate: "2022-01-15", status: "Active", salary: 185000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "Node.js", "TypeScript", "AWS"], rating: 4.5, bankDetails: { bankName: "Bank of Ceylon", branchName: "Colombo Fort", accountNumber: "8001234567", accountHolderName: "James Perera", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [
+            { date: "2022-01-15", type: "Joined", details: "Joined as Senior Engineer", user: "Admin", salary: 140000 },
+            { date: "2023-01-15", type: "Promotion", details: "Promoted to Lead Engineer", user: "Nimali Silva", salary: 160000 },
+            { date: "2024-03-01", type: "Promotion", details: "Promoted to Staff Engineer", user: "Nimali Silva", salary: 185000 },
+        ]
     },
-    { id: "EMP002", name: "Nimali Silva",    email: "nimali@company.com",  phone: "+94 772345678",  country: "LK", familyId: "jf4", level: "HR Manager",        dept: "HR & Admin",  managerId: null,     type: "Full-time", startDate: "2021-03-01", status: "Active",   salary: 165000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Recruitment", "Employee Relations", "Labour Law", "HRIS"],       rating: 4.7, bankDetails: { bankName: "People's Bank",        branchName: "Nugegoda",       accountNumber: "8002345678",           accountHolderName: "Nimali Silva",    paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [
-        { date: "2021-03-01", type: "Joined", details: "Joined as Lead HR", user: "Admin", salary: 145000 },
-        { date: "2022-06-01", type: "Role Change", details: "Promoted to HR Manager", user: "Admin", salary: 165000 },
-      ]
+    {
+        id: "EMP002", name: "Nimali Silva", email: "nimali@company.com", phone: "+94 772345678", country: "LK", familyId: "jf4", level: "HR Manager", dept: "HR & Admin", managerId: null, type: "Full-time", startDate: "2021-03-01", status: "Active", salary: 165000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Recruitment", "Employee Relations", "Labour Law", "HRIS"], rating: 4.7, bankDetails: { bankName: "People's Bank", branchName: "Nugegoda", accountNumber: "8002345678", accountHolderName: "Nimali Silva", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [
+            { date: "2021-03-01", type: "Joined", details: "Joined as Lead HR", user: "Admin", salary: 145000 },
+            { date: "2022-06-01", type: "Role Change", details: "Promoted to HR Manager", user: "Admin", salary: 165000 },
+        ]
     },
-    { id: "EMP003", name: "David Chen",      email: "david@company.com",   phone: "+94 773456789",  country: "LK", familyId: "jf2", level: "Senior PM",         dept: "Product",     managerId: null,     type: "Full-time", startDate: "2023-08-01", status: "Active",   salary: 175000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Product Strategy", "Roadmapping", "User Research", "Analytics"], rating: 4.2, bankDetails: { bankName: "Commercial Bank",      branchName: "Bambalapitiya", accountNumber: "8003456789",           accountHolderName: "David Chen",      paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2023-08-01", type: "Joined", details: "Joined as Senior PM", user: "Admin", salary: 175000 }]
+    {
+        id: "EMP003", name: "David Chen", email: "david@company.com", phone: "+94 773456789", country: "LK", familyId: "jf2", level: "Senior PM", dept: "Product", managerId: null, type: "Full-time", startDate: "2023-08-01", status: "Active", salary: 175000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Product Strategy", "Roadmapping", "User Research", "Analytics"], rating: 4.2, bankDetails: { bankName: "Commercial Bank", branchName: "Bambalapitiya", accountNumber: "8003456789", accountHolderName: "David Chen", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2023-08-01", type: "Joined", details: "Joined as Senior PM", user: "Admin", salary: 175000 }]
     },
-    { id: "EMP004", name: "Ayesha Farook",   email: "ayesha@company.com",  phone: "+94 774567890",  country: "LK", familyId: "jf8", level: "QA Engineer",       dept: "QA",          managerId: "EMP003", type: "Full-time", startDate: "2022-11-01", status: "On Leave", salary: 110000, leaveBalance: { annual: 8,  medical: 5, emergency: 3 }, skills: ["Manual Testing", "Selenium", "API Testing"],                    rating: 3.8, bankDetails: { bankName: "Hatton National Bank", branchName: "Dehiwala",       accountNumber: "8004567890",           accountHolderName: "Ayesha Farook",   paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2022-11-01", type: "Joined", details: "Joined as QA Engineer", user: "David Chen", salary: 110000 }]
+    {
+        id: "EMP004", name: "Ayesha Farook", email: "ayesha@company.com", phone: "+94 774567890", country: "LK", familyId: "jf8", level: "QA Engineer", dept: "QA", managerId: "EMP003", type: "Full-time", startDate: "2022-11-01", status: "On Leave", salary: 110000, leaveBalance: { annual: 8, medical: 5, emergency: 3 }, skills: ["Manual Testing", "Selenium", "API Testing"], rating: 3.8, bankDetails: { bankName: "Hatton National Bank", branchName: "Dehiwala", accountNumber: "8004567890", accountHolderName: "Ayesha Farook", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2022-11-01", type: "Joined", details: "Joined as QA Engineer", user: "David Chen", salary: 110000 }]
     },
-    { id: "EMP005", name: "Rayan Kumar",     email: "rayan@company.com",   phone: "+94 775678901",  country: "LK", familyId: "jf1", level: "Senior Engineer",   dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-02-01", status: "Active",   salary: 145000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["Node.js", "PostgreSQL", "Docker", "Redis"],                     rating: 4.0, bankDetails: { bankName: "Sampath Bank",         branchName: "Kandy Road",     accountNumber: "8005678901",           accountHolderName: "Rayan Kumar",     paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2024-02-01", type: "Joined", details: "Joined as Senior Engineer", user: "James Perera", salary: 145000 }]
+    {
+        id: "EMP005", name: "Rayan Kumar", email: "rayan@company.com", phone: "+94 775678901", country: "LK", familyId: "jf1", level: "Senior Engineer", dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-02-01", status: "Active", salary: 145000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["Node.js", "PostgreSQL", "Docker", "Redis"], rating: 4.0, bankDetails: { bankName: "Sampath Bank", branchName: "Kandy Road", accountNumber: "8005678901", accountHolderName: "Rayan Kumar", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2024-02-01", type: "Joined", details: "Joined as Senior Engineer", user: "James Perera", salary: 145000 }]
     },
-    { id: "EMP006", name: "Emma Thompson",   email: "emma@company.com",    phone: "+44 7891234567", country: "GB", familyId: "jf3", level: "Sales Manager",     dept: "Sales",       managerId: null,     type: "Full-time", startDate: "2020-06-15", status: "Active",   salary: 160000, leaveBalance: { annual: 16, medical: 7, emergency: 3 }, skills: ["Negotiation", "CRM", "Pipeline Management", "Presentation"],   rating: 4.4, bankDetails: { bankName: "Barclays",             branchName: "London City",    accountNumber: "GB29BARC20201530093459", accountHolderName: "Emma Thompson",   paymentMethod: "bank_transfer", currency: "GBP" },
-      history: [{ date: "2020-06-15", type: "Joined", details: "Joined as Sales Manager", user: "Admin", salary: 160000 }]
+    {
+        id: "EMP006", name: "Emma Thompson", email: "emma@company.com", phone: "+44 7891234567", country: "GB", familyId: "jf3", level: "Sales Manager", dept: "Sales", managerId: null, type: "Full-time", startDate: "2020-06-15", status: "Active", salary: 160000, leaveBalance: { annual: 16, medical: 7, emergency: 3 }, skills: ["Negotiation", "CRM", "Pipeline Management", "Presentation"], rating: 4.4, bankDetails: { bankName: "Barclays", branchName: "London City", accountNumber: "GB29BARC20201530093459", accountHolderName: "Emma Thompson", paymentMethod: "bank_transfer", currency: "GBP" },
+        history: [{ date: "2020-06-15", type: "Joined", details: "Joined as Sales Manager", user: "Admin", salary: 160000 }]
     },
-    { id: "EMP007", name: "Arjun Mehta",     email: "arjun@company.com",   phone: "+94 776789012",  country: "LK", familyId: "jf6", level: "Lead DevOps",       dept: "DevOps",      managerId: null,     type: "Full-time", startDate: "2023-09-01", status: "Active",   salary: 155000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"],           rating: 4.1, bankDetails: { bankName: "Commercial Bank",      branchName: "Kandy",          accountNumber: "8007890123",           accountHolderName: "Arjun Mehta",     paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2023-09-01", type: "Joined", details: "Joined as Lead DevOps", user: "Admin", salary: 155000 }]
+    {
+        id: "EMP007", name: "Arjun Mehta", email: "arjun@company.com", phone: "+94 776789012", country: "LK", familyId: "jf6", level: "Lead DevOps", dept: "DevOps", managerId: null, type: "Full-time", startDate: "2023-09-01", status: "Active", salary: 155000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["AWS", "Docker", "Kubernetes", "Terraform", "CI/CD"], rating: 4.1, bankDetails: { bankName: "Commercial Bank", branchName: "Kandy", accountNumber: "8007890123", accountHolderName: "Arjun Mehta", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2023-09-01", type: "Joined", details: "Joined as Lead DevOps", user: "Admin", salary: 155000 }]
     },
-    { id: "EMP008", name: "Kavya Pillai",    email: "kavya@company.com",   phone: "+94 777890123",  country: "LK", familyId: "jf4", level: "HR Executive",      dept: "HR & Admin",  managerId: "EMP002", type: "Full-time", startDate: "2023-05-15", status: "Active",   salary: 95000,  leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Recruitment", "HRIS", "Benefits Admin"],                        rating: 3.9, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Nawala",         accountNumber: "8008901234",           accountHolderName: "Kavya Pillai",    paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2023-05-15", type: "Joined", details: "Joined as HR Executive", user: "Nimali Silva", salary: 95000 }]
+    {
+        id: "EMP008", name: "Kavya Pillai", email: "kavya@company.com", phone: "+94 777890123", country: "LK", familyId: "jf4", level: "HR Executive", dept: "HR & Admin", managerId: "EMP002", type: "Full-time", startDate: "2023-05-15", status: "Active", salary: 95000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Recruitment", "HRIS", "Benefits Admin"], rating: 3.9, bankDetails: { bankName: "Bank of Ceylon", branchName: "Nawala", accountNumber: "8008901234", accountHolderName: "Kavya Pillai", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2023-05-15", type: "Joined", details: "Joined as HR Executive", user: "Nimali Silva", salary: 95000 }]
     },
-    { id: "EMP009", name: "Chamara Silva",   email: "chamara@company.com", phone: "+94 778901234",  country: "LK", familyId: "jf5", level: "Finance Manager",   dept: "Finance",     managerId: null,     type: "Full-time", startDate: "2021-08-01", status: "Active",   salary: 150000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Financial Modelling", "Excel", "Budgeting", "Tax Compliance"], rating: 4.3, bankDetails: { bankName: "People's Bank",        branchName: "Wellawatte",     accountNumber: "8009012345",           accountHolderName: "Chamara Silva",   paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2021-08-01", type: "Joined", details: "Joined as Finance Manager", user: "Admin", salary: 150000 }]
+    {
+        id: "EMP009", name: "Chamara Silva", email: "chamara@company.com", phone: "+94 778901234", country: "LK", familyId: "jf5", level: "Finance Manager", dept: "Finance", managerId: null, type: "Full-time", startDate: "2021-08-01", status: "Active", salary: 150000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Financial Modelling", "Excel", "Budgeting", "Tax Compliance"], rating: 4.3, bankDetails: { bankName: "People's Bank", branchName: "Wellawatte", accountNumber: "8009012345", accountHolderName: "Chamara Silva", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2021-08-01", type: "Joined", details: "Joined as Finance Manager", user: "Admin", salary: 150000 }]
     },
-    { id: "EMP010", name: "Priya Nair",      email: "priya@company.com",   phone: "+94 779012345",  country: "LK", familyId: "jf1", level: "Engineer",          dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-06-01", status: "Active",   salary: 105000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "CSS"],                                   rating: 3.5, bankDetails: { bankName: "Hatton National Bank", branchName: "Moratuwa",       accountNumber: "8010123456",           accountHolderName: "Priya Nair",      paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2024-06-01", type: "Joined", details: "Joined as Engineer", user: "James Perera", salary: 105000 }]
+    {
+        id: "EMP010", name: "Priya Nair", email: "priya@company.com", phone: "+94 779012345", country: "LK", familyId: "jf1", level: "Engineer", dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2024-06-01", status: "Active", salary: 105000, leaveBalance: { annual: 14, medical: 7, emergency: 3 }, skills: ["JavaScript", "React", "CSS"], rating: 3.5, bankDetails: { bankName: "Hatton National Bank", branchName: "Moratuwa", accountNumber: "8010123456", accountHolderName: "Priya Nair", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2024-06-01", type: "Joined", details: "Joined as Engineer", user: "James Perera", salary: 105000 }]
     },
-    { id: "EMP011", name: "Rohan Peiris",    email: "rohan@company.com",   phone: "+94 770123456",  country: "LK", familyId: "jf3", level: "Account Executive", dept: "Sales",       managerId: "EMP006", type: "Full-time", startDate: "2024-01-15", status: "Active",   salary: 95000,  leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["CRM", "Prospecting", "Presentation"],                           rating: 3.6, bankDetails: { bankName: "Sampath Bank",         branchName: "Nugegoda",       accountNumber: "8011234567",           accountHolderName: "Rohan Peiris",    paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2024-01-15", type: "Joined", details: "Joined as Account Executive", user: "Emma Thompson", salary: 95000 }]
+    {
+        id: "EMP011", name: "Rohan Peiris", email: "rohan@company.com", phone: "+94 770123456", country: "LK", familyId: "jf3", level: "Account Executive", dept: "Sales", managerId: "EMP006", type: "Full-time", startDate: "2024-01-15", status: "Active", salary: 95000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["CRM", "Prospecting", "Presentation"], rating: 3.6, bankDetails: { bankName: "Sampath Bank", branchName: "Nugegoda", accountNumber: "8011234567", accountHolderName: "Rohan Peiris", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2024-01-15", type: "Joined", details: "Joined as Account Executive", user: "Emma Thompson", salary: 95000 }]
     },
-    { id: "EMP012", name: "Tina Mendis",     email: "tina@company.com",    phone: "+94 771122334",  country: "LK", familyId: "jf7", level: "Senior Designer",   dept: "Design",      managerId: null,     type: "Full-time", startDate: "2022-04-01", status: "Active",   salary: 135000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Figma", "UI Design", "Prototyping", "Design Systems"],          rating: 4.6, bankDetails: { bankName: "Commercial Bank",      branchName: "Colombo 03",     accountNumber: "8012345678",           accountHolderName: "Tina Mendis",     paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2022-04-01", type: "Joined", details: "Joined as Senior Designer", user: "Admin", salary: 135000 }]
+    {
+        id: "EMP012", name: "Tina Mendis", email: "tina@company.com", phone: "+94 771122334", country: "LK", familyId: "jf7", level: "Senior Designer", dept: "Design", managerId: null, type: "Full-time", startDate: "2022-04-01", status: "Active", salary: 135000, leaveBalance: { annual: 12, medical: 7, emergency: 3 }, skills: ["Figma", "UI Design", "Prototyping", "Design Systems"], rating: 4.6, bankDetails: { bankName: "Commercial Bank", branchName: "Colombo 03", accountNumber: "8012345678", accountHolderName: "Tina Mendis", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2022-04-01", type: "Joined", details: "Joined as Senior Designer", user: "Admin", salary: 135000 }]
     },
-    { id: "EMP013", name: "Saman Wijesinghe",email: "saman@company.com",   phone: "+94 772233445",  country: "LK", familyId: "jf1", level: "Junior Engineer",   dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2025-11-01", status: "Active",   salary: 75000,  leaveBalance: { annual: 14, medical: 7, emergency: 2 }, skills: ["JavaScript", "HTML", "CSS"],                                    rating: 0,   bankDetails: { bankName: "People's Bank",        branchName: "Kelaniya",       accountNumber: "8013456789",           accountHolderName: "Saman Wijesinghe",paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2025-11-01", type: "Joined", details: "Joined as Junior Engineer", user: "James Perera", salary: 75000 }]
+    {
+        id: "EMP013", name: "Saman Wijesinghe", email: "saman@company.com", phone: "+94 772233445", country: "LK", familyId: "jf1", level: "Junior Engineer", dept: "Engineering", managerId: "EMP001", type: "Full-time", startDate: "2025-11-01", status: "Active", salary: 75000, leaveBalance: { annual: 14, medical: 7, emergency: 2 }, skills: ["JavaScript", "HTML", "CSS"], rating: 0, bankDetails: { bankName: "People's Bank", branchName: "Kelaniya", accountNumber: "8013456789", accountHolderName: "Saman Wijesinghe", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2025-11-01", type: "Joined", details: "Joined as Junior Engineer", user: "James Perera", salary: 75000 }]
     },
-    { id: "EMP014", name: "Dilani Fernando", email: "dilani@company.com",  phone: "+94 773344556",  country: "LK", familyId: "jf5", level: "Senior Analyst",    dept: "Finance",     managerId: "EMP009", type: "Full-time", startDate: "2023-02-01", status: "Active",   salary: 120000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Excel", "Accounting", "Budgeting"],                             rating: 4.0, bankDetails: { bankName: "Bank of Ceylon",       branchName: "Pettah",         accountNumber: "8014567890",           accountHolderName: "Dilani Fernando", paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2023-02-01", type: "Joined", details: "Joined as Senior Analyst", user: "Chamara Silva", salary: 120000 }]
+    {
+        id: "EMP014", name: "Dilani Fernando", email: "dilani@company.com", phone: "+94 773344556", country: "LK", familyId: "jf5", level: "Senior Analyst", dept: "Finance", managerId: "EMP009", type: "Full-time", startDate: "2023-02-01", status: "Active", salary: 120000, leaveBalance: { annual: 10, medical: 7, emergency: 3 }, skills: ["Excel", "Accounting", "Budgeting"], rating: 4.0, bankDetails: { bankName: "Bank of Ceylon", branchName: "Pettah", accountNumber: "8014567890", accountHolderName: "Dilani Fernando", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2023-02-01", type: "Joined", details: "Joined as Senior Analyst", user: "Chamara Silva", salary: 120000 }]
     },
-    { id: "EMP015", name: "Leila Hassan",    email: "leila@company.com",   phone: "+94 774455667",  country: "LK", familyId: "jf1", level: "Engineer",          dept: "Engineering", managerId: "EMP001", type: "Part-time", startDate: "2024-09-01", status: "Active",   salary: 85000,  leaveBalance: { annual: 7,  medical: 4, emergency: 2 }, skills: ["Python", "Django", "PostgreSQL"],                               rating: 3.7, bankDetails: { bankName: "Sampath Bank",         branchName: "Maharagama",     accountNumber: "8015678901",           accountHolderName: "Leila Hassan",    paymentMethod: "bank_transfer", currency: "LKR" },
-      history: [{ date: "2024-09-01", type: "Joined", details: "Joined as Engineer", user: "James Perera", salary: 85000 }]
+    {
+        id: "EMP015", name: "Leila Hassan", email: "leila@company.com", phone: "+94 774455667", country: "LK", familyId: "jf1", level: "Engineer", dept: "Engineering", managerId: "EMP001", type: "Part-time", startDate: "2024-09-01", status: "Active", salary: 85000, leaveBalance: { annual: 7, medical: 4, emergency: 2 }, skills: ["Python", "Django", "PostgreSQL"], rating: 3.7, bankDetails: { bankName: "Sampath Bank", branchName: "Maharagama", accountNumber: "8015678901", accountHolderName: "Leila Hassan", paymentMethod: "bank_transfer", currency: "LKR" },
+        history: [{ date: "2024-09-01", type: "Joined", details: "Joined as Engineer", user: "James Perera", salary: 85000 }]
     },
 ];
 
@@ -810,13 +835,13 @@ const INITIAL_ATTENDANCE = (() => {
  */
 const computeMonthlyAllowances = (emp) => {
     const items = [
-        { type: "transport",     label: "Transport Allowance", amount: 8000,                               taxable: false },
-        { type: "meal",          label: "Meal Allowance",      amount: 5000,                               taxable: false },
+        { type: "transport", label: "Transport Allowance", amount: 8000, taxable: false },
+        { type: "meal", label: "Meal Allowance", amount: 5000, taxable: false },
     ];
     if (["jf1", "jf2", "jf3"].includes(emp.familyId))
         items.push({ type: "housing", label: "Housing Allowance", amount: Math.round(emp.salary * 0.15), taxable: true });
     if (["jf1", "jf6"].includes(emp.familyId))
-        items.push({ type: "phone_internet", label: "Phone & Internet", amount: 3000,                     taxable: false });
+        items.push({ type: "phone_internet", label: "Phone & Internet", amount: 3000, taxable: false });
     return items;
 };
 
@@ -825,50 +850,50 @@ const computeMonthlyAllowances = (emp) => {
  * Sends: country, employment_type, gross_salary, allowances[], bank_details.
  */
 const buildPayrollApiPayload = (emp, payRecord) => ({
-    employee_id:      emp.id,
-    country:          emp.country,
-    employment_type:  emp.type,
-    gross_salary:     emp.salary,
-    currency:         emp.bankDetails?.currency || "LKR",
+    employee_id: emp.id,
+    country: emp.country,
+    employment_type: emp.type,
+    gross_salary: emp.salary,
+    currency: emp.bankDetails?.currency || "LKR",
     allowances: computeMonthlyAllowances(emp).map(a => ({
-        type:      a.type,
-        label:     a.label,
-        amount:    a.amount,
+        type: a.type,
+        label: a.label,
+        amount: a.amount,
         is_taxable: a.taxable,
         frequency: "monthly",
     })),
     bank_details: emp.bankDetails ? {
-        bank_name:            emp.bankDetails.bankName,
-        branch_name:          emp.bankDetails.branchName,
-        account_number:       emp.bankDetails.accountNumber,
-        account_holder_name:  emp.bankDetails.accountHolderName,
-        payment_method:       emp.bankDetails.paymentMethod,
-        currency:             emp.bankDetails.currency,
+        bank_name: emp.bankDetails.bankName,
+        branch_name: emp.bankDetails.branchName,
+        account_number: emp.bankDetails.accountNumber,
+        account_holder_name: emp.bankDetails.accountHolderName,
+        payment_method: emp.bankDetails.paymentMethod,
+        currency: emp.bankDetails.currency,
     } : null,
     pay_period: payRecord?.period || null,
-    net_pay:    payRecord?.netPay  || null,
+    net_pay: payRecord?.netPay || null,
 });
 
 const INITIAL_PAYROLL = INITIAL_EMPLOYEES.filter(e => e.status !== "Inactive").map(emp => {
-    const allowanceItems  = computeMonthlyAllowances(emp);
+    const allowanceItems = computeMonthlyAllowances(emp);
     const totalAllowances = allowanceItems.reduce((s, a) => s + a.amount, 0);
-    const deductions      = 0;
-    const tax             = Math.floor(emp.salary * 0.12);
+    const deductions = 0;
+    const tax = Math.floor(emp.salary * 0.12);
     return {
-        id:                `PAY-${emp.id}`,
-        empId:             emp.id,
-        empName:           emp.name,
-        dept:              emp.dept,
-        country:           emp.country,
-        currency:          emp.bankDetails?.currency || "LKR",
-        baseSalary:        emp.salary,
-        allowances:        totalAllowances,
+        id: `PAY-${emp.id}`,
+        empId: emp.id,
+        empName: emp.name,
+        dept: emp.dept,
+        country: emp.country,
+        currency: emp.bankDetails?.currency || "LKR",
+        baseSalary: emp.salary,
+        allowances: totalAllowances,
         allowanceBreakdown: allowanceItems,
         deductions,
         tax,
-        netPay:            emp.salary + totalAllowances - deductions - tax,
-        status:            emp.name.charCodeAt(0) % 5 === 0 ? "Pending" : "Paid",
-        period:            "March 2026",
+        netPay: emp.salary + totalAllowances - deductions - tax,
+        status: emp.name.charCodeAt(0) % 5 === 0 ? "Pending" : "Paid",
+        period: "March 2026",
     };
 });
 
@@ -921,62 +946,66 @@ const getBreadcrumb = (active) => {
 
 const RECENT_SEARCHES = [
     { label: "Leave Requests", key: "leave_All_Leave_Requests", icon: "CalendarOff" },
-    { label: "People Directory", key: "people_Directory",        icon: "Users"      },
-    { label: "Skill Gap Analysis", key: "skills_Gap_Analysis",  icon: "Sparkles"   },
+    { label: "People Directory", key: "people_Directory", icon: "Users" },
+    { label: "Skill Gap Analysis", key: "skills_Gap_Analysis", icon: "Sparkles" },
 ];
 
 const THEME_SWATCHES = [
-    { key: "teal",   label: "Teal",   color: "#0d9488" },
+    { key: "teal", label: "Teal", color: "#0d9488" },
     { key: "indigo", label: "Indigo", color: "#6366f1" },
-    { key: "blue",   label: "Blue",   color: "#3b82f6" },
+    { key: "blue", label: "Blue", color: "#3b82f6" },
     { key: "purple", label: "Purple", color: "#8b5cf6" },
-    { key: "rose",   label: "Rose",   color: "#f43f5e" },
+    { key: "rose", label: "Rose", color: "#f43f5e" },
 ];
 
 // ── Contextual sub-nav per module — shown in the TopBar ──────────────
 // ── Contextual CTA button per module — shown in TopBar right side ─
 // Keyed by specific page — "New Leave" only on leave pages, not attendance
 const MODULE_ACTIONS = {
-    "performance":              { label: "New Review",   icon: "Plus"     },
-    "skills":                   { label: "Add Skill",    icon: "Plus"     },
+    "performance": { label: "New Review", icon: "Plus" },
+    "skills": { label: "Add Skill", icon: "Plus" },
 };
 
 const MODULE_SUB_NAV = {
     time_leave: [
-        { label: "Attendance",     key: "time_leave",                  activeFor: ["time_leave", "timesheet", "timesheet_All_Records", "timesheet_Corrections", "timesheet_Overtime"] },
-        { label: "Leave Requests", key: "leave_All_Leave_Requests",     activeFor: ["leave_All_Leave_Requests", "leave_My_Requests", "leave_Leave_Types", "leave"] },
-        { label: "Calendar",       key: "calendar",                    activeFor: ["calendar", "leave_Team_Calendar", "timesheet_Calendar"] },
-        { label: "Balance",        key: "leave_Leave_Entitlements",    activeFor: ["leave_Leave_Entitlements"] },
-        { label: "Schedules",      key: "timesheet_Schedule",          activeFor: ["timesheet_Schedule"] },
+        { label: "Attendance", key: "time_leave", activeFor: ["time_leave", "timesheet", "timesheet_All_Records", "timesheet_Corrections", "timesheet_Overtime"] },
+        { label: "Leave Requests", key: "leave_All_Leave_Requests", activeFor: ["leave_All_Leave_Requests", "leave_My_Requests", "leave_Leave_Types", "leave"] },
+        { label: "Calendar", key: "calendar", activeFor: ["calendar", "leave_Team_Calendar", "timesheet_Calendar"] },
+        { label: "Balance", key: "leave_Leave_Entitlements", activeFor: ["leave_Leave_Entitlements"] },
+        { label: "Schedules", key: "timesheet_Schedule", activeFor: ["timesheet_Schedule"] },
     ],
 
     people: [
-        { label: "Directory",    key: "people",               activeFor: ["people", "people_Profile", "people_Directory", "people_Lifecycle", "people_Onboarding"] },
-        { label: "Teams",        key: "people_Teams",          activeFor: ["people_Teams"] },
-        { label: "Job Families", key: "people_Job_Families",  activeFor: ["people_Job_Families"] },
-        { label: "Offboarding",  key: "people_Offboarding",   activeFor: ["people_Offboarding"] },
+        { label: "Directory", key: "people", activeFor: ["people", "people_Profile", "people_Directory", "people_Lifecycle", "people_Onboarding"] },
+        { label: "Teams", key: "people_Teams", activeFor: ["people_Teams"] },
+        { label: "Job Families", key: "people_Job_Families", activeFor: ["people_Job_Families"] },
+        { label: "Offboarding", key: "people_Offboarding", activeFor: ["people_Offboarding"] },
     ],
     performance: [
-        { label: "Overview",    key: "performance",               activeFor: ["performance"] },
-        { label: "Goals & OKR", key: "performance_Goals_&_OKR",  activeFor: ["performance_Goals_&_OKR"] },
-        { label: "Feedback",    key: "performance_Feedback",      activeFor: ["performance_Feedback", "performance_Recognition"] },
-        { label: "Reviews",     key: "performance_Reviews",       activeFor: ["performance_Reviews"] },
+        { label: "Overview", key: "performance", activeFor: ["performance"] },
+        { label: "Goals & OKR", key: "performance_Goals_&_OKR", activeFor: ["performance_Goals_&_OKR"] },
+        { label: "Feedback", key: "performance_Feedback", activeFor: ["performance_Feedback", "performance_Recognition"] },
+        { label: "Reviews", key: "performance_Reviews", activeFor: ["performance_Reviews"] },
     ],
     skills: [
-        { label: "Library",      key: "skills",                    activeFor: ["skills"] },
-        { label: "Development",  key: "skills_Skill_Development",  activeFor: ["skills_Skill_Development"] },
-        { label: "Gap Analysis", key: "skills_Gap_Analysis",       activeFor: ["skills_Gap_Analysis"] },
-        { label: "Dev Plans",    key: "skills_Dev_Plans",          activeFor: ["skills_Dev_Plans"] },
-        { label: "Succession",   key: "skills_Succession",         activeFor: ["skills_Succession"] },
+        { label: "Library", key: "skills", activeFor: ["skills"] },
+        { label: "Development", key: "skills_Skill_Development", activeFor: ["skills_Skill_Development"] },
+        { label: "Gap Analysis", key: "skills_Gap_Analysis", activeFor: ["skills_Gap_Analysis"] },
+        { label: "Dev Plans", key: "skills_Dev_Plans", activeFor: ["skills_Dev_Plans"] },
+        { label: "Succession", key: "skills_Succession", activeFor: ["skills_Succession"] },
+    ],
+    payroll: [
+        { label: "Payroll", key: "payroll", activeFor: ["payroll", "payroll_Overview"] },
+        { label: "Payroll Integrations", key: "payroll_integrations", activeFor: ["payroll_integrations"] },
     ],
     settings: [
-        { label: "General",      key: "settings",      activeFor: ["settings", "config"] },
-        { label: "Organisation", key: "org",            activeFor: ["org"] },
-        { label: "Policies",     key: "allowance",      activeFor: ["allowance"] },
-        { label: "Integrations", key: "integrations",  activeFor: ["integrations"] },
-        { label: "Access",       key: "permissions",   activeFor: ["permissions"] },
-        { label: "Hardware",     key: "devices",       activeFor: ["devices"] },
-        { label: "Data",         key: "documents",     activeFor: ["documents"] },
+        { label: "General", key: "settings", activeFor: ["settings", "config"] },
+        { label: "Organisation", key: "org", activeFor: ["org"] },
+        { label: "Policies", key: "allowance", activeFor: ["allowance"] },
+        { label: "Integrations", key: "integrations", activeFor: ["integrations"] },
+        { label: "Access", key: "permissions", activeFor: ["permissions"] },
+        { label: "Hardware", key: "devices", activeFor: ["devices"] },
+        { label: "Data", key: "documents", activeFor: ["documents"] },
     ],
 };
 
@@ -1196,17 +1225,17 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
 
 // ── Sidebar always-dark color tokens (independent of light/dark theme) ──
 const SB = {
-    bg:          "#0F172A",
-    border:      "rgba(255,255,255,0.06)",
-    label:       "rgba(255,255,255,0.45)",
-    text:        "#94A3B8",
-    textHover:   "#F8FAFC",
-    textActive:  "#FFFFFF",
-    itemHover:   "rgba(255,255,255,0.08)",
-    itemActive:  "rgba(255,255,255,0.15)",
-    separator:   "rgba(255,255,255,0.08)",
-    footerCard:  "rgba(255,255,255,0.05)",
-    footerBorder:"rgba(255,255,255,0.09)",
+    bg: "#0F172A",
+    border: "rgba(255,255,255,0.06)",
+    label: "rgba(255,255,255,0.45)",
+    text: "#94A3B8",
+    textHover: "#F8FAFC",
+    textActive: "#FFFFFF",
+    itemHover: "rgba(255,255,255,0.08)",
+    itemActive: "rgba(255,255,255,0.15)",
+    separator: "rgba(255,255,255,0.08)",
+    footerCard: "rgba(255,255,255,0.05)",
+    footerBorder: "rgba(255,255,255,0.09)",
 };
 
 /* ─── SIDEBAR NAV ITEM — module-level so hover state is stable ── */
@@ -1214,7 +1243,7 @@ const SidebarNavItem = ({ item, isActive, onNav, collapsed, badgeCount, nexisHig
     const [hovered, setHovered] = useState(false);
     const NavIcon = Lucide[item.icon] || Lucide.Circle;
 
-    const bg        = isActive ? SB.itemActive : hovered ? SB.itemHover : "transparent";
+    const bg = isActive ? SB.itemActive : hovered ? SB.itemHover : "transparent";
     const iconColor = isActive ? "#fff" : nexisHighlight ? (hovered ? "#a78bfa" : "#8b5cf6") : hovered ? SB.textHover : SB.text;
     const textColor = isActive ? SB.textActive : nexisHighlight ? (hovered ? "#a78bfa" : "#8b5cf6") : hovered ? SB.textHover : SB.text;
 
@@ -1272,8 +1301,8 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
     }, []);
     const currentUser = React.useContext(UserCtx);
     const { leaveRequests } = React.useContext(DataCtx);
-    const userName    = currentUser?.name  || "Admin";
-    const userTitle   = currentUser?.title || "HR Administrator";
+    const userName = currentUser?.name || "Admin";
+    const userTitle = currentUser?.title || "HR Administrator";
     const userInitials = userName.split(" ").map(w => w[0]).join("").slice(0, 2).toUpperCase();
     const expandedW = 256;
     const collapsedW = 80;
@@ -1359,11 +1388,11 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
                     <div style={{ fontSize: 10, color: SB.text, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 1 }}>HR Portal</div>
                 </motion.div>
                 {!collapsed && (
-                    <button 
-                        onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} 
-                        style={{ 
-                            background: "transparent", border: "none", cursor: "pointer", color: SB.text, padding: 4, 
-                            display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, transition: "background 0.2s" 
+                    <button
+                        onClick={(e) => { e.stopPropagation(); setCollapsed(true); }}
+                        style={{
+                            background: "transparent", border: "none", cursor: "pointer", color: SB.text, padding: 4,
+                            display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, transition: "background 0.2s"
                         }}
                         onMouseEnter={e => { e.currentTarget.style.background = SB.hover; e.currentTarget.style.color = "#fff"; }}
                         onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = SB.text; }}
@@ -1745,10 +1774,10 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
     const onLeave = () => { mouseX.set(0); mouseY.set(0); };
 
     const BADGES = [
-        { icon: Lucide.UserCheck, label: "193 Present Today",    color: "#34D399", pos: { top: "8%",    left: "-6%"  } },
-        { icon: Lucide.Calendar,  label: "5 Pending Leave",      color: "#FBBF24", pos: { top: "22%",   right: "-14%"} },
-        { icon: Lucide.Sparkles,  label: "AI Insights Ready",    color: "#818CF8", pos: { bottom: "28%",right: "-12%"} },
-        { icon: Lucide.TrendingUp,label: "Payroll On Track",     color: "#60A5FA", pos: { bottom: "6%", left: "-4%"  } },
+        { icon: Lucide.UserCheck, label: "193 Present Today", color: "#34D399", pos: { top: "8%", left: "-6%" } },
+        { icon: Lucide.Calendar, label: "5 Pending Leave", color: "#FBBF24", pos: { top: "22%", right: "-14%" } },
+        { icon: Lucide.Sparkles, label: "AI Insights Ready", color: "#818CF8", pos: { bottom: "28%", right: "-12%" } },
+        { icon: Lucide.TrendingUp, label: "Payroll On Track", color: "#60A5FA", pos: { bottom: "6%", left: "-4%" } },
     ];
 
     return (
@@ -1756,31 +1785,41 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
             style={{ background: "#060D1A", minHeight: "100vh", display: "flex", flexDirection: "column", position: "relative", overflow: "hidden" }}>
 
             {/* dot grid */}
-            <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
+            <div style={{
+                position: "absolute", inset: 0, pointerEvents: "none",
                 backgroundImage: "radial-gradient(rgba(99,102,241,0.15) 1px, transparent 1px)",
-                backgroundSize: "30px 30px" }} />
+                backgroundSize: "30px 30px"
+            }} />
 
             {/* indigo glow */}
             <motion.div animate={{ scale: [1, 1.18, 1], opacity: [0.25, 0.45, 0.25] }}
                 transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-                style={{ position: "absolute", top: "15%", right: "25%", width: 560, height: 560, borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)", pointerEvents: "none" }} />
+                style={{
+                    position: "absolute", top: "15%", right: "25%", width: 560, height: 560, borderRadius: "50%",
+                    background: "radial-gradient(circle, rgba(99,102,241,0.18) 0%, transparent 70%)", pointerEvents: "none"
+                }} />
 
             {/* teal glow */}
             <motion.div animate={{ scale: [1.1, 1, 1.1], opacity: [0.15, 0.3, 0.15] }}
                 transition={{ duration: 9, repeat: Infinity, ease: "easeInOut", delay: 3 }}
-                style={{ position: "absolute", bottom: "5%", left: "5%", width: 380, height: 380, borderRadius: "50%",
-                    background: "radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
+                style={{
+                    position: "absolute", bottom: "5%", left: "5%", width: 380, height: 380, borderRadius: "50%",
+                    background: "radial-gradient(circle, rgba(52,211,153,0.12) 0%, transparent 70%)", pointerEvents: "none"
+                }} />
 
             {/* main layout */}
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "130px 28px 60px",
-                display: "flex", alignItems: "center", gap: 56, flex: 1, position: "relative", zIndex: 10 }}>
+            <div style={{
+                maxWidth: 1200, margin: "0 auto", padding: "130px 28px 60px",
+                display: "flex", alignItems: "center", gap: 56, flex: 1, position: "relative", zIndex: 10
+            }}>
 
                 {/* ── LEFT: copy ── */}
                 <div style={{ flex: "0 0 48%", maxWidth: "48%" }}>
                     <motion.div initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.45 }}
-                        style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px",
-                            borderRadius: 20, border: "1px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.1)", marginBottom: 26 }}>
+                        style={{
+                            display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px",
+                            borderRadius: 20, border: "1px solid rgba(99,102,241,0.4)", background: "rgba(99,102,241,0.1)", marginBottom: 26
+                        }}>
                         <motion.div animate={{ scale: [1, 1.4, 1] }} transition={{ duration: 2.2, repeat: Infinity }}
                             style={{ width: 6, height: 6, borderRadius: "50%", background: "#6366F1" }} />
                         <span style={{ fontSize: 11.5, fontWeight: 700, color: "#A5B4FC", letterSpacing: "0.1em", textTransform: "uppercase" }}>
@@ -1789,11 +1828,15 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                     </motion.div>
 
                     <motion.h1 initial={{ opacity: 0, y: 28 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.55, delay: 0.08 }}
-                        style={{ fontSize: "clamp(36px, 4.8vw, 62px)", fontWeight: 900, lineHeight: 1.08,
-                            letterSpacing: "-2px", margin: "0 0 22px", color: "#fff" }}>
+                        style={{
+                            fontSize: "clamp(36px, 4.8vw, 62px)", fontWeight: 900, lineHeight: 1.08,
+                            letterSpacing: "-2px", margin: "0 0 22px", color: "#fff"
+                        }}>
                         Your People,<br />
-                        <span style={{ background: "linear-gradient(135deg, #6366F1 0%, #A5B4FC 50%, #34D399 100%)",
-                            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>
+                        <span style={{
+                            background: "linear-gradient(135deg, #6366F1 0%, #A5B4FC 50%, #34D399 100%)",
+                            WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text"
+                        }}>
                             Powered by
                         </span><br />
                         Intelligence.
@@ -1809,17 +1852,21 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                         style={{ display: "flex", gap: 12, marginBottom: 44, flexWrap: "wrap" }}>
                         <motion.button whileHover={{ scale: 1.04, boxShadow: "0 8px 32px rgba(99,102,241,0.55)" }} whileTap={{ scale: 0.97 }}
                             onClick={onStartSetup}
-                            style={{ padding: "13px 26px", borderRadius: 12, border: "none",
+                            style={{
+                                padding: "13px 26px", borderRadius: 12, border: "none",
                                 background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "#fff",
                                 fontSize: 15, fontWeight: 700, cursor: "pointer", fontFamily: "inherit",
-                                boxShadow: "0 4px 20px rgba(99,102,241,0.38)", display: "flex", alignItems: "center", gap: 8 }}>
+                                boxShadow: "0 4px 20px rgba(99,102,241,0.38)", display: "flex", alignItems: "center", gap: 8
+                            }}>
                             Start Free Trial <Lucide.ArrowRight size={16} />
                         </motion.button>
                         <motion.button whileHover={{ scale: 1.03, borderColor: "rgba(99,102,241,0.55)" }} whileTap={{ scale: 0.97 }}
                             onClick={onEnterApp}
-                            style={{ padding: "13px 26px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.14)",
+                            style={{
+                                padding: "13px 26px", borderRadius: 12, border: "1px solid rgba(255,255,255,0.14)",
                                 background: "rgba(255,255,255,0.04)", color: "#fff", fontSize: 15, fontWeight: 600,
-                                cursor: "pointer", fontFamily: "inherit", backdropFilter: "blur(8px)" }}>
+                                cursor: "pointer", fontFamily: "inherit", backdropFilter: "blur(8px)"
+                            }}>
                             Sign In
                         </motion.button>
                     </motion.div>
@@ -1827,10 +1874,10 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                     <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ delay: 0.5 }}
                         style={{ display: "flex", gap: 22, flexWrap: "wrap" }}>
                         {[
-                            { Icon: Lucide.Building2,    label: "5 Industries"      },
-                            { Icon: Lucide.ShieldCheck,  label: "99.9% Uptime"      },
-                            { Icon: Lucide.Sparkles,     label: "NexisAI Built-in"  },
-                            { Icon: Lucide.Globe,        label: "150+ Countries"    },
+                            { Icon: Lucide.Building2, label: "5 Industries" },
+                            { Icon: Lucide.ShieldCheck, label: "99.9% Uptime" },
+                            { Icon: Lucide.Sparkles, label: "NexisAI Built-in" },
+                            { Icon: Lucide.Globe, label: "150+ Countries" },
                         ].map(({ Icon: Ic, label }) => (
                             <div key={label} style={{ display: "flex", alignItems: "center", gap: 7 }}>
                                 <Ic size={13} color="#6366F1" strokeWidth={2} />
@@ -1843,8 +1890,10 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                 {/* ── RIGHT: 3D card ── */}
                 <div style={{ flex: "0 0 52%", maxWidth: "52%", position: "relative", display: "flex", justifyContent: "center" }}>
                     {/* card glow */}
-                    <div style={{ position: "absolute", inset: "-15%", pointerEvents: "none",
-                        background: "radial-gradient(ellipse at center, rgba(99,102,241,0.22) 0%, transparent 65%)" }} />
+                    <div style={{
+                        position: "absolute", inset: "-15%", pointerEvents: "none",
+                        background: "radial-gradient(ellipse at center, rgba(99,102,241,0.22) 0%, transparent 65%)"
+                    }} />
 
                     {/* floating stat badges */}
                     {BADGES.map((b, i) => (
@@ -1853,16 +1902,20 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                             animate={{ opacity: 1, scale: 1, y: [0, -9, 0] }}
                             transition={{
                                 opacity: { delay: 0.9 + i * 0.15, duration: 0.35 },
-                                scale:   { delay: 0.9 + i * 0.15, duration: 0.35 },
-                                y:       { delay: i * 0.4, duration: 3.2 + i * 0.4, repeat: Infinity, ease: "easeInOut" },
+                                scale: { delay: 0.9 + i * 0.15, duration: 0.35 },
+                                y: { delay: i * 0.4, duration: 3.2 + i * 0.4, repeat: Infinity, ease: "easeInOut" },
                             }}
-                            style={{ position: "absolute", ...b.pos, zIndex: 20, whiteSpace: "nowrap",
+                            style={{
+                                position: "absolute", ...b.pos, zIndex: 20, whiteSpace: "nowrap",
                                 background: "rgba(6,13,26,0.88)", backdropFilter: "blur(14px)",
                                 border: `1px solid ${b.color}30`, borderRadius: 12, padding: "9px 13px",
                                 display: "flex", alignItems: "center", gap: 8,
-                                boxShadow: `0 4px 18px rgba(0,0,0,0.45), 0 0 0 1px ${b.color}18` }}>
-                            <div style={{ width: 26, height: 26, borderRadius: 7, background: `${b.color}1A`,
-                                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                boxShadow: `0 4px 18px rgba(0,0,0,0.45), 0 0 0 1px ${b.color}18`
+                            }}>
+                            <div style={{
+                                width: 26, height: 26, borderRadius: 7, background: `${b.color}1A`,
+                                display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                            }}>
                                 <b.icon size={13} color={b.color} strokeWidth={2.2} />
                             </div>
                             <span style={{ fontSize: 12, fontWeight: 600, color: "#E2E8F0" }}>{b.label}</span>
@@ -1875,15 +1928,19 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                         style={{ perspective: "1100px", width: "100%" }}>
                         <motion.div style={{ rotateX, rotateY, transformStyle: "preserve-3d" }}
                             transition={{ type: "spring", stiffness: 140, damping: 22 }}>
-                            <div style={{ background: "linear-gradient(145deg, #131D31 0%, #1A2640 100%)",
+                            <div style={{
+                                background: "linear-gradient(145deg, #131D31 0%, #1A2640 100%)",
                                 borderRadius: 22, border: "1px solid rgba(99,102,241,0.22)",
                                 boxShadow: "0 40px 80px rgba(0,0,0,0.65), 0 0 0 1px rgba(255,255,255,0.03)",
-                                overflow: "hidden" }}>
+                                overflow: "hidden"
+                            }}>
 
                                 {/* topbar */}
-                                <div style={{ padding: "13px 16px", borderBottom: "1px solid rgba(255,255,255,0.055)",
+                                <div style={{
+                                    padding: "13px 16px", borderBottom: "1px solid rgba(255,255,255,0.055)",
                                     display: "flex", alignItems: "center", justifyContent: "space-between",
-                                    background: "rgba(0,0,0,0.25)" }}>
+                                    background: "rgba(0,0,0,0.25)"
+                                }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 9 }}>
                                         <SelfvoraLogo size={28} />
                                         <div>
@@ -1892,26 +1949,32 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                                         </div>
                                     </div>
                                     <div style={{ display: "flex", gap: 5 }}>
-                                        {["#FF5F57","#FFBD2E","#27C93F"].map(c => (
+                                        {["#FF5F57", "#FFBD2E", "#27C93F"].map(c => (
                                             <div key={c} style={{ width: 9, height: 9, borderRadius: "50%", background: c }} />
                                         ))}
                                     </div>
                                 </div>
 
                                 {/* KPI strip */}
-                                <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1,
-                                    background: "rgba(255,255,255,0.03)", margin: "12px 12px 0", borderRadius: 12, overflow: "hidden" }}>
+                                <div style={{
+                                    display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 1,
+                                    background: "rgba(255,255,255,0.03)", margin: "12px 12px 0", borderRadius: 12, overflow: "hidden"
+                                }}>
                                     {[
-                                        { label: "Present",  value: "193", color: "#34D399", Icon: Lucide.UserCheck },
-                                        { label: "On Leave", value: "20",  color: "#FBBF24", Icon: Lucide.Calendar  },
-                                        { label: "Alerts",   value: "7",   color: "#F87171", Icon: Lucide.Bell      },
+                                        { label: "Present", value: "193", color: "#34D399", Icon: Lucide.UserCheck },
+                                        { label: "On Leave", value: "20", color: "#FBBF24", Icon: Lucide.Calendar },
+                                        { label: "Alerts", value: "7", color: "#F87171", Icon: Lucide.Bell },
                                     ].map(({ label, value, color, Icon: Ic }) => (
-                                        <div key={label} style={{ padding: "13px 10px", background: "rgba(255,255,255,0.02)",
-                                            display: "flex", flexDirection: "column", alignItems: "center", gap: 5 }}>
+                                        <div key={label} style={{
+                                            padding: "13px 10px", background: "rgba(255,255,255,0.02)",
+                                            display: "flex", flexDirection: "column", alignItems: "center", gap: 5
+                                        }}>
                                             <Ic size={15} color={color} strokeWidth={2} />
                                             <div style={{ fontSize: 22, fontWeight: 800, color, letterSpacing: "-0.5px" }}>{value}</div>
-                                            <div style={{ fontSize: 9.5, color: "rgba(148,163,184,0.55)", fontWeight: 600,
-                                                textTransform: "uppercase", letterSpacing: "0.06em" }}>{label}</div>
+                                            <div style={{
+                                                fontSize: 9.5, color: "rgba(148,163,184,0.55)", fontWeight: 600,
+                                                textTransform: "uppercase", letterSpacing: "0.06em"
+                                            }}>{label}</div>
                                         </div>
                                     ))}
                                 </div>
@@ -1919,32 +1982,42 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                                 {/* charts row */}
                                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, padding: "10px 12px" }}>
                                     {/* bar chart */}
-                                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "11px 12px",
-                                        border: "1px solid rgba(255,255,255,0.04)" }}>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(148,163,184,0.7)",
-                                            marginBottom: 9, textTransform: "uppercase", letterSpacing: "0.06em" }}>Weekly Attendance</div>
+                                    <div style={{
+                                        background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "11px 12px",
+                                        border: "1px solid rgba(255,255,255,0.04)"
+                                    }}>
+                                        <div style={{
+                                            fontSize: 10, fontWeight: 700, color: "rgba(148,163,184,0.7)",
+                                            marginBottom: 9, textTransform: "uppercase", letterSpacing: "0.06em"
+                                        }}>Weekly Attendance</div>
                                         <div style={{ display: "flex", alignItems: "flex-end", gap: 3, height: 54 }}>
-                                            {[72,88,76,92,85,78,94].map((v, i) => (
+                                            {[72, 88, 76, 92, 85, 78, 94].map((v, i) => (
                                                 <motion.div key={i}
                                                     initial={{ height: 0 }} animate={{ height: `${v}%` }}
                                                     transition={{ delay: 0.7 + i * 0.07, duration: 0.55, ease: "easeOut" }}
-                                                    style={{ flex: 1, borderRadius: "3px 3px 0 0",
+                                                    style={{
+                                                        flex: 1, borderRadius: "3px 3px 0 0",
                                                         background: i === 6
                                                             ? "linear-gradient(180deg,#6366F1,#8B5CF6)"
-                                                            : "rgba(99,102,241,0.28)" }} />
+                                                            : "rgba(99,102,241,0.28)"
+                                                    }} />
                                             ))}
                                         </div>
                                     </div>
 
                                     {/* dept bars */}
-                                    <div style={{ background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "11px 12px",
-                                        border: "1px solid rgba(255,255,255,0.04)" }}>
-                                        <div style={{ fontSize: 10, fontWeight: 700, color: "rgba(148,163,184,0.7)",
-                                            marginBottom: 9, textTransform: "uppercase", letterSpacing: "0.06em" }}>Departments</div>
+                                    <div style={{
+                                        background: "rgba(255,255,255,0.03)", borderRadius: 10, padding: "11px 12px",
+                                        border: "1px solid rgba(255,255,255,0.04)"
+                                    }}>
+                                        <div style={{
+                                            fontSize: 10, fontWeight: 700, color: "rgba(148,163,184,0.7)",
+                                            marginBottom: 9, textTransform: "uppercase", letterSpacing: "0.06em"
+                                        }}>Departments</div>
                                         {[
                                             { label: "Engineering", pct: 38, color: "#6366F1" },
-                                            { label: "HR & People",  pct: 22, color: "#34D399" },
-                                            { label: "Finance",      pct: 18, color: "#FBBF24" },
+                                            { label: "HR & People", pct: 22, color: "#34D399" },
+                                            { label: "Finance", pct: 18, color: "#FBBF24" },
                                         ].map(d => (
                                             <div key={d.label} style={{ marginBottom: 7 }}>
                                                 <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 2 }}>
@@ -1962,16 +2035,20 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
                                 </div>
 
                                 {/* NexisAI strip */}
-                                <div style={{ margin: "0 12px 12px",
+                                <div style={{
+                                    margin: "0 12px 12px",
                                     background: "linear-gradient(135deg, rgba(99,102,241,0.12), rgba(139,92,246,0.07))",
                                     borderRadius: 10, padding: "11px 13px",
                                     border: "1px solid rgba(99,102,241,0.18)",
-                                    display: "flex", alignItems: "center", gap: 10 }}>
+                                    display: "flex", alignItems: "center", gap: 10
+                                }}>
                                     <motion.div animate={{ rotate: [0, 360] }}
                                         transition={{ duration: 9, repeat: Infinity, ease: "linear" }}
-                                        style={{ width: 26, height: 26, borderRadius: 7,
+                                        style={{
+                                            width: 26, height: 26, borderRadius: 7,
                                             background: "linear-gradient(135deg, #6366F1, #8B5CF6)",
-                                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                                        }}>
                                         <Lucide.Sparkles size={12} color="#fff" strokeWidth={2} />
                                     </motion.div>
                                     <div style={{ flex: 1 }}>
@@ -1989,23 +2066,25 @@ const HeroSection = ({ onEnterApp, onStartSetup }) => {
             </div>
 
             {/* scrolling module marquee */}
-            <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", padding: "14px 0", overflow: "hidden",
-                position: "relative", zIndex: 10, background: "rgba(0,0,0,0.2)" }}>
+            <div style={{
+                borderTop: "1px solid rgba(255,255,255,0.05)", padding: "14px 0", overflow: "hidden",
+                position: "relative", zIndex: 10, background: "rgba(0,0,0,0.2)"
+            }}>
                 <motion.div animate={{ x: ["0%", "-50%"] }}
                     transition={{ duration: 22, repeat: Infinity, ease: "linear" }}
                     style={{ display: "flex", gap: 36, whiteSpace: "nowrap" }}>
                     {[...Array(2)].map((_, rep) =>
                         [
-                            { Icon: Lucide.Clock,       label: "Smart Attendance"      },
-                            { Icon: Lucide.Calendar,    label: "Leave Management"      },
-                            { Icon: Lucide.DollarSign,  label: "Payroll Sync"          },
-                            { Icon: Lucide.TrendingUp,  label: "Performance & OKR"     },
-                            { Icon: Lucide.Sparkles,    label: "NexisAI Assistant"     },
-                            { Icon: Lucide.BookOpen,    label: "Skills & Talent"       },
-                            { Icon: Lucide.Users,       label: "People Directory"      },
+                            { Icon: Lucide.Clock, label: "Smart Attendance" },
+                            { Icon: Lucide.Calendar, label: "Leave Management" },
+                            { Icon: Lucide.DollarSign, label: "Payroll Sync" },
+                            { Icon: Lucide.TrendingUp, label: "Performance & OKR" },
+                            { Icon: Lucide.Sparkles, label: "NexisAI Assistant" },
+                            { Icon: Lucide.BookOpen, label: "Skills & Talent" },
+                            { Icon: Lucide.Users, label: "People Directory" },
                             { Icon: Lucide.ShieldCheck, label: "Security & Compliance" },
-                            { Icon: Lucide.FileText,    label: "Document Vault"        },
-                            { Icon: Lucide.BarChart2,   label: "HR Analytics"          },
+                            { Icon: Lucide.FileText, label: "Document Vault" },
+                            { Icon: Lucide.BarChart2, label: "HR Analytics" },
                         ].map(({ Icon: Ic, label }) => (
                             <div key={`${rep}-${label}`} style={{ display: "flex", alignItems: "center", gap: 7, flexShrink: 0 }}>
                                 <Ic size={12} color="rgba(99,102,241,0.65)" strokeWidth={2} />
@@ -2108,12 +2187,14 @@ const FeaturesSection = () => {
             desc: "Onsite, remote, and hybrid — every clock-in captured with geo-fencing, biometric validation, and offline sync.",
             visual: (
                 <div style={{ display: "flex", alignItems: "flex-end", gap: 5, height: 64, marginTop: 16 }}>
-                    {[55,70,62,88,80,74,94].map((v, i) => (
+                    {[55, 70, 62, 88, 80, 74, 94].map((v, i) => (
                         <motion.div key={i}
                             initial={{ height: 0 }} whileInView={{ height: `${v}%` }} viewport={{ once: true }}
                             transition={{ delay: 0.1 + i * 0.07, duration: 0.55, ease: "easeOut" }}
-                            style={{ flex: 1, borderRadius: "4px 4px 0 0",
-                                background: i === 6 ? "linear-gradient(180deg,#6366F1,#8B5CF6)" : "rgba(99,102,241,0.25)" }} />
+                            style={{
+                                flex: 1, borderRadius: "4px 4px 0 0",
+                                background: i === 6 ? "linear-gradient(180deg,#6366F1,#8B5CF6)" : "rgba(99,102,241,0.25)"
+                            }} />
                     ))}
                 </div>
             ),
@@ -2126,8 +2207,8 @@ const FeaturesSection = () => {
             visual: (
                 <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 8 }}>
                     {[
-                        { label: "Attrition Risk",      pct: 72, color: "#F87171" },
-                        { label: "Skills Coverage",     pct: 58, color: "#FBBF24" },
+                        { label: "Attrition Risk", pct: 72, color: "#F87171" },
+                        { label: "Skills Coverage", pct: 58, color: "#FBBF24" },
                         { label: "Promotion Readiness", pct: 84, color: "#34D399" },
                     ].map(d => (
                         <div key={d.label}>
@@ -2152,12 +2233,14 @@ const FeaturesSection = () => {
             desc: "Multi-level approvals, 10+ leave types, team calendar, and accrual engine — all automated.",
             visual: (
                 <div style={{ marginTop: 14, display: "flex", gap: 6, flexWrap: "wrap" }}>
-                    {["Annual","Medical","Emergency","Maternity","Compassionate"].map((t, i) => (
-                        <div key={t} style={{ padding: "4px 10px", borderRadius: 20,
+                    {["Annual", "Medical", "Emergency", "Maternity", "Compassionate"].map((t, i) => (
+                        <div key={t} style={{
+                            padding: "4px 10px", borderRadius: 20,
                             background: i === 0 ? "rgba(52,211,153,0.18)" : "rgba(255,255,255,0.05)",
                             border: `1px solid ${i === 0 ? "rgba(52,211,153,0.35)" : "rgba(255,255,255,0.08)"}`,
                             fontSize: 10.5, fontWeight: 600,
-                            color: i === 0 ? "#34D399" : "rgba(148,163,184,0.55)" }}>
+                            color: i === 0 ? "#34D399" : "rgba(148,163,184,0.55)"
+                        }}>
                             {t}
                         </div>
                     ))}
@@ -2172,18 +2255,20 @@ const FeaturesSection = () => {
             visual: (
                 <div style={{ marginTop: 14, display: "flex", flexDirection: "column", gap: 7 }}>
                     {[
-                        { name: "Deel",  flag: "🌍", status: "Connected", color: "#34D399" },
-                        { name: "Xero",  flag: "🇬🇧", status: "Connected", color: "#34D399" },
-                        { name: "ADP",   flag: "🇺🇸", status: "Available", color: "#FBBF24" },
+                        { name: "Deel", flag: "🌍", status: "Connected", color: "#34D399" },
+                        { name: "Xero", flag: "🇬🇧", status: "Connected", color: "#34D399" },
+                        { name: "ADP", flag: "🇺🇸", status: "Available", color: "#FBBF24" },
                     ].map(p => (
                         <div key={p.name} style={{ display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                             <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
                                 <span style={{ fontSize: 13 }}>{p.flag}</span>
                                 <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(226,232,240,0.8)" }}>{p.name}</span>
                             </div>
-                            <span style={{ fontSize: 10.5, fontWeight: 700, color: p.color,
+                            <span style={{
+                                fontSize: 10.5, fontWeight: 700, color: p.color,
                                 padding: "2px 8px", borderRadius: 10,
-                                background: `${p.color}18`, border: `1px solid ${p.color}30` }}>
+                                background: `${p.color}18`, border: `1px solid ${p.color}30`
+                            }}>
                                 {p.status}
                             </span>
                         </div>
@@ -2228,11 +2313,13 @@ const FeaturesSection = () => {
             desc: "Skill library, gap analysis, succession planning and personalised dev plans per employee.",
             visual: (
                 <div style={{ marginTop: 14, display: "flex", flexWrap: "wrap", gap: 5 }}>
-                    {["React","AWS","TypeScript","Leadership","SQL","Python","Kubernetes","DevOps"].map((s, i) => (
-                        <div key={s} style={{ padding: "3px 9px", borderRadius: 20, fontSize: 10.5, fontWeight: 600,
+                    {["React", "AWS", "TypeScript", "Leadership", "SQL", "Python", "Kubernetes", "DevOps"].map((s, i) => (
+                        <div key={s} style={{
+                            padding: "3px 9px", borderRadius: 20, fontSize: 10.5, fontWeight: 600,
                             background: i < 3 ? "rgba(244,114,182,0.15)" : "rgba(255,255,255,0.04)",
                             border: `1px solid ${i < 3 ? "rgba(244,114,182,0.3)" : "rgba(255,255,255,0.07)"}`,
-                            color: i < 3 ? "#F472B6" : "rgba(148,163,184,0.5)" }}>
+                            color: i < 3 ? "#F472B6" : "rgba(148,163,184,0.5)"
+                        }}>
                             {s}
                         </div>
                     ))}
@@ -2244,24 +2331,32 @@ const FeaturesSection = () => {
     return (
         <div id="features" style={{ background: "#060D1A", padding: "100px 28px", position: "relative", overflow: "hidden" }}>
             {/* grid bg */}
-            <div style={{ position: "absolute", inset: 0, pointerEvents: "none",
+            <div style={{
+                position: "absolute", inset: 0, pointerEvents: "none",
                 backgroundImage: "linear-gradient(rgba(99,102,241,0.04) 1px, transparent 1px), linear-gradient(90deg,rgba(99,102,241,0.04) 1px, transparent 1px)",
-                backgroundSize: "56px 56px" }} />
+                backgroundSize: "56px 56px"
+            }} />
 
             <div style={{ maxWidth: 1100, margin: "0 auto", position: "relative", zIndex: 5 }}>
                 {/* header */}
                 <motion.div initial={{ opacity: 0, y: 24 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                     style={{ textAlign: "center", marginBottom: 56 }}>
-                    <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px",
-                        borderRadius: 20, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", marginBottom: 18 }}>
+                    <div style={{
+                        display: "inline-flex", alignItems: "center", gap: 8, padding: "5px 14px",
+                        borderRadius: 20, border: "1px solid rgba(99,102,241,0.35)", background: "rgba(99,102,241,0.1)", marginBottom: 18
+                    }}>
                         <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#6366F1" }} />
                         <span style={{ fontSize: 11.5, fontWeight: 700, color: "#A5B4FC", letterSpacing: "0.1em", textTransform: "uppercase" }}>Platform Capabilities</span>
                     </div>
-                    <h2 style={{ fontSize: "clamp(28px, 3.5vw, 46px)", fontWeight: 900, color: "#fff",
-                        letterSpacing: "-1.5px", margin: "0 0 14px", lineHeight: 1.1 }}>
+                    <h2 style={{
+                        fontSize: "clamp(28px, 3.5vw, 46px)", fontWeight: 900, color: "#fff",
+                        letterSpacing: "-1.5px", margin: "0 0 14px", lineHeight: 1.1
+                    }}>
                         Everything your HR team needs,<br />
-                        <span style={{ background: "linear-gradient(135deg,#6366F1,#A5B4FC)", WebkitBackgroundClip: "text",
-                            WebkitTextFillColor: "transparent", backgroundClip: "text" }}>in one intelligent platform.</span>
+                        <span style={{
+                            background: "linear-gradient(135deg,#6366F1,#A5B4FC)", WebkitBackgroundClip: "text",
+                            WebkitTextFillColor: "transparent", backgroundClip: "text"
+                        }}>in one intelligent platform.</span>
                     </h2>
                     <p style={{ fontSize: 16, color: "rgba(148,163,184,0.7)", maxWidth: 520, margin: "0 auto", lineHeight: 1.65 }}>
                         Built for modern distributed teams — from a 10-person startup to a 1,000-person enterprise.
@@ -2275,19 +2370,25 @@ const FeaturesSection = () => {
                             initial={{ opacity: 0, y: 28 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                             transition={{ delay: idx * 0.07, duration: 0.45 }}
                             whileHover={{ y: -4, boxShadow: `0 20px 50px rgba(0,0,0,0.5), 0 0 0 1px ${b.accent}28` }}
-                            style={{ gridColumn: b.col, gridRow: b.row,
+                            style={{
+                                gridColumn: b.col, gridRow: b.row,
                                 background: "linear-gradient(145deg, #111827 0%, #0F172A 100%)",
                                 borderRadius: 18, padding: "22px 22px 20px",
                                 border: `1px solid rgba(255,255,255,0.06)`,
                                 boxShadow: "0 4px 24px rgba(0,0,0,0.4)",
                                 transition: "box-shadow 0.25s, transform 0.25s",
-                                overflow: "hidden", position: "relative" }}>
+                                overflow: "hidden", position: "relative"
+                            }}>
                             {/* accent corner glow */}
-                            <div style={{ position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%",
-                                background: `radial-gradient(circle, ${b.accent}18 0%, transparent 70%)`, pointerEvents: "none" }} />
+                            <div style={{
+                                position: "absolute", top: -30, right: -30, width: 120, height: 120, borderRadius: "50%",
+                                background: `radial-gradient(circle, ${b.accent}18 0%, transparent 70%)`, pointerEvents: "none"
+                            }} />
                             <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 10 }}>
-                                <div style={{ width: 34, height: 34, borderRadius: 10, background: `${b.accent}18`,
-                                    border: `1px solid ${b.accent}28`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                <div style={{
+                                    width: 34, height: 34, borderRadius: 10, background: `${b.accent}18`,
+                                    border: `1px solid ${b.accent}28`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0
+                                }}>
                                     <b.icon size={16} color={b.accent} strokeWidth={2} />
                                 </div>
                                 <span style={{ fontSize: 13.5, fontWeight: 700, color: "#fff" }}>{b.title}</span>
@@ -2299,20 +2400,24 @@ const FeaturesSection = () => {
                 </div>
 
                 {/* bottom stats strip */}
-                <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1,
+                <div style={{
+                    display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 1,
                     marginTop: 14, background: "rgba(255,255,255,0.03)", borderRadius: 16, overflow: "hidden",
-                    border: "1px solid rgba(255,255,255,0.06)" }}>
+                    border: "1px solid rgba(255,255,255,0.06)"
+                }}>
                     {[
-                        { value: "1,000+", label: "Employees Supported",    icon: Lucide.Users        },
-                        { value: "6",      label: "Core HR Modules",         icon: Lucide.LayoutDashboard },
-                        { value: "99.9%",  label: "Uptime SLA",              icon: Lucide.ShieldCheck  },
-                        { value: "150+",   label: "Countries via Payroll",   icon: Lucide.Globe        },
+                        { value: "1,000+", label: "Employees Supported", icon: Lucide.Users },
+                        { value: "6", label: "Core HR Modules", icon: Lucide.LayoutDashboard },
+                        { value: "99.9%", label: "Uptime SLA", icon: Lucide.ShieldCheck },
+                        { value: "150+", label: "Countries via Payroll", icon: Lucide.Globe },
                     ].map(({ value, label, icon: Ic }, i) => (
                         <motion.div key={label}
                             initial={{ opacity: 0, y: 16 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true }}
                             transition={{ delay: 0.5 + i * 0.1, duration: 0.4 }}
-                            style={{ padding: "24px 20px", textAlign: "center",
-                                borderRight: i < 3 ? "1px solid rgba(255,255,255,0.04)" : "none" }}>
+                            style={{
+                                padding: "24px 20px", textAlign: "center",
+                                borderRight: i < 3 ? "1px solid rgba(255,255,255,0.04)" : "none"
+                            }}>
                             <Ic size={18} color="#6366F1" strokeWidth={1.75} style={{ margin: "0 auto 8px" }} />
                             <div style={{ fontSize: 28, fontWeight: 900, color: "#fff", letterSpacing: "-1px", lineHeight: 1 }}>{value}</div>
                             <div style={{ fontSize: 12, color: "rgba(148,163,184,0.55)", fontWeight: 500, marginTop: 5 }}>{label}</div>
@@ -2639,19 +2744,19 @@ const FooterSection = () => (
    ═══════════════════════════════════════════════════════════════════════════ */
 
 const COUNTRY_DEFAULTS = {
-    'Sri Lanka':      { timezone: 'Asia/Colombo',      currency: 'LKR', taxRegime: 'Sri Lanka' },
-    'United Kingdom': { timezone: 'Europe/London',     currency: 'GBP', taxRegime: 'UK' },
-    'United States':  { timezone: 'America/New_York',  currency: 'USD', taxRegime: 'US' },
-    'Australia':      { timezone: 'Australia/Sydney',  currency: 'AUD', taxRegime: 'Australia' },
-    'India':          { timezone: 'Asia/Kolkata',      currency: 'INR', taxRegime: 'India' },
-    'Singapore':      { timezone: 'Asia/Singapore',    currency: 'SGD', taxRegime: 'Singapore' },
-    'UAE':            { timezone: 'Asia/Dubai',        currency: 'AED', taxRegime: 'UAE' },
-    'Germany':        { timezone: 'Europe/Berlin',     currency: 'EUR', taxRegime: 'EU' },
-    'Canada':         { timezone: 'America/Toronto',   currency: 'CAD', taxRegime: 'Canada' },
-    'Other':          { timezone: 'UTC',               currency: 'USD', taxRegime: 'Other' },
+    'Sri Lanka': { timezone: 'Asia/Colombo', currency: 'LKR', taxRegime: 'Sri Lanka' },
+    'United Kingdom': { timezone: 'Europe/London', currency: 'GBP', taxRegime: 'UK' },
+    'United States': { timezone: 'America/New_York', currency: 'USD', taxRegime: 'US' },
+    'Australia': { timezone: 'Australia/Sydney', currency: 'AUD', taxRegime: 'Australia' },
+    'India': { timezone: 'Asia/Kolkata', currency: 'INR', taxRegime: 'India' },
+    'Singapore': { timezone: 'Asia/Singapore', currency: 'SGD', taxRegime: 'Singapore' },
+    'UAE': { timezone: 'Asia/Dubai', currency: 'AED', taxRegime: 'UAE' },
+    'Germany': { timezone: 'Europe/Berlin', currency: 'EUR', taxRegime: 'EU' },
+    'Canada': { timezone: 'America/Toronto', currency: 'CAD', taxRegime: 'Canada' },
+    'Other': { timezone: 'UTC', currency: 'USD', taxRegime: 'Other' },
 };
 
-const ALL_COUNTRIES = ['Sri Lanka','United Kingdom','United States','Australia','India','Singapore','UAE','Germany','Canada','Other'];
+const ALL_COUNTRIES = ['Sri Lanka', 'United Kingdom', 'United States', 'Australia', 'India', 'Singapore', 'UAE', 'Germany', 'Canada', 'Other'];
 
 const CompanySetupWizard = ({ onComplete, onSkip }) => {
     const [form, setForm] = React.useState({ displayName: '', companyName: '', size: '11-50', industry: 'Technology', email: '', password: '' });
@@ -2717,13 +2822,13 @@ const CompanySetupWizard = ({ onComplete, onSkip }) => {
                             <div>
                                 <label style={LBL}>Industry</label>
                                 <select value={form.industry} onChange={e => set('industry', e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
-                                    {['Technology','Finance','Healthcare','Retail','Manufacturing','Education','Consulting','Other'].map(i => <option key={i}>{i}</option>)}
+                                    {['Technology', 'Finance', 'Healthcare', 'Retail', 'Manufacturing', 'Education', 'Consulting', 'Other'].map(i => <option key={i}>{i}</option>)}
                                 </select>
                             </div>
                             <div>
                                 <label style={LBL}>Company size</label>
                                 <select value={form.size} onChange={e => set('size', e.target.value)} style={{ ...INP, cursor: 'pointer' }}>
-                                    {['1-10','11-50','51-200','201-500','500+'].map(s => <option key={s}>{s}</option>)}
+                                    {['1-10', '11-50', '51-200', '201-500', '500+'].map(s => <option key={s}>{s}</option>)}
                                 </select>
                             </div>
                         </div>
@@ -2802,11 +2907,11 @@ const LandingPage = ({ onEnterApp, onStartSetup }) => {
 /* ═══════════════════════════════════════════════════════════════
    LOCALSTORAGE UTILITIES
    ═══════════════════════════════════════════════════════════════ */
-const LS_CONFIG_KEY  = "peoplecore_company_config";
+const LS_CONFIG_KEY = "peoplecore_company_config";
 const LS_SESSION_KEY = "peoplecore_session";
-const lsSave  = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch {} };
-const lsLoad  = (key)      => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; } };
-const lsClear = (...keys)  => { try { keys.forEach(k => localStorage.removeItem(k)); } catch {} };
+const lsSave = (key, val) => { try { localStorage.setItem(key, JSON.stringify(val)); } catch { } };
+const lsLoad = (key) => { try { const v = localStorage.getItem(key); return v ? JSON.parse(v) : null; } catch { return null; } };
+const lsClear = (...keys) => { try { keys.forEach(k => localStorage.removeItem(k)); } catch { } };
 
 // ── CHANGE: industry config moved to src/industryConfig.js (imported above) ──
 // ── CHANGE: KPI value resolver — located near DashboardPage ──
@@ -2894,24 +2999,24 @@ const DashboardPage = () => {
     });
     const dismissGuide = () => {
         setGuideDismissed(true);
-        try { localStorage.setItem("pc_guide_dismissed", "true"); } catch {}
+        try { localStorage.setItem("pc_guide_dismissed", "true"); } catch { }
     };
 
     // ── Live stats ────────────────────────────────────────────────
-    const active         = employees.filter(e => e.status === "Active").length;
-    const onLeave        = employees.filter(e => e.status === "On Leave").length;
-    const pendingLeaves  = leaveRequests.filter(l => l.status === "Pending").length;
-    const todayStr       = "2026-03-13";
-    const todayAtt       = attendance.filter(a => a.date === todayStr);
-    const present        = todayAtt.filter(a => a.status === "Present").length;
-    const late           = todayAtt.filter(a => a.status === "Late").length;
-    const absent         = todayAtt.filter(a => a.status === "Absent").length;
+    const active = employees.filter(e => e.status === "Active").length;
+    const onLeave = employees.filter(e => e.status === "On Leave").length;
+    const pendingLeaves = leaveRequests.filter(l => l.status === "Pending").length;
+    const todayStr = "2026-03-13";
+    const todayAtt = attendance.filter(a => a.date === todayStr);
+    const present = todayAtt.filter(a => a.status === "Present").length;
+    const late = todayAtt.filter(a => a.status === "Late").length;
+    const absent = todayAtt.filter(a => a.status === "Absent").length;
     const pendingPayroll = payroll.filter(p => p.status === "Pending").length;
-    const unread         = notifications.filter(n => !n.read).length;
+    const unread = notifications.filter(n => !n.read).length;
 
     const { showToast } = useToast();
     const approveLeave = (id) => { setLeaveRequests(prev => prev.map(l => l.id === id ? { ...l, status: "Approved", approvedBy: "EMP002" } : l)); showToast("Leave request approved"); };
-    const rejectLeave  = (id) => { setLeaveRequests(prev => prev.map(l => l.id === id ? { ...l, status: "Rejected" } : l)); showToast("Leave request rejected", "error"); };
+    const rejectLeave = (id) => { setLeaveRequests(prev => prev.map(l => l.id === id ? { ...l, status: "Rejected" } : l)); showToast("Leave request rejected", "error"); };
 
     const depts = {};
     employees.filter(e => e.status !== "Inactive").forEach(e => { depts[e.dept] = (depts[e.dept] || 0) + 1; });
@@ -3102,22 +3207,22 @@ const DashboardPage = () => {
 
     // ── Industry config ───────────────────────────────────────────
     const effectiveConfig = companyConfig || lsLoad(LS_CONFIG_KEY);
-    const industry        = effectiveConfig?.company?.industry;
-    const iCfg            = INDUSTRY_CONFIGS[industry] ?? null;
-    const companyName     = effectiveConfig?.company?.name || "";
+    const industry = effectiveConfig?.company?.industry;
+    const iCfg = INDUSTRY_CONFIGS[industry] ?? null;
+    const companyName = effectiveConfig?.company?.name || "";
     const interp = (str) => (str || "").replace("{company}", companyName || "Your Company");
 
     const SEVERITY_STYLES = {
-        info:     { bg: C.infoBg,    border: C.infoBorder,    icon: C.info,    text: C.info    },
-        warning:  { bg: C.warningBg, border: C.warningBorder, icon: C.warning, text: C.warning },
-        critical: { bg: C.dangerBg,  border: C.dangerBorder,  icon: C.danger,  text: C.danger  },
+        info: { bg: C.infoBg, border: C.infoBorder, icon: C.info, text: C.info },
+        warning: { bg: C.warningBg, border: C.warningBorder, icon: C.warning, text: C.warning },
+        critical: { bg: C.dangerBg, border: C.dangerBorder, icon: C.danger, text: C.danger },
     };
 
     // ── Reusable mini leave row ───────────────────────────────────
     const LeaveRow = ({ lr, compact }) => {
         const emp = employees.find(e => e.id === lr.empId);
         return (
-            <div style={{ padding: compact ? "10px 20px" : "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+            <div style={{ padding: compact ? "10px 20px" : "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                 <Avatar name={emp?.name || "?"} size={32} />
                 <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{emp?.name}</div>
@@ -3125,7 +3230,7 @@ const DashboardPage = () => {
                 </div>
                 <div style={{ display: "flex", gap: 4 }}>
                     <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={12} color="#fff" /></Btn>
-                    <Btn variant="danger"  size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={12} /></Btn>
+                    <Btn variant="danger" size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={12} /></Btn>
                 </div>
             </div>
         );
@@ -3167,23 +3272,23 @@ const DashboardPage = () => {
     const avgRating = React.useMemo(() => { const rated = employees.filter(e => e.rating > 0); return rated.length ? (rated.reduce((s, e) => s + e.rating, 0) / rated.length).toFixed(1) : "–"; }, [employees]);
     const newHires = employees.filter(e => { try { const d = new Date(e.startDate); return d >= new Date("2026-01-01"); } catch { return false; } }).length;
     const KPI_POOL = React.useMemo(() => [
-        { id: "headcount",    label: "Total Employees",     value: String(employees.length),      sub: `+${newHires} since Jan`,              up: true,  icon: "Users" },
-        { id: "here_today",   label: "Here Today",          value: String(present + late),         sub: `${absent} absent · ${late} late`,     up: absent === 0, icon: "UserCheck" },
-        { id: "on_leave",     label: "On Leave",            value: String(onLeave),                sub: `${pendingLeaves} pending approval`,    up: false, icon: "Plane" },
-        { id: "attendance",   label: "Attendance Rate",     value: `${attPct}%`,                   sub: "Today vs expected",                   up: attPct >= 80, icon: "CalendarCheck" },
-        { id: "goals",        label: "Goals on Track",      value: `${okrPct}%`,                   sub: "+3% from last quarter",               up: true,  icon: "Target" },
-        { id: "pending_leave",label: "Pending Leave",       value: String(pendingLeaves),          sub: pendingLeaves > 0 ? "Needs review" : "All cleared", up: pendingLeaves === 0, icon: "Clock" },
-        { id: "skill_reviews",label: "Skill Reviews",       value: String(skillGapCount),          sub: skillGapCount > 0 ? "Awaiting validation" : "Up to date", up: skillGapCount === 0, icon: "BookOpen" },
-        { id: "at_risk",      label: "Flight Risk",         value: String(highRiskCount),          sub: "Employees at risk",                   up: highRiskCount === 0, icon: "AlertTriangle" },
-        { id: "chemistry",    label: "Team Chemistry",      value: `${avgChemistry}%`,             sub: `Across ${teamChemistry.length} teams`, up: avgChemistry >= 65, icon: "Heart" },
-        { id: "payroll_pend", label: "Payroll Pending",     value: String(pendingPayroll),         sub: "Awaiting processing",                 up: pendingPayroll === 0, icon: "DollarSign" },
-        { id: "avg_rating",   label: "Avg Performance",     value: String(avgRating),              sub: "Out of 5.0",                          up: parseFloat(avgRating) >= 3.5, icon: "Star" },
-        { id: "absent_cost",  label: "Absence Cost Today",  value: attEcon.fmt(attEcon.absentCost),sub: "Lost productivity",                   up: attEcon.absentCost === 0, icon: "TrendingDown" },
+        { id: "headcount", label: "Total Employees", value: String(employees.length), sub: `+${newHires} since Jan`, up: true, icon: "Users" },
+        { id: "here_today", label: "Here Today", value: String(present + late), sub: `${absent} absent · ${late} late`, up: absent === 0, icon: "UserCheck" },
+        { id: "on_leave", label: "On Leave", value: String(onLeave), sub: `${pendingLeaves} pending approval`, up: false, icon: "Plane" },
+        { id: "attendance", label: "Attendance Rate", value: `${attPct}%`, sub: "Today vs expected", up: attPct >= 80, icon: "CalendarCheck" },
+        { id: "goals", label: "Goals on Track", value: `${okrPct}%`, sub: "+3% from last quarter", up: true, icon: "Target" },
+        { id: "pending_leave", label: "Pending Leave", value: String(pendingLeaves), sub: pendingLeaves > 0 ? "Needs review" : "All cleared", up: pendingLeaves === 0, icon: "Clock" },
+        { id: "skill_reviews", label: "Skill Reviews", value: String(skillGapCount), sub: skillGapCount > 0 ? "Awaiting validation" : "Up to date", up: skillGapCount === 0, icon: "BookOpen" },
+        { id: "at_risk", label: "Flight Risk", value: String(highRiskCount), sub: "Employees at risk", up: highRiskCount === 0, icon: "AlertTriangle" },
+        { id: "chemistry", label: "Team Chemistry", value: `${avgChemistry}%`, sub: `Across ${teamChemistry.length} teams`, up: avgChemistry >= 65, icon: "Heart" },
+        { id: "payroll_pend", label: "Payroll Pending", value: String(pendingPayroll), sub: "Awaiting processing", up: pendingPayroll === 0, icon: "DollarSign" },
+        { id: "avg_rating", label: "Avg Performance", value: String(avgRating), sub: "Out of 5.0", up: parseFloat(avgRating) >= 3.5, icon: "Star" },
+        { id: "absent_cost", label: "Absence Cost Today", value: attEcon.fmt(attEcon.absentCost), sub: "Lost productivity", up: attEcon.absentCost === 0, icon: "TrendingDown" },
     ], [employees, present, late, absent, late, onLeave, pendingLeaves, attPct, okrPct, skillGapCount, highRiskCount, avgChemistry, teamChemistry, pendingPayroll, avgRating, attEcon, newHires]);
 
     // ── Dashboard widget prefs ──────────────────────────────────
     const DEFAULT_PREFS = {
-        selectedKpis: ["headcount","here_today","on_leave","goals","pending_leave","skill_reviews"],
+        selectedKpis: ["headcount", "here_today", "on_leave", "goals", "pending_leave", "skill_reviews"],
         charts: true,
         pending: true,
     };
@@ -3194,7 +3299,7 @@ const DashboardPage = () => {
     });
     const savePrefs = (next) => {
         setDashPrefs(next);
-        try { localStorage.setItem("peoplecore_dash_prefs", JSON.stringify(next)); } catch {}
+        try { localStorage.setItem("peoplecore_dash_prefs", JSON.stringify(next)); } catch { }
     };
     const toggleKpi = (id) => {
         const sel = dashPrefs.selectedKpis;
@@ -3213,7 +3318,7 @@ const DashboardPage = () => {
                         style={{ position: "fixed", inset: 0, background: "rgba(15,23,42,0.3)", zIndex: 500, display: "flex", justifyContent: "flex-end" }}>
                         <motion.div initial={{ x: 360 }} animate={{ x: 0 }} exit={{ x: 360 }} transition={{ duration: 0.22, ease: "easeOut" }}
                             onClick={e => e.stopPropagation()}
-                            style={{ width: 340, background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
+                            style={{ width: 340, background: _darkMode ? C.white : T.surfaceCard, borderLeft: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, padding: "24px 20px", overflowY: "auto", display: "flex", flexDirection: "column" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                                 <div style={{ fontSize: 16, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Customize Dashboard</div>
                                 <div onClick={() => setShowCustomize(false)} style={{ cursor: "pointer", padding: 4, borderRadius: 6 }}><Icon n="close" size={16} color={_darkMode ? C.textMuted : T.outline} /></div>
@@ -3228,7 +3333,7 @@ const DashboardPage = () => {
                                     const on = dashPrefs.selectedKpis.includes(kpi.id);
                                     return (
                                         <div key={kpi.id} onClick={() => toggleKpi(kpi.id)}
-                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", border: `1px solid ${on ? (_darkMode ? C.primaryMid : T.primary+"44") : (_darkMode ? C.borderLight : T.outlineVar+"22")}`, transition: "all 0.15s" }}>
+                                            style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 12px", borderRadius: 10, cursor: "pointer", background: on ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", border: `1px solid ${on ? (_darkMode ? C.primaryMid : T.primary + "44") : (_darkMode ? C.borderLight : T.outlineVar + "22")}`, transition: "all 0.15s" }}>
                                             <div style={{ width: 30, height: 30, borderRadius: 8, background: on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.bg : T.surfaceLow), display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "background 0.15s" }}>
                                                 <KpiIcon size={14} color={on ? "#fff" : (_darkMode ? C.textMuted : T.outline)} strokeWidth={2} />
                                             </div>
@@ -3236,7 +3341,7 @@ const DashboardPage = () => {
                                                 <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{kpi.label}</div>
                                                 <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{kpi.sub}</div>
                                             </div>
-                                            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar+"50")}`, background: on ? (_darkMode ? C.primary : T.primary) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
+                                            <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${on ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50")}`, background: on ? (_darkMode ? C.primary : T.primary) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.15s" }}>
                                                 {on && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
                                             </div>
                                         </div>
@@ -3247,16 +3352,16 @@ const DashboardPage = () => {
                             {/* Section toggles */}
                             <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, letterSpacing: "0.6px", textTransform: "uppercase", marginBottom: 10 }}>Sections</div>
                             {[
-                                { key: "charts",  label: "Charts & Analytics", desc: "Weekly attendance chart + donuts" },
-                                { key: "pending", label: "Pending Actions",    desc: "Leave approvals, recent activity" },
+                                { key: "charts", label: "Charts & Analytics", desc: "Weekly attendance chart + donuts" },
+                                { key: "pending", label: "Pending Actions", desc: "Leave approvals, recent activity" },
                             ].map(w => (
-                                <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                <div key={w.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "12px 0", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                                     <div>
                                         <div style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{w.label}</div>
                                         <div style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{w.desc}</div>
                                     </div>
                                     <div onClick={() => savePrefs({ ...dashPrefs, [w.key]: !dashPrefs[w.key] })}
-                                        style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar+"50"), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
+                                        style={{ width: 38, height: 22, borderRadius: 11, background: dashPrefs[w.key] ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50"), position: "relative", cursor: "pointer", transition: "background 0.2s", flexShrink: 0 }}>
                                         <motion.div animate={{ x: dashPrefs[w.key] ? 18 : 2 }} transition={{ duration: 0.2 }}
                                             style={{ width: 18, height: 18, borderRadius: "50%", background: "#fff", position: "absolute", top: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.2)" }} />
                                     </div>
@@ -3275,7 +3380,7 @@ const DashboardPage = () => {
                 </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                     <Btn variant="outline" size="sm" onClick={() => {
-                        const rows = [["Metric","Value","Sub"], ...KPI_POOL.map(k => [k.label, k.value, k.sub])];
+                        const rows = [["Metric", "Value", "Sub"], ...KPI_POOL.map(k => [k.label, k.value, k.sub])];
                         const csv = rows.map(r => r.join(",")).join("\n");
                         const a = document.createElement("a"); a.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv); a.download = "dashboard_kpis.csv"; a.click();
                     }}>
@@ -3292,12 +3397,12 @@ const DashboardPage = () => {
                 const selected = KPI_POOL.filter(k => dashPrefs.selectedKpis.includes(k.id));
                 const cols = Math.min(selected.length, 6);
                 return (
-                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, marginBottom: 18, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, marginBottom: 18, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                         <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
                             {selected.map((s, i) => {
                                 const KIcon = Lucide[s.icon] || Lucide.Circle;
                                 return (
-                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
                                             <KIcon size={13} color={_darkMode ? C.textMuted : T.outline} strokeWidth={2} />
                                             <span style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>{s.label}</span>
@@ -3321,7 +3426,7 @@ const DashboardPage = () => {
                 const empBase = employees.filter(e => e.status !== "Inactive").length;
                 const thisWeek = [0.72, 0.85, 0.92, 0.68, 0.88, 0.80, 0.76].map(r => Math.round(r * empBase));
                 const lastWeek = [0.65, 0.78, 0.84, 0.72, 0.80, 0.73, 0.69].map(r => Math.round(r * empBase));
-                const dayLbls = ["SUN","MON","TUE","WED","THU","FRI","SAT"];
+                const dayLbls = ["SUN", "MON", "TUE", "WED", "THU", "FRI", "SAT"];
                 const cW = 480, cH = 190, pL = 32, pR = 8, pT = 12, pB = 28;
                 const iW = cW - pL - pR, iH = cH - pT - pB;
                 const maxV = Math.max(...thisWeek, ...lastWeek) + 2;
@@ -3329,10 +3434,10 @@ const DashboardPage = () => {
                 const Y = (v) => pT + iH - (v / maxV) * iH;
                 const bezier = (data) => data.map((v, i) => {
                     if (i === 0) return `M ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;
-                    const cx = ((X(i-1) + X(i)) / 2).toFixed(1);
-                    return `C ${cx} ${Y(data[i-1]).toFixed(1)} ${cx} ${Y(v).toFixed(1)} ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;
+                    const cx = ((X(i - 1) + X(i)) / 2).toFixed(1);
+                    return `C ${cx} ${Y(data[i - 1]).toFixed(1)} ${cx} ${Y(v).toFixed(1)} ${X(i).toFixed(1)} ${Y(v).toFixed(1)}`;
                 }).join(" ");
-                const area = (data, grad) => `${bezier(data)} L ${X(6).toFixed(1)} ${(pT+iH).toFixed(1)} L ${pL} ${(pT+iH).toFixed(1)} Z`;
+                const area = (data, grad) => `${bezier(data)} L ${X(6).toFixed(1)} ${(pT + iH).toFixed(1)} L ${pL} ${(pT + iH).toFixed(1)} Z`;
 
                 // Sparkline for status card
                 const spData = [8, 12, 9, 14, 11, 13, active];
@@ -3342,18 +3447,18 @@ const DashboardPage = () => {
                 const spY = (v) => spH - (v / spMaxV) * spH;
                 const spBez = spData.map((v, i) => {
                     if (i === 0) return `M 0 ${spY(v).toFixed(1)}`;
-                    const cx = ((spX(i-1) + spX(i)) / 2).toFixed(1);
-                    return `C ${cx} ${spY(spData[i-1]).toFixed(1)} ${cx} ${spY(v).toFixed(1)} ${spX(i).toFixed(1)} ${spY(v).toFixed(1)}`;
+                    const cx = ((spX(i - 1) + spX(i)) / 2).toFixed(1);
+                    return `C ${cx} ${spY(spData[i - 1]).toFixed(1)} ${cx} ${spY(v).toFixed(1)} ${spX(i).toFixed(1)} ${spY(v).toFixed(1)}`;
                 }).join(" ");
 
                 const attPct = Math.round(((present + late) / Math.max(empBase, 1)) * 100);
-                const donutStroke = (pct, r) => { const c = 2 * Math.PI * r; return `${(pct/100*c).toFixed(1)} ${c.toFixed(1)}`; };
+                const donutStroke = (pct, r) => { const c = 2 * Math.PI * r; return `${(pct / 100 * c).toFixed(1)} ${c.toFixed(1)}`; };
 
                 const primaryColor = _darkMode ? C.primary : T.primary;
                 return (
                     <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16, marginBottom: 18 }}>
                         {/* Left: Line chart */}
-                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, padding: "20px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 18 }}>
                                 <div>
                                     <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Weekly Attendance</div>
@@ -3427,7 +3532,7 @@ const DashboardPage = () => {
                             </div>
 
                             {/* Two donut stats */}
-                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, padding: "18px 20px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                                 <div style={{ display: "flex", gap: 16 }}>
                                     {[
                                         { label: "Attendance Rate", sub: "Today", pct: attPct, color: primaryColor },
@@ -3438,7 +3543,7 @@ const DashboardPage = () => {
                                         return (
                                             <div key={d.label} style={{ flex: 1, display: "flex", alignItems: "center", gap: 12 }}>
                                                 <svg width="56" height="56" viewBox="0 0 56 56" style={{ flexShrink: 0 }}>
-                                                    <circle cx="28" cy="28" r={r} fill="none" stroke={_darkMode ? "rgba(255,255,255,0.08)" : T.outlineVar+"28"} strokeWidth="5" />
+                                                    <circle cx="28" cy="28" r={r} fill="none" stroke={_darkMode ? "rgba(255,255,255,0.08)" : T.outlineVar + "28"} strokeWidth="5" />
                                                     <circle cx="28" cy="28" r={r} fill="none" stroke={d.color} strokeWidth="5"
                                                         strokeDasharray={dash} strokeDashoffset={circ * 0.25} strokeLinecap="round"
                                                         style={{ transform: "rotate(-90deg)", transformOrigin: "28px 28px", transition: "stroke-dasharray 0.6s ease" }} />
@@ -3466,10 +3571,10 @@ const DashboardPage = () => {
                 return (
                     <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16 }}>
                         {/* Left: Market / Department overview */}
-                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Department Overview</div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
+                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
                                     <span style={{ fontSize: 12, color: _darkMode ? C.textMid : T.onSurfaceVar, fontWeight: 500 }}>This month</span>
                                     <Lucide.ChevronDown size={12} color={_darkMode ? C.textMuted : T.outline} />
                                 </div>
@@ -3492,8 +3597,8 @@ const DashboardPage = () => {
 
                         {/* Right: Todo / Pending list */}
                         <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
-                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", flex: 1, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, overflow: "hidden", flex: 1, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                <div style={{ padding: "14px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                     <div style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Pending Leave</div>
                                     {pendingLeaves > 0 && <span style={{ fontSize: 11, fontWeight: 600, background: C.warningBg, color: C.warning, border: `1px solid ${C.warningBorder}`, borderRadius: 20, padding: "2px 8px" }}>{pendingLeaves}</span>}
                                 </div>
@@ -3503,7 +3608,7 @@ const DashboardPage = () => {
                                         : pendingLeaveList.slice(0, 4).map(lr => {
                                             const emp = employees.find(e => e.id === lr.empId);
                                             return (
-                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                                                     <Avatar name={emp?.name || "?"} size={28} />
                                                     <div style={{ flex: 1, minWidth: 0 }}>
                                                         <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name || "Employee"}</div>
@@ -3519,7 +3624,7 @@ const DashboardPage = () => {
                                     }
                                 </div>
                                 {pendingLeaveList.length > 4 && (
-                                    <div style={{ padding: "10px 18px", textAlign: "center", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                    <div style={{ padding: "10px 18px", textAlign: "center", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                                         <button onClick={() => navigate && navigate("time_leave")} style={{ fontSize: 12, fontWeight: 600, color: primaryColor, background: "none", border: "none", cursor: "pointer", fontFamily: "inherit" }}>
                                             View all {pendingLeaveList.length} requests
                                         </button>
@@ -3527,13 +3632,13 @@ const DashboardPage = () => {
                                 )}
                             </div>
                             {/* Recent activity */}
-                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                                <div style={{ padding: "12px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                            <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                <div style={{ padding: "12px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                                     <div style={{ fontSize: 13.5, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Recent Activity</div>
                                 </div>
                                 <div>
                                     {(notifications || []).slice(0, 3).map(n => (
-                                        <div key={n.id} style={{ padding: "9px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
+                                        <div key={n.id} style={{ padding: "9px 18px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", gap: 10, alignItems: "flex-start" }}>
                                             <div style={{ width: 7, height: 7, borderRadius: "50%", background: n.read ? (_darkMode ? C.border : T.outlineVar) : primaryColor, marginTop: 5, flexShrink: 0 }} />
                                             <div>
                                                 <div style={{ fontSize: 12, color: _darkMode ? C.text : T.onSurface, fontWeight: n.read ? 400 : 600, lineHeight: 1.4 }}>{n.msg}</div>
@@ -3699,17 +3804,17 @@ const PeoplePage = ({ pageKey }) => {
                     <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
                         {[
                             { label: "Filters", icon: Lucide.SlidersHorizontal },
-                            { label: "Sort",    icon: Lucide.ArrowUpDown },
+                            { label: "Sort", icon: Lucide.ArrowUpDown },
                         ].map(btn => (
                             <motion.button key={btn.label} whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
-                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                                style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                                 <btn.icon size={14} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
                                 {btn.label}
                             </motion.button>
                         ))}
                         <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
                             onClick={() => setIsBulkImporting(true)}
-                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
+                            style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 18px", borderRadius: 999, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "60"}`, background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontWeight: 600, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                             <Lucide.Upload size={14} color={_darkMode ? C.textMuted : T.onSurfaceVar} strokeWidth={2} />
                             Import CSV
                         </motion.button>
@@ -3897,12 +4002,12 @@ const PeoplePage = ({ pageKey }) => {
                 <>
                     {/* Search bar + view toggle */}
                     <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 24 }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: 10, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 12, padding: "9px 16px", flex: 1, maxWidth: 360, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 10, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 12, padding: "9px 16px", flex: 1, maxWidth: 360, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
                             <Lucide.Search size={15} color={_darkMode ? C.textMuted : T.outline} />
                             <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search people..." style={{ border: "none", background: "transparent", outline: "none", fontSize: 13.5, color: _darkMode ? C.text : T.onSurface, flex: 1, fontFamily: "inherit" }} />
                         </div>
                         {/* Grid / List toggle */}
-                        <div style={{ display: "flex", background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 10, padding: 3, gap: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
+                        <div style={{ display: "flex", background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 10, padding: 3, gap: 2, boxShadow: "0 1px 3px rgba(0,0,0,0.05)" }}>
                             {[{ mode: "grid", Icon: Lucide.LayoutGrid }, { mode: "list", Icon: Lucide.List }].map(({ mode, Icon: Ic }) => (
                                 <button key={mode} onClick={() => setViewMode(mode)}
                                     style={{ width: 32, height: 32, borderRadius: 8, border: "none", background: viewMode === mode ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", transition: "background 0.15s" }}>
@@ -3923,7 +4028,7 @@ const PeoplePage = ({ pageKey }) => {
                                 {search ? `No results for "${search}" — try a different name or email` : "Add your first employee to get started"}
                             </div>
                             {search
-                                ? <button onClick={() => setSearch("")} style={{ padding: "8px 18px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", color: primaryColor, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>
+                                ? <button onClick={() => setSearch("")} style={{ padding: "8px 18px", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: "transparent", color: primaryColor, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Clear search</button>
                                 : <button onClick={() => setIsAdding(true)} style={{ padding: "8px 18px", borderRadius: 8, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>Add Employee</button>
                             }
                         </div>
@@ -3931,8 +4036,8 @@ const PeoplePage = ({ pageKey }) => {
 
                     {/* List view */}
                     {viewMode === "list" && filtered.length > 0 && (
-                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", marginBottom: 24 }}>
-                            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 120px", padding: "10px 20px", background: _darkMode ? C.bg : T.surfaceLow, borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>
+                        <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, overflow: "hidden", boxShadow: "0 1px 4px rgba(0,0,0,0.06)", marginBottom: 24 }}>
+                            <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 120px", padding: "10px 20px", background: _darkMode ? C.bg : T.surfaceLow, borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}` }}>
                                 {["Employee", "Department", "Role", "Office", "Status"].map(h => (
                                     <div key={h} style={{ fontSize: 10.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.7px" }}>{h}</div>
                                 ))}
@@ -3941,7 +4046,7 @@ const PeoplePage = ({ pageKey }) => {
                                 const statusCfg = { "Active": { bg: T.primaryFixed, color: T.primaryFixedText, label: "ACTIVE" }, "On Leave": { bg: T.tertiaryFixed, color: T.tertiary, label: "ON LEAVE" }, "Inactive": { bg: "#e2e2e2", color: "#5c5c5c", label: "INACTIVE" } }[e.status] || { bg: "#e2e2e2", color: "#5c5c5c", label: e.status };
                                 return (
                                     <div key={e.id} onClick={() => navigate("people_Profile", { id: e.id })}
-                                        style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 120px", padding: "12px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"20"}` : "none", alignItems: "center", cursor: "pointer", transition: "background 0.12s" }}
+                                        style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 120px", padding: "12px 20px", borderBottom: i < filtered.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "20"}` : "none", alignItems: "center", cursor: "pointer", transition: "background 0.12s" }}
                                         onMouseEnter={ev => ev.currentTarget.style.background = _darkMode ? C.tableRow : T.surfaceLow + "60"}
                                         onMouseLeave={ev => ev.currentTarget.style.background = "transparent"}>
                                         <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
@@ -3967,9 +4072,9 @@ const PeoplePage = ({ pageKey }) => {
                         {filtered.map((e, i) => {
                             const office = e.country === "GB" ? "London" : "Colombo";
                             const statusCfg = {
-                                "Active":   { bg: T.primaryFixed,  color: T.primaryFixedText, label: "ACTIVE"   },
-                                "On Leave": { bg: T.tertiaryFixed, color: T.tertiary,          label: "ON LEAVE" },
-                                "Inactive": { bg: "#e2e2e2",        color: "#5c5c5c",           label: "INACTIVE" },
+                                "Active": { bg: T.primaryFixed, color: T.primaryFixedText, label: "ACTIVE" },
+                                "On Leave": { bg: T.tertiaryFixed, color: T.tertiary, label: "ON LEAVE" },
+                                "Inactive": { bg: "#e2e2e2", color: "#5c5c5c", label: "INACTIVE" },
                             }[e.status] || { bg: "#e2e2e2", color: "#5c5c5c", label: e.status.toUpperCase() };
 
                             return (
@@ -3977,7 +4082,7 @@ const PeoplePage = ({ pageKey }) => {
                                     initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.03, duration: 0.2 }}
                                     whileHover={{ y: -3, boxShadow: "0 10px 28px rgba(0,0,0,0.12)" }}
                                     onClick={() => navigate("people_Profile", { id: e.id })}
-                                    style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 20, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"22"}`, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 10, cursor: "pointer" }}>
+                                    style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 20, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "22"}`, boxShadow: "0 1px 4px rgba(0,0,0,0.07)", padding: 10, cursor: "pointer" }}>
 
                                     {/* Avatar area */}
                                     <div style={{ position: "relative", borderRadius: 13, height: 140, background: _darkMode ? C.bg : T.surfaceLow, marginBottom: 10, overflow: "hidden" }}>
@@ -3995,7 +4100,7 @@ const PeoplePage = ({ pageKey }) => {
                                     <div style={{ fontSize: 11.5, color: primaryColor, fontWeight: 600, marginBottom: 10 }}>{e.level}</div>
 
                                     {/* Dept + Office */}
-                                    <div style={{ display: "flex", gap: 12, paddingTop: 8, borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"30"}` }}>
+                                    <div style={{ display: "flex", gap: 12, paddingTop: 8, borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "30"}` }}>
                                         <div>
                                             <div style={{ fontSize: 8.5, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.7px", marginBottom: 2 }}>DEPT</div>
                                             <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurface }}>{e.dept}</div>
@@ -4023,7 +4128,7 @@ const PeoplePage = ({ pageKey }) => {
                         ].map((item, idx) => {
                             if (item.type === "ellipsis") return <span key={idx} style={{ fontSize: 13, color: _darkMode ? C.textMuted : T.outline, padding: "0 6px" }}>...</span>;
                             if (item.type === "prev" || item.type === "next") return (
-                                <button key={idx} style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                                <button key={idx} style={{ width: 36, height: 36, borderRadius: "50%", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                                     {item.type === "prev" ? <Lucide.ChevronLeft size={15} color={_darkMode ? C.textMuted : T.onSurfaceVar} /> : <Lucide.ChevronRight size={15} color={_darkMode ? C.textMuted : T.onSurfaceVar} />}
                                 </button>
                             );
@@ -4365,15 +4470,15 @@ const AddEmployeePage = () => {
                         <Fld label="Country">
                             <Select
                                 options={[
-                                    { label: "Sri Lanka (LK)",     value: "LK" },
+                                    { label: "Sri Lanka (LK)", value: "LK" },
                                     { label: "United Kingdom (GB)", value: "GB" },
-                                    { label: "Singapore (SG)",      value: "SG" },
-                                    { label: "United States (US)",  value: "US" },
-                                    { label: "Australia (AU)",      value: "AU" },
-                                    { label: "India (IN)",          value: "IN" },
-                                    { label: "UAE (AE)",            value: "AE" },
-                                    { label: "Germany (DE)",        value: "DE" },
-                                    { label: "Canada (CA)",         value: "CA" },
+                                    { label: "Singapore (SG)", value: "SG" },
+                                    { label: "United States (US)", value: "US" },
+                                    { label: "Australia (AU)", value: "AU" },
+                                    { label: "India (IN)", value: "IN" },
+                                    { label: "UAE (AE)", value: "AE" },
+                                    { label: "Germany (DE)", value: "DE" },
+                                    { label: "Canada (CA)", value: "CA" },
                                 ]}
                                 value={formData.country}
                                 onChange={e => setFormData(p => ({ ...p, country: e.target.value }))}
@@ -4830,15 +4935,15 @@ const rankCandidates = (incumbent, allEmployees, jobFamilies) => {
    ═══════════════════════════════════════════════════════════════ */
 const OffboardingPage = () => {
     const { employees, jobFamilies, successionPlans, setSuccessionPlans } = React.useContext(DataCtx);
-    const [showInit, setShowInit]     = React.useState(false);
+    const [showInit, setShowInit] = React.useState(false);
     const [selectedEmp, setSelectedEmp] = React.useState("");
-    const [lastDay, setLastDay]       = React.useState("");
-    const [reason, setReason]         = React.useState("Resignation");
-    const [cases, setCases]           = React.useState([
+    const [lastDay, setLastDay] = React.useState("");
+    const [reason, setReason] = React.useState("Resignation");
+    const [cases, setCases] = React.useState([
         { id: "OFF001", empId: "EMP004", empName: "Ayesha Farook", dept: "QA", reason: "Resignation", lastDay: "2026-03-31", tasks: { exitSurvey: true, knowTransfer: false, assetsReturned: false, accessRevoked: false, finalSettlement: false }, penaltyFlag: false },
     ]);
-    const [saved, setSaved]           = React.useState(false);
-    const [ktWarning, setKtWarning]   = React.useState(null);
+    const [saved, setSaved] = React.useState(false);
+    const [ktWarning, setKtWarning] = React.useState(null);
     // penaltyConfirm: null | { caseId, empName, salary }
     const [penaltyConfirm, setPenaltyConfirm] = React.useState(null);
     const [penaltyForm, setPenaltyForm] = React.useState({ amount: "", deductFrom: "settlement", note: "" });
@@ -4846,43 +4951,43 @@ const OffboardingPage = () => {
 
     /* ── Task metadata: order, label, owner, icon ── */
     const TASK_META = [
-        { key: "exitSurvey",      label: "Exit Survey",        owner: "HR",      ownerColor: C.primary,  ownerBg: C.primaryLight, icon: Lucide.ClipboardList },
-        { key: "knowTransfer",    label: "Knowledge Transfer", owner: "Manager", ownerColor: C.success,  ownerBg: C.successBg,    icon: Lucide.BookOpen },
-        { key: "assetsReturned",  label: "Assets Returned",    owner: "IT",      ownerColor: C.info,     ownerBg: C.infoBg,       icon: Lucide.Package },
-        { key: "accessRevoked",   label: "Access Revoked",     owner: "IT",      ownerColor: C.info,     ownerBg: C.infoBg,       icon: Lucide.ShieldOff },
-        { key: "finalSettlement", label: "Final Settlement",   owner: "Finance", ownerColor: C.warning,  ownerBg: C.warningBg,    icon: Lucide.Receipt },
+        { key: "exitSurvey", label: "Exit Survey", owner: "HR", ownerColor: C.primary, ownerBg: C.primaryLight, icon: Lucide.ClipboardList },
+        { key: "knowTransfer", label: "Knowledge Transfer", owner: "Manager", ownerColor: C.success, ownerBg: C.successBg, icon: Lucide.BookOpen },
+        { key: "assetsReturned", label: "Assets Returned", owner: "IT", ownerColor: C.info, ownerBg: C.infoBg, icon: Lucide.Package },
+        { key: "accessRevoked", label: "Access Revoked", owner: "IT", ownerColor: C.info, ownerBg: C.infoBg, icon: Lucide.ShieldOff },
+        { key: "finalSettlement", label: "Final Settlement", owner: "Finance", ownerColor: C.warning, ownerBg: C.warningBg, icon: Lucide.Receipt },
     ];
 
     /* ── T-token shorthands ── */
-    const surf  = _darkMode ? C.white     : T.surfaceCard;
-    const bdr   = _darkMode ? C.border    : T.outlineVar + "28";
-    const bdrSm = _darkMode ? C.border    : T.outlineVar + "22";
-    const txt   = _darkMode ? C.text      : T.onSurface;
+    const surf = _darkMode ? C.white : T.surfaceCard;
+    const bdr = _darkMode ? C.border : T.outlineVar + "28";
+    const bdrSm = _darkMode ? C.border : T.outlineVar + "22";
+    const txt = _darkMode ? C.text : T.onSurface;
     const muted = _darkMode ? C.textMuted : T.onSurfaceVar;
-    const low   = _darkMode ? C.bg        : T.surfaceLow;
+    const low = _darkMode ? C.bg : T.surfaceLow;
     const cardSt = { background: surf, border: `1px solid ${bdr}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
 
     /* ── Workflow journey stages (5-step) ── */
     const WORKFLOW_STAGES = [
-        { key: "start",    label: "Resignation",  SIcon: Lucide.FileSignature },
-        { key: "handover", label: "Handover",      SIcon: Lucide.Users },
-        { key: "it",       label: "IT & Assets",   SIcon: Lucide.ShieldOff },
-        { key: "finance",  label: "Settlement",    SIcon: Lucide.Receipt },
-        { key: "done",     label: "Completed",     SIcon: Lucide.CheckCircle2 },
+        { key: "start", label: "Resignation", SIcon: Lucide.FileSignature },
+        { key: "handover", label: "Handover", SIcon: Lucide.Users },
+        { key: "it", label: "IT & Assets", SIcon: Lucide.ShieldOff },
+        { key: "finance", label: "Settlement", SIcon: Lucide.Receipt },
+        { key: "done", label: "Completed", SIcon: Lucide.CheckCircle2 },
     ];
     const getWorkflowStage = (tasks) => {
-        if (tasks.finalSettlement)                          return 4;
-        if (tasks.accessRevoked && tasks.assetsReturned)   return 3;
-        if (tasks.assetsReturned || tasks.accessRevoked)   return 2;
-        if (tasks.knowTransfer   || tasks.exitSurvey)      return 1;
+        if (tasks.finalSettlement) return 4;
+        if (tasks.accessRevoked && tasks.assetsReturned) return 3;
+        if (tasks.assetsReturned || tasks.accessRevoked) return 2;
+        if (tasks.knowTransfer || tasks.exitSurvey) return 1;
         return 0;
     };
 
     /* ── Department task groups ── */
     const DEPT_GROUPS = [
-        { dept: "HR",      color: "#6366f1", bg: "#eef2ff", keys: ["exitSurvey"] },
+        { dept: "HR", color: "#6366f1", bg: "#eef2ff", keys: ["exitSurvey"] },
         { dept: "Manager", color: "#10b981", bg: "#ecfdf5", keys: ["knowTransfer"] },
-        { dept: "IT",      color: "#0ea5e9", bg: "#e0f2fe", keys: ["assetsReturned", "accessRevoked"] },
+        { dept: "IT", color: "#0ea5e9", bg: "#e0f2fe", keys: ["assetsReturned", "accessRevoked"] },
         { dept: "Finance", color: "#f59e0b", bg: "#fffbeb", keys: ["finalSettlement"] },
     ];
 
@@ -4896,11 +5001,11 @@ const OffboardingPage = () => {
     /* ── Knowledge risk per case ── */
     const getKnowledgeRisk = (cas) => {
         const emp = employees.find(e => e.id === cas.empId);
-        if (cas.tasks.knowTransfer) return { level: "LOW",  color: "#10b981", bg: "#ecfdf5", reasons: ["Knowledge transfer completed"] };
-        const isEng = ["Engineering","DevOps","Product"].includes(emp?.dept);
+        if (cas.tasks.knowTransfer) return { level: "LOW", color: "#10b981", bg: "#ecfdf5", reasons: ["Knowledge transfer completed"] };
+        const isEng = ["Engineering", "DevOps", "Product"].includes(emp?.dept);
         const tenure = emp?.startDate ? Math.floor((new Date() - new Date(emp.startDate)) / (365.25 * 86400000)) : 0;
-        if (isEng && tenure >= 2)  return { level: "HIGH",   color: "#ef4444", bg: "#fef2f2", reasons: [`${emp.dept} role with ${tenure}y tenure — critical knowledge at risk`, "No KT session scheduled", "Documented processes may be missing"] };
-        if (isEng || tenure >= 1)  return { level: "MEDIUM", color: "#f59e0b", bg: "#fffbeb", reasons: ["Knowledge transfer not yet started", tenure >= 1 ? `${tenure}y institutional knowledge` : "Technical role"] };
+        if (isEng && tenure >= 2) return { level: "HIGH", color: "#ef4444", bg: "#fef2f2", reasons: [`${emp.dept} role with ${tenure}y tenure — critical knowledge at risk`, "No KT session scheduled", "Documented processes may be missing"] };
+        if (isEng || tenure >= 1) return { level: "MEDIUM", color: "#f59e0b", bg: "#fffbeb", reasons: ["Knowledge transfer not yet started", tenure >= 1 ? `${tenure}y institutional knowledge` : "Technical role"] };
         return { level: "LOW", color: "#10b981", bg: "#ecfdf5", reasons: ["Short tenure — minimal knowledge risk"] };
     };
 
@@ -4970,7 +5075,7 @@ const OffboardingPage = () => {
         setKtWarning(null);
     };
 
-    const activeCases    = cases.filter(c => !c.tasks.finalSettlement);
+    const activeCases = cases.filter(c => !c.tasks.finalSettlement);
     const completedCases = cases.filter(c => c.tasks.finalSettlement);
     const inpSt = { width: "100%", padding: "9px 12px", border: `1px solid ${bdrSm}`, borderRadius: 9, fontSize: 13, background: low, color: txt, outline: "none", fontFamily: "inherit", boxSizing: "border-box" };
 
@@ -5008,10 +5113,10 @@ const OffboardingPage = () => {
                 {/* ── Stat Cards ── */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 14, marginBottom: 22 }}>
                     {[
-                        { label: "ACTIVE CASES",    value: activeCases.length,    sub: "In progress",          iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.GitBranch },
-                        { label: "SETTLED",          value: completedCases.length, sub: "Fully completed",       iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.CheckCircle2 },
-                        { label: "PENDING TASKS",    value: activeCases.reduce((a, c) => a + Object.values(c.tasks).filter(v => !v).length, 0), sub: "Across all cases", iconBg: "#fef2f2", iconColor: "#ef4444", LIcon: Lucide.Clock },
-                        { label: "AVG COMPLETION",   value: cases.length ? Math.round(cases.reduce((a, c) => a + progress(c.tasks).pct, 0) / cases.length) + "%" : "—", sub: "Task progress", iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.TrendingUp },
+                        { label: "ACTIVE CASES", value: activeCases.length, sub: "In progress", iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.GitBranch },
+                        { label: "SETTLED", value: completedCases.length, sub: "Fully completed", iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.CheckCircle2 },
+                        { label: "PENDING TASKS", value: activeCases.reduce((a, c) => a + Object.values(c.tasks).filter(v => !v).length, 0), sub: "Across all cases", iconBg: "#fef2f2", iconColor: "#ef4444", LIcon: Lucide.Clock },
+                        { label: "AVG COMPLETION", value: cases.length ? Math.round(cases.reduce((a, c) => a + progress(c.tasks).pct, 0) / cases.length) + "%" : "—", sub: "Task progress", iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.TrendingUp },
                     ].map(s => (
                         <motion.div key={s.label} whileHover={{ y: -2 }} style={{ ...cardSt, padding: "18px 20px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                             <div>
@@ -5029,8 +5134,8 @@ const OffboardingPage = () => {
                 {/* ── Offboarding Cases ── */}
                 <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
                     {cases.map(cas => {
-                        const prog     = progress(cas.tasks);
-                        const wfStage  = getWorkflowStage(cas.tasks);
+                        const prog = progress(cas.tasks);
+                        const wfStage = getWorkflowStage(cas.tasks);
                         const daysLeft = getDaysLeft(cas.lastDay);
                         const isOverdue = daysLeft <= 0;
                         const urgencyColor = isOverdue ? "#ef4444" : daysLeft <= 5 ? "#f59e0b" : muted;
@@ -5112,9 +5217,9 @@ const OffboardingPage = () => {
                                         {TASK_META.map(meta => {
                                             const dg = DEPT_GROUPS.find(d => d.keys.includes(meta.key));
                                             const color = dg?.color || muted;
-                                            const bg    = dg?.bg    || low;
-                                            const dept  = dg?.dept  || "";
-                                            const done  = cas.tasks[meta.key];
+                                            const bg = dg?.bg || low;
+                                            const dept = dg?.dept || "";
+                                            const done = cas.tasks[meta.key];
                                             const isBlocked = meta.key === "finalSettlement" && !cas.tasks.knowTransfer && !done;
                                             const TIcon = meta.icon;
                                             return (
@@ -5563,11 +5668,11 @@ const LifecyclePage = () => {
 /* ─── INITIAL SCHEDULE DATA — deterministic seed from employee name ─────────── */
 const INITIAL_SCHEDULES = (() => {
     const seed = [
-        { Mon:"Onsite",  Tue:"Remote",  Wed:"Onsite",  Thu:"Remote",  Fri:"Onsite",  Sat:"Day Off", Sun:"Day Off" },
-        { Mon:"Onsite",  Tue:"Onsite",  Wed:"Remote",  Thu:"Onsite",  Fri:"Remote",  Sat:"Day Off", Sun:"Day Off" },
-        { Mon:"Remote",  Tue:"Onsite",  Wed:"Onsite",  Thu:"Remote",  Fri:"Onsite",  Sat:"Day Off", Sun:"Day Off" },
-        { Mon:"Onsite",  Tue:"Onsite",  Wed:"Onsite",  Thu:"Onsite",  Fri:"Onsite",  Sat:"Day Off", Sun:"Day Off" },
-        { Mon:"Remote",  Tue:"Remote",  Wed:"Onsite",  Thu:"Onsite",  Fri:"Remote",  Sat:"Day Off", Sun:"Day Off" },
+        { Mon: "Onsite", Tue: "Remote", Wed: "Onsite", Thu: "Remote", Fri: "Onsite", Sat: "Day Off", Sun: "Day Off" },
+        { Mon: "Onsite", Tue: "Onsite", Wed: "Remote", Thu: "Onsite", Fri: "Remote", Sat: "Day Off", Sun: "Day Off" },
+        { Mon: "Remote", Tue: "Onsite", Wed: "Onsite", Thu: "Remote", Fri: "Onsite", Sat: "Day Off", Sun: "Day Off" },
+        { Mon: "Onsite", Tue: "Onsite", Wed: "Onsite", Thu: "Onsite", Fri: "Onsite", Sat: "Day Off", Sun: "Day Off" },
+        { Mon: "Remote", Tue: "Remote", Wed: "Onsite", Thu: "Onsite", Fri: "Remote", Sat: "Day Off", Sun: "Day Off" },
     ];
     const out = {};
     INITIAL_EMPLOYEES.forEach(emp => { out[emp.id] = { ...seed[emp.name.charCodeAt(0) % seed.length] }; });
@@ -5579,43 +5684,43 @@ const INITIAL_SCHEDULES = (() => {
    ═══════════════════════════════════════════════════════════════ */
 /* ─── INITIAL PERFORMANCE DATA — lifted to DataCtx so all sub-pages share it ─ */
 const INITIAL_GOALS = [
-    { id: "G001", empId: "EMP001", empName: "James Perera",    title: "Launch new design system",      dept: "Engineering", type: "OKR",      progress: 80, due: "2026-03-31", status: "On Track",  reviewScore: null, selfAssessment: "", weight: "High",   linkedReward: "£500 performance bonus on completion" },
-    { id: "G002", empId: "EMP003", empName: "David Chen",      title: "Increase MAU by 25%",           dept: "Product",     type: "KPI",      progress: 60, due: "2026-06-30", status: "At Risk",   reviewScore: null, selfAssessment: "", weight: "High",   linkedReward: "" },
-    { id: "G003", empId: "EMP002", empName: "Nimali Silva",    title: "Reduce attrition to <5%",       dept: "HR & Admin",  type: "KPI",      progress: 90, due: "2026-12-31", status: "On Track",  reviewScore: null, selfAssessment: "", weight: "High",   linkedReward: "" },
-    { id: "G004", empId: "EMP005", empName: "Rayan Kumar",     title: "Complete AWS certification",    dept: "Engineering", type: "Dev Goal", progress: 45, due: "2026-04-15", status: "At Risk",   reviewScore: null, selfAssessment: "", weight: "Medium", linkedReward: "Team lunch + recognition badge" },
-    { id: "G005", empId: "EMP006", empName: "Emma Thompson",   title: "Close £500k in new contracts",  dept: "Sales",       type: "KPI",      progress: 55, due: "2026-06-30", status: "At Risk",   reviewScore: null, selfAssessment: "", weight: "High",   linkedReward: "Q2 commission accelerator 1.2×" },
-    { id: "G006", empId: "EMP001", empName: "James Perera",    title: "Mentor 2 junior engineers",     dept: "Engineering", type: "Dev Goal", progress: 100,due: "2026-03-15", status: "Completed", reviewScore: null, selfAssessment: "Both mentees have completed their onboarding tasks.", weight: "Medium", linkedReward: "Culture Champion badge" },
+    { id: "G001", empId: "EMP001", empName: "James Perera", title: "Launch new design system", dept: "Engineering", type: "OKR", progress: 80, due: "2026-03-31", status: "On Track", reviewScore: null, selfAssessment: "", weight: "High", linkedReward: "£500 performance bonus on completion" },
+    { id: "G002", empId: "EMP003", empName: "David Chen", title: "Increase MAU by 25%", dept: "Product", type: "KPI", progress: 60, due: "2026-06-30", status: "At Risk", reviewScore: null, selfAssessment: "", weight: "High", linkedReward: "" },
+    { id: "G003", empId: "EMP002", empName: "Nimali Silva", title: "Reduce attrition to <5%", dept: "HR & Admin", type: "KPI", progress: 90, due: "2026-12-31", status: "On Track", reviewScore: null, selfAssessment: "", weight: "High", linkedReward: "" },
+    { id: "G004", empId: "EMP005", empName: "Rayan Kumar", title: "Complete AWS certification", dept: "Engineering", type: "Dev Goal", progress: 45, due: "2026-04-15", status: "At Risk", reviewScore: null, selfAssessment: "", weight: "Medium", linkedReward: "Team lunch + recognition badge" },
+    { id: "G005", empId: "EMP006", empName: "Emma Thompson", title: "Close £500k in new contracts", dept: "Sales", type: "KPI", progress: 55, due: "2026-06-30", status: "At Risk", reviewScore: null, selfAssessment: "", weight: "High", linkedReward: "Q2 commission accelerator 1.2×" },
+    { id: "G006", empId: "EMP001", empName: "James Perera", title: "Mentor 2 junior engineers", dept: "Engineering", type: "Dev Goal", progress: 100, due: "2026-03-15", status: "Completed", reviewScore: null, selfAssessment: "Both mentees have completed their onboarding tasks.", weight: "Medium", linkedReward: "Culture Champion badge" },
 ];
 
 const INITIAL_FEEDBACKS = [
-    { id: "F001", from: "EMP002", fromName: "Nimali Silva",    to: "EMP001", toName: "James Perera",     type: "Praise",      message: "Exceptional work on the component library. Delivered ahead of schedule.",              date: "2026-03-10", visibility: "Public"  },
-    { id: "F002", from: "EMP003", fromName: "David Chen",      to: "EMP005", toName: "Rayan Kumar",      type: "Development", message: "Would benefit from more proactive communication during sprint planning.",              date: "2026-03-08", visibility: "Private" },
-    { id: "F003", from: "EMP002", fromName: "Nimali Silva",    to: "EMP006", toName: "Emma Thompson",    type: "Praise",      message: "Closed the largest deal of Q1. Great negotiation skills.",                          date: "2026-03-05", visibility: "Public"  },
-    { id: "F004", from: "EMP001", fromName: "James Perera",    to: "EMP013", toName: "Saman Wijesinghe", type: "Praise",      message: "Strong start — picking up React concepts very quickly for a junior.",               date: "2026-03-12", visibility: "Public"  },
-    { id: "F005", from: "EMP009", fromName: "Chamara Silva",   to: "EMP014", toName: "Dilani Fernando",  type: "Development", message: "Budget forecasts need more scenario analysis. Let's discuss in our 1:1.",           date: "2026-03-11", visibility: "Private" },
+    { id: "F001", from: "EMP002", fromName: "Nimali Silva", to: "EMP001", toName: "James Perera", type: "Praise", message: "Exceptional work on the component library. Delivered ahead of schedule.", date: "2026-03-10", visibility: "Public" },
+    { id: "F002", from: "EMP003", fromName: "David Chen", to: "EMP005", toName: "Rayan Kumar", type: "Development", message: "Would benefit from more proactive communication during sprint planning.", date: "2026-03-08", visibility: "Private" },
+    { id: "F003", from: "EMP002", fromName: "Nimali Silva", to: "EMP006", toName: "Emma Thompson", type: "Praise", message: "Closed the largest deal of Q1. Great negotiation skills.", date: "2026-03-05", visibility: "Public" },
+    { id: "F004", from: "EMP001", fromName: "James Perera", to: "EMP013", toName: "Saman Wijesinghe", type: "Praise", message: "Strong start — picking up React concepts very quickly for a junior.", date: "2026-03-12", visibility: "Public" },
+    { id: "F005", from: "EMP009", fromName: "Chamara Silva", to: "EMP014", toName: "Dilani Fernando", type: "Development", message: "Budget forecasts need more scenario analysis. Let's discuss in our 1:1.", date: "2026-03-11", visibility: "Private" },
 ];
 
 const INITIAL_RECOGNITIONS = [
-    { id: "R001", empId: "EMP001", empName: "James Perera",  badge: "🏆", title: "MVP of the Month", reason: "Led the component library overhaul, improving dev velocity by 30%.", awardedBy: "Sarah Admin", date: "2026-03-01", points: 500 },
-    { id: "R002", empId: "EMP006", empName: "Emma Thompson", badge: "🌟", title: "Top Performer",    reason: "Closed the largest deal in Q1 history — £220k contract.",           awardedBy: "Sarah Admin", date: "2026-02-28", points: 400 },
-    { id: "R003", empId: "EMP002", empName: "Nimali Silva",  badge: "💎", title: "Culture Champion", reason: "Organised 3 team-building events, significantly improving morale.",    awardedBy: "Sarah Admin", date: "2026-02-15", points: 350 },
-    { id: "R004", empId: "EMP005", empName: "Rayan Kumar",   badge: "🚀", title: "Fast Learner",     reason: "Completed 5 certifications in Q4 2025.",                             awardedBy: "David Chen",  date: "2026-01-20", points: 250 },
+    { id: "R001", empId: "EMP001", empName: "James Perera", badge: "🏆", title: "MVP of the Month", reason: "Led the component library overhaul, improving dev velocity by 30%.", awardedBy: "Sarah Admin", date: "2026-03-01", points: 500 },
+    { id: "R002", empId: "EMP006", empName: "Emma Thompson", badge: "🌟", title: "Top Performer", reason: "Closed the largest deal in Q1 history — £220k contract.", awardedBy: "Sarah Admin", date: "2026-02-28", points: 400 },
+    { id: "R003", empId: "EMP002", empName: "Nimali Silva", badge: "💎", title: "Culture Champion", reason: "Organised 3 team-building events, significantly improving morale.", awardedBy: "Sarah Admin", date: "2026-02-15", points: 350 },
+    { id: "R004", empId: "EMP005", empName: "Rayan Kumar", badge: "🚀", title: "Fast Learner", reason: "Completed 5 certifications in Q4 2025.", awardedBy: "David Chen", date: "2026-01-20", points: 250 },
 ];
 
 const INITIAL_REVIEWS = [
-    { id: "REV001", empId: "EMP001", empName: "James Perera",  dept: "Engineering", reviewer: "Sarah Admin",  cycle: "Q1 2026", status: "In Progress",             selfScore: 4.2, managerScore: null, finalScore: null, comments: "",                            dueDate: "2026-03-31" },
-    { id: "REV002", empId: "EMP005", empName: "Rayan Kumar",   dept: "Engineering", reviewer: "James Perera", cycle: "Q1 2026", status: "Pending Self-Assessment", selfScore: null,managerScore: null, finalScore: null, comments: "",                            dueDate: "2026-03-31" },
-    { id: "REV003", empId: "EMP003", empName: "David Chen",    dept: "Product",     reviewer: "Sarah Admin",  cycle: "Q1 2026", status: "Completed",               selfScore: 4.0, managerScore: 4.2,  finalScore: 4.2,  comments: "Solid quarter.",            dueDate: "2026-03-31" },
-    { id: "REV008", empId: "EMP006", empName: "Emma Thompson", dept: "Sales",       reviewer: "Sarah Admin",  cycle: "Q1 2026", status: "Completed",               selfScore: 4.6, managerScore: 4.8,  finalScore: 4.7,  comments: "Outstanding sales quarter.", dueDate: "2026-03-31" },
-    { id: "REV009", empId: "EMP002", empName: "Nimali Silva",  dept: "HR & Admin",  reviewer: "Sarah Admin",  cycle: "Q1 2026", status: "Completed",               selfScore: 3.8, managerScore: 4.0,  finalScore: 3.9,  comments: "Strong culture contribution.", dueDate: "2026-03-31" },
-    { id: "REV010", empId: "EMP007", empName: "Amara Osei",    dept: "Engineering", reviewer: "James Perera", cycle: "Q1 2026", status: "Completed",               selfScore: 2.8, managerScore: 3.0,  finalScore: 2.9,  comments: "Needs improvement on delivery timelines.", dueDate: "2026-03-31" },
+    { id: "REV001", empId: "EMP001", empName: "James Perera", dept: "Engineering", reviewer: "Sarah Admin", cycle: "Q1 2026", status: "In Progress", selfScore: 4.2, managerScore: null, finalScore: null, comments: "", dueDate: "2026-03-31" },
+    { id: "REV002", empId: "EMP005", empName: "Rayan Kumar", dept: "Engineering", reviewer: "James Perera", cycle: "Q1 2026", status: "Pending Self-Assessment", selfScore: null, managerScore: null, finalScore: null, comments: "", dueDate: "2026-03-31" },
+    { id: "REV003", empId: "EMP003", empName: "David Chen", dept: "Product", reviewer: "Sarah Admin", cycle: "Q1 2026", status: "Completed", selfScore: 4.0, managerScore: 4.2, finalScore: 4.2, comments: "Solid quarter.", dueDate: "2026-03-31" },
+    { id: "REV008", empId: "EMP006", empName: "Emma Thompson", dept: "Sales", reviewer: "Sarah Admin", cycle: "Q1 2026", status: "Completed", selfScore: 4.6, managerScore: 4.8, finalScore: 4.7, comments: "Outstanding sales quarter.", dueDate: "2026-03-31" },
+    { id: "REV009", empId: "EMP002", empName: "Nimali Silva", dept: "HR & Admin", reviewer: "Sarah Admin", cycle: "Q1 2026", status: "Completed", selfScore: 3.8, managerScore: 4.0, finalScore: 3.9, comments: "Strong culture contribution.", dueDate: "2026-03-31" },
+    { id: "REV010", empId: "EMP007", empName: "Amara Osei", dept: "Engineering", reviewer: "James Perera", cycle: "Q1 2026", status: "Completed", selfScore: 2.8, managerScore: 3.0, finalScore: 2.9, comments: "Needs improvement on delivery timelines.", dueDate: "2026-03-31" },
     // Q4 2025 — historical cycle
-    { id: "REV004", empId: "EMP001", empName: "James Perera",  dept: "Engineering", reviewer: "Sarah Admin",  cycle: "Q4 2025", status: "Completed",               selfScore: 4.0, managerScore: 3.8,  finalScore: 3.9,  comments: "Good quarter, room to grow on leadership.", dueDate: "2025-12-31" },
-    { id: "REV005", empId: "EMP005", empName: "Rayan Kumar",   dept: "Engineering", reviewer: "James Perera", cycle: "Q4 2025", status: "Completed",               selfScore: 3.5, managerScore: 3.7,  finalScore: 3.6,  comments: "Improving steadily.",       dueDate: "2025-12-31" },
-    { id: "REV006", empId: "EMP003", empName: "David Chen",    dept: "Product",     reviewer: "Sarah Admin",  cycle: "Q4 2025", status: "Completed",               selfScore: 3.8, managerScore: 4.0,  finalScore: 3.9,  comments: "Strong product delivery.",  dueDate: "2025-12-31" },
-    { id: "REV007", empId: "EMP006", empName: "Emma Thompson", dept: "Sales",       reviewer: "Sarah Admin",  cycle: "Q4 2025", status: "Completed",               selfScore: 4.3, managerScore: 4.5,  finalScore: 4.4,  comments: "Top closer of the quarter.", dueDate: "2025-12-31" },
-    { id: "REV011", empId: "EMP002", empName: "Nimali Silva",  dept: "HR & Admin",  reviewer: "Sarah Admin",  cycle: "Q4 2025", status: "Completed",               selfScore: 3.5, managerScore: 3.6,  finalScore: 3.6,  comments: "Consistent performer.",     dueDate: "2025-12-31" },
-    { id: "REV012", empId: "EMP007", empName: "Amara Osei",    dept: "Engineering", reviewer: "James Perera", cycle: "Q4 2025", status: "Completed",               selfScore: 2.5, managerScore: 2.8,  finalScore: 2.7,  comments: "Struggled with sprint commitments.", dueDate: "2025-12-31" },
+    { id: "REV004", empId: "EMP001", empName: "James Perera", dept: "Engineering", reviewer: "Sarah Admin", cycle: "Q4 2025", status: "Completed", selfScore: 4.0, managerScore: 3.8, finalScore: 3.9, comments: "Good quarter, room to grow on leadership.", dueDate: "2025-12-31" },
+    { id: "REV005", empId: "EMP005", empName: "Rayan Kumar", dept: "Engineering", reviewer: "James Perera", cycle: "Q4 2025", status: "Completed", selfScore: 3.5, managerScore: 3.7, finalScore: 3.6, comments: "Improving steadily.", dueDate: "2025-12-31" },
+    { id: "REV006", empId: "EMP003", empName: "David Chen", dept: "Product", reviewer: "Sarah Admin", cycle: "Q4 2025", status: "Completed", selfScore: 3.8, managerScore: 4.0, finalScore: 3.9, comments: "Strong product delivery.", dueDate: "2025-12-31" },
+    { id: "REV007", empId: "EMP006", empName: "Emma Thompson", dept: "Sales", reviewer: "Sarah Admin", cycle: "Q4 2025", status: "Completed", selfScore: 4.3, managerScore: 4.5, finalScore: 4.4, comments: "Top closer of the quarter.", dueDate: "2025-12-31" },
+    { id: "REV011", empId: "EMP002", empName: "Nimali Silva", dept: "HR & Admin", reviewer: "Sarah Admin", cycle: "Q4 2025", status: "Completed", selfScore: 3.5, managerScore: 3.6, finalScore: 3.6, comments: "Consistent performer.", dueDate: "2025-12-31" },
+    { id: "REV012", empId: "EMP007", empName: "Amara Osei", dept: "Engineering", reviewer: "James Perera", cycle: "Q4 2025", status: "Completed", selfScore: 2.5, managerScore: 2.8, finalScore: 2.7, comments: "Struggled with sprint commitments.", dueDate: "2025-12-31" },
 ];
 
 const INITIAL_SUCCESSION_PLANS = [
@@ -5626,11 +5731,11 @@ const INITIAL_SUCCESSION_PLANS = [
 
 const getRatingLabel = (score) => {
     if (score === null || score === undefined) return null;
-    if (score >= 4.5) return { label: "Outstanding",            color: "#8B5CF6" };
-    if (score >= 3.8) return { label: "Exceeds Expectations",   color: C.success };
-    if (score >= 3.0) return { label: "Meets Expectations",     color: C.info };
-    if (score >= 2.0) return { label: "Needs Improvement",      color: C.warning };
-    return               { label: "Below Expectations",         color: C.danger };
+    if (score >= 4.5) return { label: "Outstanding", color: "#8B5CF6" };
+    if (score >= 3.8) return { label: "Exceeds Expectations", color: C.success };
+    if (score >= 3.0) return { label: "Meets Expectations", color: C.info };
+    if (score >= 2.0) return { label: "Needs Improvement", color: C.warning };
+    return { label: "Below Expectations", color: C.danger };
 };
 
 // ── Unified Performance page (tabs: Overview, Goals, Feedback, Reviews) ──
@@ -5735,11 +5840,11 @@ const PerformanceOverviewPage = () => {
             {(() => {
                 const completedQ1 = (reviews || []).filter(r => r.finalScore !== null && r.cycle === "Q1 2026");
                 const BANDS = [
-                    { label: "Outstanding",          min: 4.5, max: 5.1, color: "#8B5CF6" },
+                    { label: "Outstanding", min: 4.5, max: 5.1, color: "#8B5CF6" },
                     { label: "Exceeds Expectations", min: 3.8, max: 4.5, color: C.success },
-                    { label: "Meets Expectations",   min: 3.0, max: 3.8, color: C.info    },
-                    { label: "Needs Improvement",    min: 2.0, max: 3.0, color: C.warning },
-                    { label: "Below Expectations",   min: 0,   max: 2.0, color: C.danger  },
+                    { label: "Meets Expectations", min: 3.0, max: 3.8, color: C.info },
+                    { label: "Needs Improvement", min: 2.0, max: 3.0, color: C.warning },
+                    { label: "Below Expectations", min: 0, max: 2.0, color: C.danger },
                 ];
                 const counts = BANDS.map(b => ({ ...b, count: completedQ1.filter(r => r.finalScore >= b.min && r.finalScore < b.max).length }));
                 const maxCount = Math.max(...counts.map(b => b.count), 1);
@@ -5762,18 +5867,20 @@ const PerformanceOverviewPage = () => {
                         <div style={{ background: C.white, border: `1px solid ${C.border}`, borderRadius: 14, overflow: "hidden", boxShadow: C.shadow }}>
                             <div style={{ padding: "14px 18px", borderBottom: `1px solid ${C.borderLight}`, fontSize: 14, fontWeight: 700, color: C.text }}>Score Summary — Q1 2026</div>
                             <div style={{ padding: "16px 18px", display: "flex", flexDirection: "column", gap: 12 }}>
-                                {completedQ1.map(r => { const rl = getRatingLabel(r.finalScore); return (
-                                    <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                                        <div>
-                                            <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{r.empName}</div>
-                                            <div style={{ fontSize: 11, color: C.textMuted }}>{r.dept}</div>
+                                {completedQ1.map(r => {
+                                    const rl = getRatingLabel(r.finalScore); return (
+                                        <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                            <div>
+                                                <div style={{ fontSize: 13, fontWeight: 600, color: C.text }}>{r.empName}</div>
+                                                <div style={{ fontSize: 11, color: C.textMuted }}>{r.dept}</div>
+                                            </div>
+                                            <div style={{ textAlign: "right" }}>
+                                                <div style={{ fontSize: 14, fontWeight: 800, color: rl.color }}>{r.finalScore}/5</div>
+                                                <div style={{ fontSize: 10, fontWeight: 600, color: rl.color }}>{rl.label}</div>
+                                            </div>
                                         </div>
-                                        <div style={{ textAlign: "right" }}>
-                                            <div style={{ fontSize: 14, fontWeight: 800, color: rl.color }}>{r.finalScore}/5</div>
-                                            <div style={{ fontSize: 10, fontWeight: 600, color: rl.color }}>{rl.label}</div>
-                                        </div>
-                                    </div>
-                                ); })}
+                                    );
+                                })}
                                 {completedQ1.length === 0 && <div style={{ fontSize: 13, color: C.textMuted }}>No completed reviews yet.</div>}
                             </div>
                         </div>
@@ -6255,10 +6362,10 @@ const RecognitionPage = () => {
    Returns a suggested score (0–5) and a per-dimension breakdown.
    ───────────────────────────────────────────────────────────── */
 const evaluateEmployee = (empId, { goals = [], feedbacks = [], recognitions = [], skillRequests = [] }) => {
-    const empGoals    = goals.filter(g => g.empId === empId);
-    const empFBs      = feedbacks.filter(f => f.to === empId);
-    const empRecs     = recognitions.filter(r => r.empId === empId);
-    const empSkills   = skillRequests.filter(s => s.empId === empId);
+    const empGoals = goals.filter(g => g.empId === empId);
+    const empFBs = feedbacks.filter(f => f.to === empId);
+    const empRecs = recognitions.filter(r => r.empId === empId);
+    const empSkills = skillRequests.filter(s => s.empId === empId);
 
     // ── Dimension 1: Goal Achievement (weight 40) ─────────────
     const PRIORITY = { High: 3, Medium: 2, Low: 1 };
@@ -6287,7 +6394,7 @@ const evaluateEmployee = (empId, { goals = [], feedbacks = [], recognitions = []
     let skillScore = null, skillDetail = "No skill requests";
     if (empSkills.length > 0) {
         const approved = empSkills.filter(s => s.status === "approved").length;
-        const pending  = empSkills.filter(s => s.status === "pending").length;
+        const pending = empSkills.filter(s => s.status === "pending").length;
         const rejected = empSkills.filter(s => s.status === "rejected").length;
         const raw = 2.5 + approved * 0.85 + pending * 0.2 - rejected * 0.15;
         skillScore = parseFloat(Math.max(0, Math.min(5, raw)).toFixed(2));
@@ -6304,10 +6411,10 @@ const evaluateEmployee = (empId, { goals = [], feedbacks = [], recognitions = []
 
     // ── Composite weighted average (redistribute if dims missing) ──
     const dims = [
-        { key: "goals",       score: goalScore,  baseWeight: 40, label: "Goal Achievement",  detail: goalDetail  },
-        { key: "feedback",    score: fbScore,    baseWeight: 25, label: "Feedback Quality",   detail: fbDetail    },
-        { key: "skills",      score: skillScore, baseWeight: 20, label: "Skill Development",  detail: skillDetail },
-        { key: "recognition", score: recScore,   baseWeight: 15, label: "Recognition",        detail: recDetail   },
+        { key: "goals", score: goalScore, baseWeight: 40, label: "Goal Achievement", detail: goalDetail },
+        { key: "feedback", score: fbScore, baseWeight: 25, label: "Feedback Quality", detail: fbDetail },
+        { key: "skills", score: skillScore, baseWeight: 20, label: "Skill Development", detail: skillDetail },
+        { key: "recognition", score: recScore, baseWeight: 15, label: "Recognition", detail: recDetail },
     ];
     const active = dims.filter(d => d.score !== null);
     const totalW = active.reduce((acc, d) => acc + d.baseWeight, 0);
@@ -7880,30 +7987,30 @@ const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
 
     // ── Status badges mapped to template token colours ──
     const leaveBadge = {
-        "Pending":  { bg: T.tertiaryFixed, color: T.tertiary,         label: "Pending"  },
-        "Approved": { bg: T.primaryFixed,  color: T.primaryFixedText, label: "Approved" },
-        "Rejected": { bg: "#ffdad6",       color: "#ba1a1a",          label: "Rejected" },
+        "Pending": { bg: T.tertiaryFixed, color: T.tertiary, label: "Pending" },
+        "Approved": { bg: T.primaryFixed, color: T.primaryFixedText, label: "Approved" },
+        "Rejected": { bg: "#ffdad6", color: "#ba1a1a", label: "Rejected" },
     };
 
     // Leave type chip colours — warm palette anchored to template primaries
     const leaveTypeChip = {
-        "Annual Leave":    { bg: T.primaryFixed,   color: T.primaryFixedText },
-        "Medical Leave":   { bg: "#ffdad6",         color: "#ba1a1a"          },
-        "Emergency Leave": { bg: T.tertiaryFixed,   color: T.tertiary         },
-        "Casual Leave":    { bg: "#d4f4e8",         color: "#166534"          },
+        "Annual Leave": { bg: T.primaryFixed, color: T.primaryFixedText },
+        "Medical Leave": { bg: "#ffdad6", color: "#ba1a1a" },
+        "Emergency Leave": { bg: T.tertiaryFixed, color: T.tertiary },
+        "Casual Leave": { bg: "#d4f4e8", color: "#166534" },
     };
 
     const leaveDistribution = [
-        { label: "Annual Leave",    count: 12, pct: 50, color: T.primary  },
-        { label: "Medical Leave",   count: 6,  pct: 25, color: "#ba1a1a"  },
-        { label: "Emergency Leave", count: 4,  pct: 17, color: T.tertiary },
-        { label: "Casual Leave",    count: 2,  pct: 8,  color: "#166534"  },
+        { label: "Annual Leave", count: 12, pct: 50, color: T.primary },
+        { label: "Medical Leave", count: 6, pct: 25, color: "#ba1a1a" },
+        { label: "Emergency Leave", count: 4, pct: 17, color: T.tertiary },
+        { label: "Casual Leave", count: 2, pct: 8, color: "#166534" },
     ];
 
-    const pendingCount  = requests.filter(r => r.status === "Pending").length;
+    const pendingCount = requests.filter(r => r.status === "Pending").length;
     const approvedCount = requests.filter(r => r.status === "Approved").length;
     const rejectedCount = requests.filter(r => r.status === "Rejected").length;
-    const onLeaveToday  = requests.filter(r => r.status === "Approved").slice(0, 3);
+    const onLeaveToday = requests.filter(r => r.status === "Approved").slice(0, 3);
 
     const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
 
@@ -8006,7 +8113,7 @@ const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
                         leaveRequests={requests.map(r => ({
                             empId: r.name, name: r.name, type: r.type,
                             from: `2026-${r.from.replace("Mar ", "03-").replace("Apr ", "04-").padStart(7, "0")}`,
-                            to:   `2026-${r.to.replace("Mar ", "03-").replace("Apr ", "04-").padStart(7, "0")}`,
+                            to: `2026-${r.to.replace("Mar ", "03-").replace("Apr ", "04-").padStart(7, "0")}`,
                             status: r.status
                         }))}
                         employees={allEmployees}
@@ -8137,7 +8244,7 @@ const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
                             <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                                 <Lucide.ChevronLeft size={16} color={T.onSurfaceVar} />
                             </motion.button>
-                            {[1,2,3].map(p => (
+                            {[1, 2, 3].map(p => (
                                 <button key={p} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: p === 1 ? T.primary : "transparent", color: p === 1 ? "#fff" : T.onSurfaceVar, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
                             ))}
                             <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -8226,10 +8333,10 @@ const LeavePage = ({ pageKey, leaveApplyTrigger }) => {
                             <div style={{ fontSize: 13.5, color: T.onSurfaceVar, marginBottom: 20 }}>Avg remaining days per type</div>
                             <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                                 {[
-                                    { label: "Annual Leave",   avg: 11, bg: T.primaryFixed,  color: T.primaryFixedText },
-                                    { label: "Medical Leave",  avg: 8,  bg: "#ffdad6",        color: "#ba1a1a"          },
-                                    { label: "Emergency",      avg: 2,  bg: T.tertiaryFixed,  color: T.tertiary         },
-                                    { label: "Casual Leave",   avg: 5,  bg: "#d4f4e8",        color: "#166534"          },
+                                    { label: "Annual Leave", avg: 11, bg: T.primaryFixed, color: T.primaryFixedText },
+                                    { label: "Medical Leave", avg: 8, bg: "#ffdad6", color: "#ba1a1a" },
+                                    { label: "Emergency", avg: 2, bg: T.tertiaryFixed, color: T.tertiary },
+                                    { label: "Casual Leave", avg: 5, bg: "#d4f4e8", color: "#166534" },
                                 ].map(b => (
                                     <div key={b.label} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "11px 14px", borderRadius: 10, background: b.bg + "80", border: `1px solid ${b.bg}` }}>
                                         <span style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{b.label}</span>
@@ -8503,9 +8610,9 @@ const ConfigPage = () => {
                         <CardHeader title="Fallback & Override Settings" subtitle="Controls for when automated detection (biometric/geo-fence/IP) is unavailable" />
                         <div style={{ padding: "18px 20px", display: "flex", flexDirection: "column", gap: 12 }}>
                             {[
-                                { key: "manualOnsite",  label: "Allow manual onsite clock-in (fallback)",       desc: "Employees can manually declare Onsite when biometric terminals are under maintenance or geo-fence is temporarily inaccurate. Records are tagged as 'Manual Override' and highlighted in amber." },
-                                { key: "requireReason", label: "Require reason note for manual overrides",       desc: "Employee must select a reason (Device maintenance, Geo-fence error, New location, Other) before proceeding with a manual clock-in." },
-                                { key: "notifyAdmin",   label: "Notify HR Admin on manual override clock-ins",  desc: "HR receives a daily summary of all employees who used manual override clock-in that day." },
+                                { key: "manualOnsite", label: "Allow manual onsite clock-in (fallback)", desc: "Employees can manually declare Onsite when biometric terminals are under maintenance or geo-fence is temporarily inaccurate. Records are tagged as 'Manual Override' and highlighted in amber." },
+                                { key: "requireReason", label: "Require reason note for manual overrides", desc: "Employee must select a reason (Device maintenance, Geo-fence error, New location, Other) before proceeding with a manual clock-in." },
+                                { key: "notifyAdmin", label: "Notify HR Admin on manual override clock-ins", desc: "HR receives a daily summary of all employees who used manual override clock-in that day." },
                             ].map(s => (
                                 <div key={s.key} style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", padding: "14px 16px", background: C.bg, borderRadius: 10, border: `1px solid ${C.border}` }}>
                                     <div style={{ flex: 1, paddingRight: 16 }}>
@@ -8662,51 +8769,51 @@ const ReportsPage = () => {
 
     const [activeReport, setActiveReport] = useState("headcount");
     const [dateFrom, setDateFrom] = useState("2026-01-01");
-    const [dateTo, setDateTo]     = useState("2026-03-31");
-    const [filterDept,   setFilterDept]   = useState("All");
+    const [dateTo, setDateTo] = useState("2026-03-31");
+    const [filterDept, setFilterDept] = useState("All");
     const [filterStatus, setFilterStatus] = useState("All");
     const [selectedCols, setSelectedCols] = useState([]);
     const [generatedRows, setGeneratedRows] = useState(null);
     const [sortCol, setSortCol] = useState(null);
     const [sortDir, setSortDir] = useState("asc");
     const [scheduleModal, setScheduleModal] = useState(false);
-    const [scheduleDone,  setScheduleDone]  = useState(false);
+    const [scheduleDone, setScheduleDone] = useState(false);
     const [schedEmail, setSchedEmail] = useState("");
-    const [schedFreq,  setSchedFreq]  = useState("Weekly — Every Monday");
-    const [schedFmt,   setSchedFmt]   = useState("CSV");
+    const [schedFreq, setSchedFreq] = useState("Weekly — Every Monday");
+    const [schedFmt, setSchedFmt] = useState("CSV");
 
     const DEPTS_ALL = ["All", ...Array.from(new Set(employees.map(e => e.dept))).sort()];
-    const STATUSES  = ["All", "Active", "On Leave", "Inactive", "Pending", "Approved", "Rejected", "Present", "Late", "Absent"];
+    const STATUSES = ["All", "Active", "On Leave", "Inactive", "Pending", "Approved", "Rejected", "Present", "Late", "Absent"];
 
     const REPORT_CATALOG = [
-        { id: "headcount",  cat: "Workforce",         icon: "people",    label: "Headcount Report",  desc: "Employees by department, type, and status" },
-        { id: "turnover",   cat: "Workforce",         icon: "trending",  label: "Workforce Trends",  desc: "Headcount, attrition, and dept breakdown" },
+        { id: "headcount", cat: "Workforce", icon: "people", label: "Headcount Report", desc: "Employees by department, type, and status" },
+        { id: "turnover", cat: "Workforce", icon: "trending", label: "Workforce Trends", desc: "Headcount, attrition, and dept breakdown" },
         { id: "attendance", cat: "Time & Attendance", icon: "timesheet", label: "Attendance Report", desc: "Clock-in/out records and hours worked" },
-        { id: "leave",      cat: "Time & Attendance", icon: "leave",     label: "Leave Utilisation", desc: "Leave requests by type, status, and employee" },
-        { id: "payroll",    cat: "Finance",           icon: "invoices",  label: "Payroll Summary",   desc: "Salary cost breakdown by department" },
-        { id: "skills",     cat: "Talent",            icon: "briefcase", label: "Skills Coverage",   desc: "Skills distribution and gap count per team" },
+        { id: "leave", cat: "Time & Attendance", icon: "leave", label: "Leave Utilisation", desc: "Leave requests by type, status, and employee" },
+        { id: "payroll", cat: "Finance", icon: "invoices", label: "Payroll Summary", desc: "Salary cost breakdown by department" },
+        { id: "skills", cat: "Talent", icon: "briefcase", label: "Skills Coverage", desc: "Skills distribution and gap count per team" },
     ];
 
     const REPORT_COLS = {
-        headcount:  { all: ["name","dept","level","type","status","startDate","salary"],                    def: ["name","dept","level","type","status","startDate"] },
-        turnover:   { all: ["dept","headcount","active","onLeave","inactive","attritionRate"],             def: ["dept","headcount","active","onLeave","inactive","attritionRate"] },
-        attendance: { all: ["empName","dept","date","clockIn","clockOut","hours","status","mode"],         def: ["empName","date","clockIn","clockOut","hours","status","mode"] },
-        leave:      { all: ["empName","dept","type","from","to","days","status"],                          def: ["empName","dept","type","from","to","days","status"] },
-        payroll:    { all: ["dept","headcount","totalSalary","avgSalary","minSalary","maxSalary"],         def: ["dept","headcount","totalSalary","avgSalary","minSalary","maxSalary"] },
-        skills:     { all: ["dept","empCount","avgSkills","topSkill","gapCount"],                         def: ["dept","empCount","avgSkills","topSkill","gapCount"] },
+        headcount: { all: ["name", "dept", "level", "type", "status", "startDate", "salary"], def: ["name", "dept", "level", "type", "status", "startDate"] },
+        turnover: { all: ["dept", "headcount", "active", "onLeave", "inactive", "attritionRate"], def: ["dept", "headcount", "active", "onLeave", "inactive", "attritionRate"] },
+        attendance: { all: ["empName", "dept", "date", "clockIn", "clockOut", "hours", "status", "mode"], def: ["empName", "date", "clockIn", "clockOut", "hours", "status", "mode"] },
+        leave: { all: ["empName", "dept", "type", "from", "to", "days", "status"], def: ["empName", "dept", "type", "from", "to", "days", "status"] },
+        payroll: { all: ["dept", "headcount", "totalSalary", "avgSalary", "minSalary", "maxSalary"], def: ["dept", "headcount", "totalSalary", "avgSalary", "minSalary", "maxSalary"] },
+        skills: { all: ["dept", "empCount", "avgSkills", "topSkill", "gapCount"], def: ["dept", "empCount", "avgSkills", "topSkill", "gapCount"] },
     };
 
     const COL_LABELS = {
-        name:"Employee Name", dept:"Department", level:"Level / Role", type:"Emp. Type", status:"Status",
-        startDate:"Start Date", salary:`Salary (${ccy})`, empName:"Employee", date:"Date",
-        clockIn:"Clock In", clockOut:"Clock Out", hours:"Hours", mode:"Work Mode",
-        from:"From", to:"To", days:"Days", headcount:"Headcount",
-        totalSalary:`Total Salary (${ccy})`, avgSalary:`Avg Salary (${ccy})`, minSalary:`Min (${ccy})`, maxSalary:`Max (${ccy})`,
-        active:"Active", onLeave:"On Leave", inactive:"Inactive", attritionRate:"Attrition %",
-        empCount:"Employees", avgSkills:"Avg Skills", topSkill:"Top Skill", gapCount:"Skill Gaps",
+        name: "Employee Name", dept: "Department", level: "Level / Role", type: "Emp. Type", status: "Status",
+        startDate: "Start Date", salary: `Salary (${ccy})`, empName: "Employee", date: "Date",
+        clockIn: "Clock In", clockOut: "Clock Out", hours: "Hours", mode: "Work Mode",
+        from: "From", to: "To", days: "Days", headcount: "Headcount",
+        totalSalary: `Total Salary (${ccy})`, avgSalary: `Avg Salary (${ccy})`, minSalary: `Min (${ccy})`, maxSalary: `Max (${ccy})`,
+        active: "Active", onLeave: "On Leave", inactive: "Inactive", attritionRate: "Attrition %",
+        empCount: "Employees", avgSkills: "Avg Skills", topSkill: "Top Skill", gapCount: "Skill Gaps",
     };
 
-    const rCfg   = REPORT_CATALOG.find(r => r.id === activeReport);
+    const rCfg = REPORT_CATALOG.find(r => r.id === activeReport);
     const colCfg = REPORT_COLS[activeReport] || { all: [], def: [] };
 
     const selectReport = (id) => {
@@ -8813,9 +8920,9 @@ const ReportsPage = () => {
         const csvRows = displayRows.map(row => selectedCols.map(c => { const v = String(row[c] ?? "").replace(/"/g, '""'); return v.includes(",") ? `"${v}"` : v; }));
         const csv = [headers.join(","), ...csvRows.map(r => r.join(","))].join("\n");
         const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
-        const url  = URL.createObjectURL(blob);
-        const a    = document.createElement("a");
-        a.href = url; a.download = `${rCfg.label.replace(/\s+/g,"_")}_${dateFrom}_${dateTo}.csv`;
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url; a.download = `${rCfg.label.replace(/\s+/g, "_")}_${dateFrom}_${dateTo}.csv`;
         document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
     };
 
@@ -8874,10 +8981,10 @@ const ReportsPage = () => {
 
     const statusColor = (v) => {
         const lv = (v || "").toLowerCase();
-        if (["active","present","approved"].includes(lv))  return { bg: C.successBg, color: C.success, border: C.successBorder };
-        if (["pending","late"].includes(lv))               return { bg: C.warningBg, color: C.warning, border: C.warningBorder };
-        if (["absent","inactive","rejected"].includes(lv)) return { bg: C.dangerBg,  color: C.danger,  border: C.dangerBorder };
-        if (["on leave","remote","hybrid"].includes(lv))   return { bg: C.infoBg,    color: C.info,    border: C.infoBorder };
+        if (["active", "present", "approved"].includes(lv)) return { bg: C.successBg, color: C.success, border: C.successBorder };
+        if (["pending", "late"].includes(lv)) return { bg: C.warningBg, color: C.warning, border: C.warningBorder };
+        if (["absent", "inactive", "rejected"].includes(lv)) return { bg: C.dangerBg, color: C.danger, border: C.dangerBorder };
+        if (["on leave", "remote", "hybrid"].includes(lv)) return { bg: C.infoBg, color: C.info, border: C.infoBorder };
         return null;
     };
 
@@ -8929,7 +9036,7 @@ const ReportsPage = () => {
 
                 {/* Filter bar */}
                 <div style={{ padding: "12px 24px", borderBottom: `1px solid ${C.border}`, flexShrink: 0, background: C.bg, display: "flex", gap: 12, flexWrap: "wrap", alignItems: "flex-end" }}>
-                    {["attendance","leave"].includes(activeReport) && (<>
+                    {["attendance", "leave"].includes(activeReport) && (<>
                         <div>
                             <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, marginBottom: 4, textTransform: "uppercase" }}>From</div>
                             <input type="date" value={dateFrom} onChange={e => { setDateFrom(e.target.value); setGeneratedRows(null); }}
@@ -8945,7 +9052,7 @@ const ReportsPage = () => {
                         <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, marginBottom: 4, textTransform: "uppercase" }}>Department</div>
                         <Select options={DEPTS_ALL} value={filterDept} onChange={e => { setFilterDept(e.target.value); setGeneratedRows(null); }} style={{ minWidth: 148 }} />
                     </div>
-                    {["headcount","attendance","leave"].includes(activeReport) && (
+                    {["headcount", "attendance", "leave"].includes(activeReport) && (
                         <div>
                             <div style={{ fontSize: 10.5, fontWeight: 700, color: C.textMuted, marginBottom: 4, textTransform: "uppercase" }}>Status</div>
                             <Select options={STATUSES} value={filterStatus} onChange={e => { setFilterStatus(e.target.value); setGeneratedRows(null); }} style={{ minWidth: 128 }} />
@@ -9067,11 +9174,11 @@ const ReportsPage = () => {
                         </div>
                         <div>
                             <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Frequency</div>
-                            <Select options={["Weekly — Every Monday","Monthly — 1st of month","Quarterly","Daily"]} value={schedFreq} onChange={e => setSchedFreq(e.target.value)} style={{ width: "100%" }} />
+                            <Select options={["Weekly — Every Monday", "Monthly — 1st of month", "Quarterly", "Daily"]} value={schedFreq} onChange={e => setSchedFreq(e.target.value)} style={{ width: "100%" }} />
                         </div>
                         <div>
                             <div style={{ fontSize: 12, fontWeight: 700, color: C.text, marginBottom: 6 }}>Format</div>
-                            <Select options={["CSV","PDF (Print layout)"]} value={schedFmt} onChange={e => setSchedFmt(e.target.value)} style={{ width: "100%" }} />
+                            <Select options={["CSV", "PDF (Print layout)"]} value={schedFmt} onChange={e => setSchedFmt(e.target.value)} style={{ width: "100%" }} />
                         </div>
                         <div style={{ display: "flex", justifyContent: "flex-end", gap: 8, borderTop: `1px solid ${C.borderLight}`, paddingTop: 14 }}>
                             <Btn variant="outline" onClick={() => setScheduleModal(false)}>Cancel</Btn>
@@ -9088,11 +9195,11 @@ const ReportsPage = () => {
 
 /* ─── PAGE: WORK SCHEDULE MANAGER ────────────────────────────── */
 const SCHEDULE_TEMPLATES = [
-    { id: "tpl1", name: "Full Onsite",   desc: "Mon–Fri onsite, weekends off",          Icon: Lucide.Building2,    color: "#10B981", schedule: { Mon:"Onsite",  Tue:"Onsite",  Wed:"Onsite",  Thu:"Onsite",  Fri:"Onsite",  Sat:"Day Off", Sun:"Day Off" } },
-    { id: "tpl2", name: "Full Remote",   desc: "Mon–Fri remote, weekends off",          Icon: Lucide.Wifi,         color: "#6366F1", schedule: { Mon:"Remote",  Tue:"Remote",  Wed:"Remote",  Thu:"Remote",  Fri:"Remote",  Sat:"Day Off", Sun:"Day Off" } },
-    { id: "tpl3", name: "Hybrid 3–2",    desc: "Mon/Tue/Wed onsite · Thu/Fri remote",   Icon: Lucide.Shuffle,      color: "#F59E0B", schedule: { Mon:"Onsite",  Tue:"Onsite",  Wed:"Onsite",  Thu:"Remote",  Fri:"Remote",  Sat:"Day Off", Sun:"Day Off" } },
-    { id: "tpl4", name: "Hybrid 2–3",    desc: "Mon/Tue onsite · Wed–Fri remote",       Icon: Lucide.ArrowLeftRight, color: "#0EA5E9", schedule: { Mon:"Onsite",  Tue:"Onsite",  Wed:"Remote",  Thu:"Remote",  Fri:"Remote",  Sat:"Day Off", Sun:"Day Off" } },
-    { id: "tpl5", name: "Flex / Split",  desc: "Mon/Wed/Fri onsite · Tue/Thu remote",   Icon: Lucide.SplitSquareHorizontal, color: "#8B5CF6", schedule: { Mon:"Onsite",  Tue:"Remote",  Wed:"Onsite",  Thu:"Remote",  Fri:"Onsite",  Sat:"Day Off", Sun:"Day Off" } },
+    { id: "tpl1", name: "Full Onsite", desc: "Mon–Fri onsite, weekends off", Icon: Lucide.Building2, color: "#10B981", schedule: { Mon: "Onsite", Tue: "Onsite", Wed: "Onsite", Thu: "Onsite", Fri: "Onsite", Sat: "Day Off", Sun: "Day Off" } },
+    { id: "tpl2", name: "Full Remote", desc: "Mon–Fri remote, weekends off", Icon: Lucide.Wifi, color: "#6366F1", schedule: { Mon: "Remote", Tue: "Remote", Wed: "Remote", Thu: "Remote", Fri: "Remote", Sat: "Day Off", Sun: "Day Off" } },
+    { id: "tpl3", name: "Hybrid 3–2", desc: "Mon/Tue/Wed onsite · Thu/Fri remote", Icon: Lucide.Shuffle, color: "#F59E0B", schedule: { Mon: "Onsite", Tue: "Onsite", Wed: "Onsite", Thu: "Remote", Fri: "Remote", Sat: "Day Off", Sun: "Day Off" } },
+    { id: "tpl4", name: "Hybrid 2–3", desc: "Mon/Tue onsite · Wed–Fri remote", Icon: Lucide.ArrowLeftRight, color: "#0EA5E9", schedule: { Mon: "Onsite", Tue: "Onsite", Wed: "Remote", Thu: "Remote", Fri: "Remote", Sat: "Day Off", Sun: "Day Off" } },
+    { id: "tpl5", name: "Flex / Split", desc: "Mon/Wed/Fri onsite · Tue/Thu remote", Icon: Lucide.SplitSquareHorizontal, color: "#8B5CF6", schedule: { Mon: "Onsite", Tue: "Remote", Wed: "Onsite", Thu: "Remote", Fri: "Onsite", Sat: "Day Off", Sun: "Day Off" } },
 ];
 
 const WorkSchedulePage = () => {
@@ -9104,48 +9211,48 @@ const WorkSchedulePage = () => {
         customScheduleTemplates, setCustomScheduleTemplates,
     } = React.useContext(DataCtx);
 
-    const DAYS      = ["Mon","Tue","Wed","Thu","Fri","Sat","Sun"];
-    const DAY_LABELS = { Mon:"Monday", Tue:"Tuesday", Wed:"Wednesday", Thu:"Thursday", Fri:"Friday", Sat:"Saturday", Sun:"Sunday" };
-    const MODES     = ["Onsite","Remote","Hybrid","Day Off"];
-    const MODE_CFG  = {
-        "Onsite":  { color:"#10B981", bg:"#ECFDF5", border:"#A7F3D0" },
-        "Remote":  { color:"#6366F1", bg:"#EEF2FF", border:"#C7D2FE" },
-        "Hybrid":  { color:"#F59E0B", bg:"#FFFBEB", border:"#FDE68A" },
-        "Day Off": { color:"#94A3B8", bg:"#F8FAFC", border:"#E2E8F0" },
+    const DAYS = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"];
+    const DAY_LABELS = { Mon: "Monday", Tue: "Tuesday", Wed: "Wednesday", Thu: "Thursday", Fri: "Friday", Sat: "Saturday", Sun: "Sunday" };
+    const MODES = ["Onsite", "Remote", "Hybrid", "Day Off"];
+    const MODE_CFG = {
+        "Onsite": { color: "#10B981", bg: "#ECFDF5", border: "#A7F3D0" },
+        "Remote": { color: "#6366F1", bg: "#EEF2FF", border: "#C7D2FE" },
+        "Hybrid": { color: "#F59E0B", bg: "#FFFBEB", border: "#FDE68A" },
+        "Day Off": { color: "#94A3B8", bg: "#F8FAFC", border: "#E2E8F0" },
     };
-    const TPL_COLORS = ["#6366F1","#10B981","#F59E0B","#EF4444","#8B5CF6","#EC4899","#0EA5E9","#14B8A6"];
+    const TPL_COLORS = ["#6366F1", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#EC4899", "#0EA5E9", "#14B8A6"];
 
-    const [selectedId, setSelectedId]   = useState(employees[0]?.id || "");
-    const [search, setSearch]           = useState("");
-    const [savedFlash, setSavedFlash]   = useState(false);
-    const [activeTab, setActiveTab]     = useState("schedule");
+    const [selectedId, setSelectedId] = useState(employees[0]?.id || "");
+    const [search, setSearch] = useState("");
+    const [savedFlash, setSavedFlash] = useState(false);
+    const [activeTab, setActiveTab] = useState("schedule");
 
     // ── Shift form ────────────────────────────────────────────────
-    const blankShiftForm = { name:"", startTime:"09:00", endTime:"17:00", color:"#6366F1" };
-    const [shiftForm, setShiftForm]     = useState(blankShiftForm);
+    const blankShiftForm = { name: "", startTime: "09:00", endTime: "17:00", color: "#6366F1" };
+    const [shiftForm, setShiftForm] = useState(blankShiftForm);
     const [showShiftForm, setShowShiftForm] = useState(false);
-    const setSF = (k,v) => setShiftForm(p => ({...p,[k]:v}));
+    const setSF = (k, v) => setShiftForm(p => ({ ...p, [k]: v }));
 
-    const blankAssignForm = { empId:employees[0]?.id||"", shiftId:"", scheduleType:"permanent", days:["Mon","Tue","Wed","Thu","Fri"], startDate:"2026-03-16", endDate:"" };
-    const [assignForm, setAssignForm]   = useState(blankAssignForm);
-    const setAF = (k,v) => setAssignForm(p => ({...p,[k]:v}));
+    const blankAssignForm = { empId: employees[0]?.id || "", shiftId: "", scheduleType: "permanent", days: ["Mon", "Tue", "Wed", "Thu", "Fri"], startDate: "2026-03-16", endDate: "" };
+    const [assignForm, setAssignForm] = useState(blankAssignForm);
+    const setAF = (k, v) => setAssignForm(p => ({ ...p, [k]: v }));
 
     // ── Bulk apply modal ──────────────────────────────────────────
     const [templateToApply, setTemplateToApply] = useState(null);
-    const [bulkEmpIds, setBulkEmpIds]           = useState([]);
+    const [bulkEmpIds, setBulkEmpIds] = useState([]);
 
     // ── Create-template modal ─────────────────────────────────────
-    const blankTplForm = { name:"", color:"#6366F1", schedule:{ Mon:"Onsite", Tue:"Onsite", Wed:"Onsite", Thu:"Onsite", Fri:"Onsite", Sat:"Day Off", Sun:"Day Off" } };
+    const blankTplForm = { name: "", color: "#6366F1", schedule: { Mon: "Onsite", Tue: "Onsite", Wed: "Onsite", Thu: "Onsite", Fri: "Onsite", Sat: "Day Off", Sun: "Day Off" } };
     const [showCreateTpl, setShowCreateTpl] = useState(false);
-    const [tplForm, setTplForm]             = useState(blankTplForm);
-    const setTD = (day, mode) => setTplForm(p => ({...p, schedule:{...p.schedule,[day]:mode}}));
+    const [tplForm, setTplForm] = useState(blankTplForm);
+    const setTD = (day, mode) => setTplForm(p => ({ ...p, schedule: { ...p.schedule, [day]: mode } }));
 
-    const emp      = employees.find(e => e.id === selectedId);
-    const empSched = (schedules||{})[selectedId] || {};
+    const emp = employees.find(e => e.id === selectedId);
+    const empSched = (schedules || {})[selectedId] || {};
 
     // Every day-mode click writes straight to DataCtx — always persisted
     const setDayMode = (day, mode) => {
-        setSchedules(prev => ({...prev, [selectedId]: {...(prev[selectedId]||{}), [day]:mode}}));
+        setSchedules(prev => ({ ...prev, [selectedId]: { ...(prev[selectedId] || {}), [day]: mode } }));
     };
 
     const filteredEmps = employees.filter(e =>
@@ -9153,30 +9260,30 @@ const WorkSchedulePage = () => {
         e.dept.toLowerCase().includes(search.toLowerCase())
     );
 
-    const modeCounts = MODES.reduce((acc,m) => {
-        acc[m] = DAYS.filter(d => (empSched[d]||"Onsite") === m).length;
+    const modeCounts = MODES.reduce((acc, m) => {
+        acc[m] = DAYS.filter(d => (empSched[d] || "Onsite") === m).length;
         return acc;
     }, {});
 
     // ── Shift actions ─────────────────────────────────────────────
     const addShift = () => {
         if (!shiftForm.name.trim()) return;
-        setShifts(prev => [...prev, {id:`sh_${Date.now()}`, ...shiftForm}]);
+        setShifts(prev => [...prev, { id: `sh_${Date.now()}`, ...shiftForm }]);
         setShiftForm(blankShiftForm);
         setShowShiftForm(false);
     };
     const assignShift = () => {
         if (!assignForm.empId || !assignForm.shiftId) return;
         if (assignForm.scheduleType === "fixed" && (!assignForm.startDate || !assignForm.endDate)) return;
-        setShiftAssignments(prev => [...prev, {id:`sa_${Date.now()}`, ...assignForm}]);
-        setAssignForm(p => ({...blankAssignForm, empId:p.empId}));
+        setShiftAssignments(prev => [...prev, { id: `sa_${Date.now()}`, ...assignForm }]);
+        setAssignForm(p => ({ ...blankAssignForm, empId: p.empId }));
     };
 
     // ── Template actions ──────────────────────────────────────────
     const applyTemplate = (template, empIds) => {
         setSchedules(prev => {
-            const next = {...prev};
-            empIds.forEach(id => { next[id] = {...template.schedule}; });
+            const next = { ...prev };
+            empIds.forEach(id => { next[id] = { ...template.schedule }; });
             return next;
         });
         setTemplateToApply(null);
@@ -9186,10 +9293,10 @@ const WorkSchedulePage = () => {
     const saveCustomTemplate = () => {
         if (!tplForm.name.trim()) return;
         const modeList = Object.entries(tplForm.schedule);
-        const onsite  = modeList.filter(([,v]) => v==="Onsite").map(([d]) => d).join("/");
-        const remote  = modeList.filter(([,v]) => v==="Remote").map(([d]) => d).join("/");
-        const hybrid  = modeList.filter(([,v]) => v==="Hybrid").map(([d]) => d).join("/");
-        const parts   = [onsite && `${onsite} onsite`, remote && `${remote} remote`, hybrid && `${hybrid} hybrid`].filter(Boolean);
+        const onsite = modeList.filter(([, v]) => v === "Onsite").map(([d]) => d).join("/");
+        const remote = modeList.filter(([, v]) => v === "Remote").map(([d]) => d).join("/");
+        const hybrid = modeList.filter(([, v]) => v === "Hybrid").map(([d]) => d).join("/");
+        const parts = [onsite && `${onsite} onsite`, remote && `${remote} remote`, hybrid && `${hybrid} hybrid`].filter(Boolean);
         const autoDesc = parts.join(" · ") || "Custom arrangement";
         setCustomScheduleTemplates(prev => [...prev, {
             id: `ctpl_${Date.now()}`,
@@ -9197,7 +9304,7 @@ const WorkSchedulePage = () => {
             desc: autoDesc,
             color: tplForm.color,
             isCustom: true,
-            schedule: {...tplForm.schedule},
+            schedule: { ...tplForm.schedule },
         }]);
         setTplForm(blankTplForm);
         setShowCreateTpl(false);
@@ -9207,7 +9314,7 @@ const WorkSchedulePage = () => {
         setCustomScheduleTemplates(prev => prev.filter(t => t.id !== id));
 
     const toggleBulkEmp = (id) =>
-        setBulkEmpIds(prev => prev.includes(id) ? prev.filter(x => x!==id) : [...prev,id]);
+        setBulkEmpIds(prev => prev.includes(id) ? prev.filter(x => x !== id) : [...prev, id]);
 
     const allTemplates = [...SCHEDULE_TEMPLATES, ...customScheduleTemplates];
 
@@ -9219,554 +9326,554 @@ const WorkSchedulePage = () => {
 
     return (
         <React.Fragment>
-        <div style={{ display:"flex", flex:1, minHeight:0 }}>
+            <div style={{ display: "flex", flex: 1, minHeight: 0 }}>
 
-            {/* ── Employee sidebar ── */}
-            <div style={{ width:240, background:_darkMode?C.white:T.surfaceCard, borderRight:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, display:"flex", flexDirection:"column", flexShrink:0 }}>
-                <div style={{ padding:"10px 14px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, flexShrink:0 }}>
-                    <div style={{ position:"relative" }}>
-                        <Icon n="search" size={13} color={_darkMode?C.textMuted:T.outline} style={{ position:"absolute", left:9, top:"50%", transform:"translateY(-50%)" }} />
-                        <input value={search} onChange={e=>setSearch(e.target.value)} placeholder="Search…"
-                            style={{ width:"100%", padding:"7px 9px 7px 30px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:12, outline:"none", background:_darkMode?C.bg:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                    </div>
-                </div>
-                <div style={{ flex:1, overflowY:"auto" }}>
-                    {filteredEmps.map(e => {
-                        const sched     = (schedules||{})[e.id] || {};
-                        const monMode   = sched["Mon"] || "Onsite";
-                        const mc        = MODE_CFG[monMode] || MODE_CFG["Onsite"];
-                        const asnCount  = shiftAssignments.filter(a => a.empId===e.id).length;
-                        return (
-                            <div key={e.id} onClick={() => setSelectedId(e.id)}
-                                style={{ padding:"10px 14px", cursor:"pointer", display:"flex", alignItems:"center", gap:10, background:selectedId===e.id?(_darkMode?C.primaryLight:T.primaryFixed):"transparent", borderRight:selectedId===e.id?`3px solid ${_darkMode?C.primary:T.primary}`:"3px solid transparent", transition:"all 0.15s" }}>
-                                <Avatar name={e.name} size={30} />
-                                <div style={{ flex:1, minWidth:0 }}>
-                                    <div style={{ fontSize:12.5, fontWeight:700, color:selectedId===e.id?(_darkMode?C.primary:T.primary):(_darkMode?C.text:T.onSurface), overflow:"hidden", textOverflow:"ellipsis", whiteSpace:"nowrap" }}>{e.name}</div>
-                                    <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{e.dept}</div>
-                                </div>
-                                <div style={{ display:"flex", flexDirection:"column", alignItems:"flex-end", gap:3 }}>
-                                    <span style={{ fontSize:10, fontWeight:700, padding:"2px 7px", borderRadius:10, background:mc.bg, color:mc.color, border:`1px solid ${mc.border}`, whiteSpace:"nowrap" }}>{monMode}</span>
-                                    {asnCount>0 && <span style={{ fontSize:9, color:_darkMode?C.primary:T.primary, fontWeight:700 }}>{asnCount} shift{asnCount>1?"s":""}</span>}
-                                </div>
-                            </div>
-                        );
-                    })}
-                </div>
-            </div>
-
-            {/* ── Main area ── */}
-            <div style={{ flex:1, display:"flex", flexDirection:"column", minWidth:0, minHeight:0 }}>
-
-                {/* Header */}
-                <div style={{ padding:"14px 28px", borderBottom:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, flexShrink:0, display:"flex", justifyContent:"space-between", alignItems:"center", background:_darkMode?C.white:T.surfaceCard }}>
-                    <div style={{ display:"flex", alignItems:"center", gap:14 }}>
-                        {emp && <Avatar name={emp.name} size={38} />}
-                        <div>
-                            <h1 style={{ fontSize:17, fontWeight:800, color:_darkMode?C.text:T.onSurface, margin:0 }}>{emp?.name || "Select an employee"}</h1>
-                            <p style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, margin:"2px 0 0" }}>{emp?.dept} · {emp?.level}</p>
+                {/* ── Employee sidebar ── */}
+                <div style={{ width: 240, background: _darkMode ? C.white : T.surfaceCard, borderRight: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, display: "flex", flexDirection: "column", flexShrink: 0 }}>
+                    <div style={{ padding: "10px 14px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, flexShrink: 0 }}>
+                        <div style={{ position: "relative" }}>
+                            <Icon n="search" size={13} color={_darkMode ? C.textMuted : T.outline} style={{ position: "absolute", left: 9, top: "50%", transform: "translateY(-50%)" }} />
+                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search…"
+                                style={{ width: "100%", padding: "7px 9px 7px 30px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 12, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
                         </div>
                     </div>
-                    <div style={{ display:"flex", gap:8, alignItems:"center" }}>
-                        <div style={{ display:"flex", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, overflow:"hidden" }}>
-                            {[{id:"schedule",label:"Weekly Schedule"},{id:"shifts",label:"Shift Management"}].map(t => (
-                                <button key={t.id} onClick={() => setActiveTab(t.id)}
-                                    style={{ padding:"7px 16px", fontSize:12, fontWeight:600, cursor:"pointer", background:activeTab===t.id?(_darkMode?C.primary:T.primary):(_darkMode?C.white:T.surfaceCard), color:activeTab===t.id?"#fff":(_darkMode?C.textMid:T.onSurfaceVar), border:"none", fontFamily:"inherit", transition:"all 0.15s" }}>
-                                    {t.label}
-                                </button>
-                            ))}
-                        </div>
-                        {activeTab === "schedule" && (
-                            <>
-                                <AnimatePresence>
-                                    {savedFlash && (
-                                        <motion.span key="sf" initial={{ opacity:0, x:6 }} animate={{ opacity:1, x:0 }} exit={{ opacity:0 }}
-                                            style={{ fontSize:12, color:C.success, fontWeight:700, display:"flex", alignItems:"center", gap:5 }}>
-                                            <Icon n="check" size={14} color={C.success} />Saved
-                                        </motion.span>
-                                    )}
-                                </AnimatePresence>
-                                <Btn variant="primary" size="sm" onClick={handleSave}>
-                                    <Icon n="check" size={13} color="#fff" />Save Schedule
-                                </Btn>
-                            </>
-                        )}
-                    </div>
-                </div>
-
-                {activeTab === "schedule" ? (
-                    <div style={{ flex:1, overflowY:"auto", padding:"22px 28px", display:"flex", flexDirection:"column", gap:22, background:_darkMode?C.bg:T.surface }}>
-
-                        {/* Mode summary pills */}
-                        <div style={{ display:"flex", gap:10, flexWrap:"wrap", alignItems:"center" }}>
-                            {MODES.filter(m => modeCounts[m] > 0).map(m => {
-                                const mc = MODE_CFG[m];
-                                return (
-                                    <div key={m} style={{ display:"flex", alignItems:"center", gap:7, padding:"5px 14px", borderRadius:20, background:mc.bg, border:`1px solid ${mc.border}` }}>
-                                        <span style={{ width:7, height:7, borderRadius:"50%", background:mc.color }} />
-                                        <span style={{ fontSize:12.5, fontWeight:700, color:mc.color }}>{m} {modeCounts[m]}d/wk</span>
+                    <div style={{ flex: 1, overflowY: "auto" }}>
+                        {filteredEmps.map(e => {
+                            const sched = (schedules || {})[e.id] || {};
+                            const monMode = sched["Mon"] || "Onsite";
+                            const mc = MODE_CFG[monMode] || MODE_CFG["Onsite"];
+                            const asnCount = shiftAssignments.filter(a => a.empId === e.id).length;
+                            return (
+                                <div key={e.id} onClick={() => setSelectedId(e.id)}
+                                    style={{ padding: "10px 14px", cursor: "pointer", display: "flex", alignItems: "center", gap: 10, background: selectedId === e.id ? (_darkMode ? C.primaryLight : T.primaryFixed) : "transparent", borderRight: selectedId === e.id ? `3px solid ${_darkMode ? C.primary : T.primary}` : "3px solid transparent", transition: "all 0.15s" }}>
+                                    <Avatar name={e.name} size={30} />
+                                    <div style={{ flex: 1, minWidth: 0 }}>
+                                        <div style={{ fontSize: 12.5, fontWeight: 700, color: selectedId === e.id ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.text : T.onSurface), overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{e.name}</div>
+                                        <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{e.dept}</div>
                                     </div>
-                                );
-                            })}
-                            <span style={{ marginLeft:"auto", fontSize:12, color:_darkMode?C.textMuted:T.outline }}>Permanent — repeats every week</span>
-                        </div>
-
-                        {/* ── Schedule Templates ── */}
-                        <div style={{ flexShrink:0, background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-                            <div style={{ padding:"12px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                                <div>
-                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Schedule Templates</div>
-                                    <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:1 }}>
-                                        Click to apply to current employee · ⋯ applies to multiple · custom templates can be deleted
+                                    <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3 }}>
+                                        <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 7px", borderRadius: 10, background: mc.bg, color: mc.color, border: `1px solid ${mc.border}`, whiteSpace: "nowrap" }}>{monMode}</span>
+                                        {asnCount > 0 && <span style={{ fontSize: 9, color: _darkMode ? C.primary : T.primary, fontWeight: 700 }}>{asnCount} shift{asnCount > 1 ? "s" : ""}</span>}
                                     </div>
                                 </div>
-                                <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:0.97 }}
-                                    onClick={() => { setTplForm(blankTplForm); setShowCreateTpl(true); }}
-                                    style={{ padding:"7px 14px", borderRadius:8, border:`1px solid ${_darkMode?C.primary:T.primary}`, background:_darkMode?C.primaryLight:T.primaryFixed, color:_darkMode?C.primary:T.primary, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit", display:"flex", alignItems:"center", gap:6, whiteSpace:"nowrap" }}>
-                                    <Icon n="plus" size={13} color={_darkMode?C.primary:T.primary} />Create Template
-                                </motion.button>
-                            </div>
+                            );
+                        })}
+                    </div>
+                </div>
 
-                            <div style={{ padding:"14px 24px", display:"flex", gap:10, flexWrap:"wrap" }}>
-                                {allTemplates.map(t => {
-                                    const IconEl = t.Icon || null;
-                                    return (
-                                        <div key={t.id} style={{ position:"relative" }}>
-                                            <motion.button whileHover={{ scale:1.02 }} whileTap={{ scale:0.97 }}
-                                                onClick={() => { applyTemplate(t, [selectedId]); handleSave(); }}
-                                                style={{ padding:"12px 40px 12px 14px", borderRadius:10, border:`1.5px solid ${t.color}40`, background:`${t.color}0D`, fontSize:12, fontWeight:600, cursor:"pointer", fontFamily:"inherit", textAlign:"left", minWidth:152, display:"flex", flexDirection:"column", gap:6 }}>
-                                                <div style={{ width:30, height:30, borderRadius:8, background:`${t.color}22`, display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                                    {IconEl
-                                                        ? <IconEl size={16} color={t.color} strokeWidth={1.75} />
-                                                        : <span style={{ fontSize:14 }}>📅</span>
-                                                    }
-                                                </div>
-                                                <span style={{ fontWeight:800, color:_darkMode?C.text:T.onSurface, fontSize:12.5 }}>{t.name}</span>
-                                                <span style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline, lineHeight:1.3 }}>{t.desc}</span>
-                                                {t.isCustom && (
-                                                    <span style={{ fontSize:9, fontWeight:700, padding:"1px 6px", borderRadius:10, background:`${t.color}20`, color:t.color, width:"fit-content" }}>Custom</span>
-                                                )}
-                                            </motion.button>
-                                            {/* Bulk-apply button */}
-                                            <button onClick={() => { setTemplateToApply(t); setBulkEmpIds([selectedId]); }}
-                                                title="Apply to multiple employees"
-                                                style={{ position:"absolute", top:7, right:t.isCustom ? 30 : 7, width:22, height:22, borderRadius:6, border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, background:_darkMode?C.white:T.surfaceCard, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                                <Lucide.Users size={11} color={_darkMode?C.textMid:T.onSurfaceVar} />
-                                            </button>
-                                            {/* Delete button — custom templates only */}
-                                            {t.isCustom && (
-                                                <button onClick={() => deleteCustomTemplate(t.id)}
-                                                    title="Delete template"
-                                                    style={{ position:"absolute", top:7, right:7, width:22, height:22, borderRadius:6, border:`1px solid ${C.dangerBorder}`, background:C.dangerBg, cursor:"pointer", display:"flex", alignItems:"center", justifyContent:"center" }}>
-                                                    <Icon n="trash" size={11} color={C.danger} />
-                                                </button>
-                                            )}
-                                        </div>
-                                    );
-                                })}
-                            </div>
-                        </div>
+                {/* ── Main area ── */}
+                <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, minHeight: 0 }}>
 
-                        {/* ── Weekly Work Schedule ── */}
-                        <div style={{ flexShrink:0, background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-                            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
-                                <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Weekly Work Schedule</div>
-                                <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>Click a mode to set the recurring work arrangement for each day</div>
-                            </div>
+                    {/* Header */}
+                    <div style={{ padding: "14px 28px", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, flexShrink: 0, display: "flex", justifyContent: "space-between", alignItems: "center", background: _darkMode ? C.white : T.surfaceCard }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+                            {emp && <Avatar name={emp.name} size={38} />}
                             <div>
-                                {DAYS.map((day, i) => {
-                                    const mode      = empSched[day] || "Onsite";
-                                    const isWeekend = i >= 5;
+                                <h1 style={{ fontSize: 17, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0 }}>{emp?.name || "Select an employee"}</h1>
+                                <p style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, margin: "2px 0 0" }}>{emp?.dept} · {emp?.level}</p>
+                            </div>
+                        </div>
+                        <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                            <div style={{ display: "flex", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, overflow: "hidden" }}>
+                                {[{ id: "schedule", label: "Weekly Schedule" }, { id: "shifts", label: "Shift Management" }].map(t => (
+                                    <button key={t.id} onClick={() => setActiveTab(t.id)}
+                                        style={{ padding: "7px 16px", fontSize: 12, fontWeight: 600, cursor: "pointer", background: activeTab === t.id ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.white : T.surfaceCard), color: activeTab === t.id ? "#fff" : (_darkMode ? C.textMid : T.onSurfaceVar), border: "none", fontFamily: "inherit", transition: "all 0.15s" }}>
+                                        {t.label}
+                                    </button>
+                                ))}
+                            </div>
+                            {activeTab === "schedule" && (
+                                <>
+                                    <AnimatePresence>
+                                        {savedFlash && (
+                                            <motion.span key="sf" initial={{ opacity: 0, x: 6 }} animate={{ opacity: 1, x: 0 }} exit={{ opacity: 0 }}
+                                                style={{ fontSize: 12, color: C.success, fontWeight: 700, display: "flex", alignItems: "center", gap: 5 }}>
+                                                <Icon n="check" size={14} color={C.success} />Saved
+                                            </motion.span>
+                                        )}
+                                    </AnimatePresence>
+                                    <Btn variant="primary" size="sm" onClick={handleSave}>
+                                        <Icon n="check" size={13} color="#fff" />Save Schedule
+                                    </Btn>
+                                </>
+                            )}
+                        </div>
+                    </div>
+
+                    {activeTab === "schedule" ? (
+                        <div style={{ flex: 1, overflowY: "auto", padding: "22px 28px", display: "flex", flexDirection: "column", gap: 22, background: _darkMode ? C.bg : T.surface }}>
+
+                            {/* Mode summary pills */}
+                            <div style={{ display: "flex", gap: 10, flexWrap: "wrap", alignItems: "center" }}>
+                                {MODES.filter(m => modeCounts[m] > 0).map(m => {
+                                    const mc = MODE_CFG[m];
                                     return (
-                                        <div key={day} style={{ display:"flex", alignItems:"center", borderBottom:i<6?`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`:"none", background:isWeekend?(_darkMode?C.bg:T.surfaceLow):(_darkMode?C.white:T.surfaceCard) }}>
-                                            <div style={{ width:150, flexShrink:0, padding:"13px 24px" }}>
-                                                <div style={{ fontSize:13.5, fontWeight:700, color:isWeekend?(_darkMode?C.textMuted:T.outline):(_darkMode?C.text:T.onSurface) }}>{DAY_LABELS[day]}</div>
-                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline, marginTop:1 }}>{isWeekend?"Weekend":"Weekday"}</div>
-                                            </div>
-                                            <div style={{ display:"flex", gap:8, padding:"13px 24px 13px 0", flexWrap:"wrap" }}>
-                                                {MODES.map(m => {
-                                                    const mmc      = MODE_CFG[m];
-                                                    const isActive = mode === m;
-                                                    return (
-                                                        <button key={m} onClick={() => setDayMode(day, m)}
-                                                            style={{ padding:"7px 20px", borderRadius:8, border:`1.5px solid ${isActive?mmc.border:(_darkMode?C.border:T.outlineVar+"50")}`, background:isActive?mmc.bg:(_darkMode?C.white:T.surfaceCard), color:isActive?mmc.color:(_darkMode?C.textMuted:T.outline), fontSize:13, fontWeight:isActive?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.12s", boxShadow:isActive?`0 2px 8px ${mmc.border}`:"none" }}>
-                                                            {m}
-                                                        </button>
-                                                    );
-                                                })}
-                                            </div>
+                                        <div key={m} style={{ display: "flex", alignItems: "center", gap: 7, padding: "5px 14px", borderRadius: 20, background: mc.bg, border: `1px solid ${mc.border}` }}>
+                                            <span style={{ width: 7, height: 7, borderRadius: "50%", background: mc.color }} />
+                                            <span style={{ fontSize: 12.5, fontWeight: 700, color: mc.color }}>{m} {modeCounts[m]}d/wk</span>
                                         </div>
                                     );
                                 })}
+                                <span style={{ marginLeft: "auto", fontSize: 12, color: _darkMode ? C.textMuted : T.outline }}>Permanent — repeats every week</span>
                             </div>
-                        </div>
 
-                        {/* ── Team Schedule Overview ── */}
-                        <div style={{ flexShrink:0, background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-                            <div style={{ padding:"14px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
-                                <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Team Schedule Overview</div>
-                                <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>All {employees.length} team members — click a row to edit</div>
-                            </div>
-                            <div style={{ overflowX:"auto" }}>
-                                <table style={{ width:"100%", borderCollapse:"collapse", fontSize:12.5, minWidth:700 }}>
-                                    <thead>
-                                        <tr style={{ background:_darkMode?C.tableHead:T.surfaceLow }}>
-                                            <th style={{ padding:"9px 20px", textAlign:"left", fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, textTransform:"uppercase", letterSpacing:"0.06em", borderBottom:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}` }}>Employee</th>
-                                            {DAYS.map(d => <th key={d} style={{ padding:"9px 14px", textAlign:"center", fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, textTransform:"uppercase", letterSpacing:"0.06em", borderBottom:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}` }}>{d}</th>)}
-                                        </tr>
-                                    </thead>
-                                    <tbody>
-                                        {employees.map((e,i) => {
-                                            const s = (schedules||{})[e.id] || {};
-                                            return (
-                                                <tr key={e.id} onClick={() => setSelectedId(e.id)}
-                                                    style={{ background:selectedId===e.id?(_darkMode?C.primaryLight:T.primaryFixed):(_darkMode?i%2===0?C.white:C.tableRow:T.surfaceCard), cursor:"pointer", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, transition:"background 0.12s" }}>
-                                                    <td style={{ padding:"9px 20px", whiteSpace:"nowrap" }}>
-                                                        <div style={{ display:"flex", alignItems:"center", gap:10 }}>
-                                                            <Avatar name={e.name} size={28} />
-                                                            <div>
-                                                                <div style={{ fontWeight:700, fontSize:13, color:selectedId===e.id?(_darkMode?C.primary:T.primary):(_darkMode?C.text:T.onSurface) }}>{e.name}</div>
-                                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{e.dept}</div>
-                                                            </div>
-                                                        </div>
-                                                    </td>
-                                                    {DAYS.map((day,di) => {
-                                                        const mode = s[day] || "Onsite";
-                                                        const mc   = MODE_CFG[mode] || MODE_CFG["Onsite"];
-                                                        return (
-                                                            <td key={day} style={{ padding:"9px 14px", textAlign:"center", background:di>=5?(_darkMode?C.bg:T.surfaceLow):"transparent" }}>
-                                                                <span style={{ fontSize:10.5, fontWeight:700, padding:"3px 10px", borderRadius:10, background:mc.bg, color:mc.color, border:`1px solid ${mc.border}` }}>{mode}</span>
-                                                            </td>
-                                                        );
-                                                    })}
-                                                </tr>
-                                            );
-                                        })}
-                                    </tbody>
-                                </table>
-                            </div>
-                        </div>
-
-                    </div>
-                ) : (
-                    /* ── Shifts tab ── */
-                    <div style={{ flex:1, overflowY:"auto", padding:"22px 28px", display:"flex", gap:20, alignItems:"flex-start", background:_darkMode?C.bg:T.surface }}>
-                        <div style={{ width:300, flexShrink:0 }}>
-                            <div style={{ background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Shift Types</div>
-                                    <button onClick={() => setShowShiftForm(v => !v)}
-                                        style={{ padding:"5px 12px", borderRadius:7, border:`1px solid ${_darkMode?C.primary:T.primary}`, background:"transparent", color:_darkMode?C.primary:T.primary, fontSize:12, fontWeight:700, cursor:"pointer", fontFamily:"inherit" }}>
-                                        {showShiftForm?"Cancel":"+ New"}
-                                    </button>
-                                </div>
-                                {showShiftForm && (
-                                    <div style={{ padding:"16px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, background:_darkMode?C.bg:T.surfaceLow, display:"flex", flexDirection:"column", gap:12 }}>
-                                        <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:4 }}>Shift Name</div>
-                                            <input value={shiftForm.name} onChange={e=>setSF("name",e.target.value)} placeholder="e.g. Morning Shift"
-                                                style={{ width:"100%", padding:"8px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:7, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceCard, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                                        </div>
-                                        <div style={{ display:"flex", gap:10 }}>
-                                            <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:4 }}>Start</div>
-                                                <input type="time" value={shiftForm.startTime} onChange={e=>setSF("startTime",e.target.value)}
-                                                    style={{ width:"100%", padding:"8px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:7, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceCard, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                                            </div>
-                                            <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:4 }}>End</div>
-                                                <input type="time" value={shiftForm.endTime} onChange={e=>setSF("endTime",e.target.value)}
-                                                    style={{ width:"100%", padding:"8px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:7, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceCard, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                                            </div>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:6 }}>Color</div>
-                                            <div style={{ display:"flex", gap:8, flexWrap:"wrap" }}>
-                                                {TPL_COLORS.map(col => (
-                                                    <button key={col} onClick={() => setSF("color",col)}
-                                                        style={{ width:24, height:24, borderRadius:"50%", background:col, border:shiftForm.color===col?`3px solid ${_darkMode?C.text:T.onSurface}`:"3px solid transparent", cursor:"pointer" }} />
-                                                ))}
-                                            </div>
-                                        </div>
-                                        <Btn variant="primary" size="sm" onClick={addShift}>Create Shift</Btn>
-                                    </div>
-                                )}
-                                <div>
-                                    {shifts.length===0 && <EmptyState icon="clock" title="No shifts defined" subtitle="Create shift templates to start scheduling" />}
-                                    {shifts.map((sh,i) => (
-                                        <div key={sh.id} style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:12, borderBottom:i<shifts.length-1?`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`:"none" }}>
-                                            <div style={{ width:10, height:10, borderRadius:"50%", background:sh.color, flexShrink:0 }} />
-                                            <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:13, fontWeight:700, color:_darkMode?C.text:T.onSurface }}>{sh.name}</div>
-                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{sh.startTime} – {sh.endTime}</div>
-                                            </div>
-                                            <button onClick={() => setShifts(prev => prev.filter(s => s.id!==sh.id))}
-                                                style={{ background:"none", border:"none", cursor:"pointer", color:_darkMode?C.textMuted:T.outline, padding:"4px", fontSize:15, lineHeight:1 }}>✕</button>
-                                        </div>
-                                    ))}
-                                </div>
-                            </div>
-                        </div>
-
-                        <div style={{ flex:1, display:"flex", flexDirection:"column", gap:16 }}>
-                            <div style={{ background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
-                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Assign Shift to Employee</div>
-                                    <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>Assigned shifts appear automatically in Timesheet → Calendar</div>
-                                </div>
-                                <div style={{ padding:"20px", display:"flex", flexDirection:"column", gap:14 }}>
-                                    <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-                                        <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Employee</div>
-                                            <select value={assignForm.empId} onChange={e=>setAF("empId",e.target.value)}
-                                                style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit" }}>
-                                                {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
-                                            </select>
-                                        </div>
-                                        <div>
-                                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Shift</div>
-                                            <select value={assignForm.shiftId} onChange={e=>setAF("shiftId",e.target.value)}
-                                                style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit" }}>
-                                                <option value="">Select a shift…</option>
-                                                {shifts.map(s => <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>)}
-                                            </select>
-                                        </div>
-                                    </div>
+                            {/* ── Schedule Templates ── */}
+                            <div style={{ flexShrink: 0, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                                <div style={{ padding: "12px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                     <div>
-                                        <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:6 }}>Schedule Type</div>
-                                        <div style={{ display:"flex", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:9, overflow:"hidden", width:"fit-content" }}>
-                                            {[["permanent","Permanent"],["fixed","Fixed Period"]].map(([val,label]) => (
-                                                <button key={val} onClick={() => setAF("scheduleType",val)}
-                                                    style={{ padding:"8px 20px", border:"none", background:assignForm.scheduleType===val?(_darkMode?C.primary:T.primary):(_darkMode?C.white:T.surfaceCard), color:assignForm.scheduleType===val?"#fff":(_darkMode?C.textMid:T.onSurfaceVar), fontSize:12.5, fontWeight:assignForm.scheduleType===val?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.15s" }}>
-                                                    {label}
-                                                </button>
-                                            ))}
-                                        </div>
-                                        {assignForm.scheduleType==="permanent" && (
-                                            <div style={{ marginTop:8, fontSize:12, color:_darkMode?C.textMuted:T.outline, display:"flex", alignItems:"center", gap:6 }}>
-                                                <Lucide.Repeat size={12} color={_darkMode?C.textMuted:T.outline} />Repeats every week with no end date
-                                            </div>
-                                        )}
-                                    </div>
-                                    <div>
-                                        <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:6 }}>Active Days</div>
-                                        <div style={{ display:"flex", gap:6 }}>
-                                            {DAYS.map(d => {
-                                                const active = (assignForm.days||[]).includes(d);
-                                                return (
-                                                    <button key={d} onClick={() => { const cur=assignForm.days||[]; setAF("days",active?cur.filter(x=>x!==d):[...cur,d]); }}
-                                                        style={{ width:40, height:34, borderRadius:7, border:`1.5px solid ${active?(_darkMode?C.primary:T.primary):(_darkMode?C.border:T.outlineVar+"50")}`, background:active?(_darkMode?C.primaryLight:T.primaryFixed):(_darkMode?C.white:T.surfaceCard), color:active?(_darkMode?C.primary:T.primary):(_darkMode?C.textMuted:T.outline), fontSize:11.5, fontWeight:active?800:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.12s" }}>
-                                                        {d}
-                                                    </button>
-                                                );
-                                            })}
+                                        <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Schedule Templates</div>
+                                        <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 1 }}>
+                                            Click to apply to current employee · ⋯ applies to multiple · custom templates can be deleted
                                         </div>
                                     </div>
-                                    {assignForm.scheduleType==="fixed" && (
-                                        <div style={{ display:"grid", gridTemplateColumns:"1fr 1fr", gap:14 }}>
-                                            <div>
-                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Start Date</div>
-                                                <input type="date" value={assignForm.startDate} onChange={e=>setAF("startDate",e.target.value)}
-                                                    style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                                            </div>
-                                            <div>
-                                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>End Date</div>
-                                                <input type="date" value={assignForm.endDate} onChange={e=>setAF("endDate",e.target.value)}
-                                                    style={{ width:"100%", padding:"9px 10px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.white:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                                            </div>
-                                        </div>
-                                    )}
-                                    <Btn variant="primary" onClick={assignShift} disabled={!assignForm.shiftId||(assignForm.scheduleType==="fixed"&&(!assignForm.startDate||!assignForm.endDate))}>
-                                        <Icon n="plus" size={13} color="#fff" />Assign Shift
-                                    </Btn>
+                                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                                        onClick={() => { setTplForm(blankTplForm); setShowCreateTpl(true); }}
+                                        style={{ padding: "7px 14px", borderRadius: 8, border: `1px solid ${_darkMode ? C.primary : T.primary}`, background: _darkMode ? C.primaryLight : T.primaryFixed, color: _darkMode ? C.primary : T.primary, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", display: "flex", alignItems: "center", gap: 6, whiteSpace: "nowrap" }}>
+                                        <Icon n="plus" size={13} color={_darkMode ? C.primary : T.primary} />Create Template
+                                    </motion.button>
                                 </div>
-                            </div>
 
-                            <div style={{ background:_darkMode?C.white:T.surfaceCard, borderRadius:14, border:`1px solid ${_darkMode?C.border:T.outlineVar+"28"}`, boxShadow:"0 1px 3px rgba(0,0,0,0.06)", overflow:"hidden" }}>
-                                <div style={{ padding:"14px 20px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
-                                    <div style={{ fontSize:13, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Current Assignments</div>
-                                    <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>{shiftAssignments.length} active — visible in Timesheet → Calendar</div>
-                                </div>
-                                <div>
-                                    {shiftAssignments.length===0 && <EmptyState icon="calendar" title="No shifts assigned" subtitle="Drag employees to shift slots to start scheduling" />}
-                                    {shiftAssignments.map((a,i) => {
-                                        const sh      = shifts.find(s => s.id===a.shiftId);
-                                        const empItem = employees.find(e => e.id===a.empId);
-                                        if (!sh||!empItem) return null;
-                                        const isPerm  = a.scheduleType==="permanent"||!a.scheduleType;
+                                <div style={{ padding: "14px 24px", display: "flex", gap: 10, flexWrap: "wrap" }}>
+                                    {allTemplates.map(t => {
+                                        const IconEl = t.Icon || null;
                                         return (
-                                            <div key={a.id} style={{ padding:"12px 20px", display:"flex", alignItems:"center", gap:14, borderBottom:i<shiftAssignments.length-1?`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`:"none" }}>
-                                                <div style={{ width:10, height:10, borderRadius:"50%", background:sh.color, flexShrink:0 }} />
-                                                <Avatar name={empItem.name} size={28} />
-                                                <div style={{ flex:1 }}>
-                                                    <div style={{ fontSize:13, fontWeight:700, color:_darkMode?C.text:T.onSurface, display:"flex", alignItems:"center", gap:8 }}>
-                                                        {empItem.name} <span style={{ fontWeight:400, color:_darkMode?C.textMuted:T.outline }}>·</span> <span style={{ color:sh.color, fontWeight:700 }}>{sh.name}</span>
-                                                        {isPerm
-                                                            ? <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background:_darkMode?C.primaryLight:T.primaryFixed, color:_darkMode?C.primary:T.primary, display:"flex", alignItems:"center", gap:4 }}><Lucide.Repeat size={9} />Permanent</span>
-                                                            : <span style={{ fontSize:10, fontWeight:700, padding:"2px 8px", borderRadius:20, background:C.warningBg, color:C.warning }}>Fixed Period</span>
+                                            <div key={t.id} style={{ position: "relative" }}>
+                                                <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }}
+                                                    onClick={() => { applyTemplate(t, [selectedId]); handleSave(); }}
+                                                    style={{ padding: "12px 40px 12px 14px", borderRadius: 10, border: `1.5px solid ${t.color}40`, background: `${t.color}0D`, fontSize: 12, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", textAlign: "left", minWidth: 152, display: "flex", flexDirection: "column", gap: 6 }}>
+                                                    <div style={{ width: 30, height: 30, borderRadius: 8, background: `${t.color}22`, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                        {IconEl
+                                                            ? <IconEl size={16} color={t.color} strokeWidth={1.75} />
+                                                            : <span style={{ fontSize: 14 }}>📅</span>
                                                         }
                                                     </div>
-                                                    <div style={{ display:"flex", alignItems:"center", gap:4, flexWrap:"wrap", marginTop:3 }}>
-                                                        <span style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{sh.startTime}–{sh.endTime}</span>
-                                                        <span style={{ color:_darkMode?C.borderLight:T.outlineVar+"44" }}>·</span>
-                                                        {(a.days||["Mon","Tue","Wed","Thu","Fri"]).map(d => (
-                                                            <span key={d} style={{ fontSize:10, fontWeight:700, padding:"1px 5px", borderRadius:4, background:_darkMode?C.primaryLight:T.primaryFixed, color:_darkMode?C.primary:T.primary }}>{d}</span>
-                                                        ))}
-                                                        {!isPerm && <span style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>· {a.startDate} → {a.endDate}</span>}
-                                                    </div>
-                                                </div>
-                                                <button onClick={() => setShiftAssignments(prev => prev.filter(x => x.id!==a.id))}
-                                                    style={{ background:"none", border:"none", cursor:"pointer", color:_darkMode?C.textMuted:T.outline, padding:"4px", fontSize:15, lineHeight:1 }}>✕</button>
+                                                    <span style={{ fontWeight: 800, color: _darkMode ? C.text : T.onSurface, fontSize: 12.5 }}>{t.name}</span>
+                                                    <span style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, lineHeight: 1.3 }}>{t.desc}</span>
+                                                    {t.isCustom && (
+                                                        <span style={{ fontSize: 9, fontWeight: 700, padding: "1px 6px", borderRadius: 10, background: `${t.color}20`, color: t.color, width: "fit-content" }}>Custom</span>
+                                                    )}
+                                                </motion.button>
+                                                {/* Bulk-apply button */}
+                                                <button onClick={() => { setTemplateToApply(t); setBulkEmpIds([selectedId]); }}
+                                                    title="Apply to multiple employees"
+                                                    style={{ position: "absolute", top: 7, right: t.isCustom ? 30 : 7, width: 22, height: 22, borderRadius: 6, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: _darkMode ? C.white : T.surfaceCard, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                    <Lucide.Users size={11} color={_darkMode ? C.textMid : T.onSurfaceVar} />
+                                                </button>
+                                                {/* Delete button — custom templates only */}
+                                                {t.isCustom && (
+                                                    <button onClick={() => deleteCustomTemplate(t.id)}
+                                                        title="Delete template"
+                                                        style={{ position: "absolute", top: 7, right: 7, width: 22, height: 22, borderRadius: 6, border: `1px solid ${C.dangerBorder}`, background: C.dangerBg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                                        <Icon n="trash" size={11} color={C.danger} />
+                                                    </button>
+                                                )}
                                             </div>
                                         );
                                     })}
                                 </div>
                             </div>
-                        </div>
-                    </div>
-                )}
-            </div>
-        </div>
 
-        {/* ══ Bulk apply modal ══ */}
-        <AnimatePresence>
-            {templateToApply && (
-                <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-                    style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-                    <motion.div onClick={() => setTemplateToApply(null)} style={{ position:"absolute", inset:0, background:"rgba(15,23,42,0.45)", backdropFilter:"blur(6px)" }} />
-                    <motion.div initial={{ opacity:0, scale:0.97, y:12 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0 }}
-                        transition={{ type:"spring", damping:28, stiffness:300 }}
-                        style={{ position:"relative", width:"100%", maxWidth:480, background:_darkMode?C.white:T.surfaceCard, borderRadius:18, boxShadow:"0 20px 56px rgba(0,0,0,0.18)", overflow:"hidden" }}>
-                        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
-                            <div style={{ fontSize:16, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Apply Template — {templateToApply.name}</div>
-                            <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:3 }}>{templateToApply.desc}</div>
-                        </div>
-                        <div style={{ padding:"16px 24px", maxHeight:320, overflowY:"auto" }}>
-                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMuted:T.outline, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:10 }}>Select employees</div>
-                            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                                {employees.map(e => {
-                                    const checked = bulkEmpIds.includes(e.id);
-                                    return (
-                                        <label key={e.id} onClick={() => toggleBulkEmp(e.id)}
-                                            style={{ display:"flex", alignItems:"center", gap:10, padding:"8px 12px", borderRadius:9, border:`1px solid ${checked?(_darkMode?C.primary:T.primary):(_darkMode?C.border:T.outlineVar+"50")}`, background:checked?(_darkMode?C.primaryLight:T.primaryFixed):(_darkMode?C.white:T.surfaceCard), cursor:"pointer", transition:"all 0.12s" }}>
-                                            <input type="checkbox" checked={checked} onChange={() => toggleBulkEmp(e.id)} style={{ accentColor:_darkMode?C.primary:T.primary, width:14, height:14, cursor:"pointer" }} />
-                                            <Avatar name={e.name} size={26} />
-                                            <div style={{ flex:1 }}>
-                                                <div style={{ fontSize:13, fontWeight:700, color:checked?(_darkMode?C.primary:T.primary):(_darkMode?C.text:T.onSurface) }}>{e.name}</div>
-                                                <div style={{ fontSize:11, color:_darkMode?C.textMuted:T.outline }}>{e.dept}</div>
+                            {/* ── Weekly Work Schedule ── */}
+                            <div style={{ flexShrink: 0, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                                <div style={{ padding: "14px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Weekly Work Schedule</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Click a mode to set the recurring work arrangement for each day</div>
+                                </div>
+                                <div>
+                                    {DAYS.map((day, i) => {
+                                        const mode = empSched[day] || "Onsite";
+                                        const isWeekend = i >= 5;
+                                        return (
+                                            <div key={day} style={{ display: "flex", alignItems: "center", borderBottom: i < 6 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none", background: isWeekend ? (_darkMode ? C.bg : T.surfaceLow) : (_darkMode ? C.white : T.surfaceCard) }}>
+                                                <div style={{ width: 150, flexShrink: 0, padding: "13px 24px" }}>
+                                                    <div style={{ fontSize: 13.5, fontWeight: 700, color: isWeekend ? (_darkMode ? C.textMuted : T.outline) : (_darkMode ? C.text : T.onSurface) }}>{DAY_LABELS[day]}</div>
+                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline, marginTop: 1 }}>{isWeekend ? "Weekend" : "Weekday"}</div>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 8, padding: "13px 24px 13px 0", flexWrap: "wrap" }}>
+                                                    {MODES.map(m => {
+                                                        const mmc = MODE_CFG[m];
+                                                        const isActive = mode === m;
+                                                        return (
+                                                            <button key={m} onClick={() => setDayMode(day, m)}
+                                                                style={{ padding: "7px 20px", borderRadius: 8, border: `1.5px solid ${isActive ? mmc.border : (_darkMode ? C.border : T.outlineVar + "50")}`, background: isActive ? mmc.bg : (_darkMode ? C.white : T.surfaceCard), color: isActive ? mmc.color : (_darkMode ? C.textMuted : T.outline), fontSize: 13, fontWeight: isActive ? 700 : 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s", boxShadow: isActive ? `0 2px 8px ${mmc.border}` : "none" }}>
+                                                                {m}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
                                             </div>
-                                        </label>
-                                    );
-                                })}
-                            </div>
-                        </div>
-                        <div style={{ padding:"14px 24px", borderTop:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                            <span style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline }}>{bulkEmpIds.length} selected</span>
-                            <div style={{ display:"flex", gap:10 }}>
-                                <Btn variant="outline" onClick={() => setTemplateToApply(null)}>Cancel</Btn>
-                                <Btn variant="primary" onClick={() => { applyTemplate(templateToApply, bulkEmpIds); handleSave(); }} disabled={bulkEmpIds.length===0}>
-                                    <Icon n="check" size={13} color="#fff" />Apply to {bulkEmpIds.length||"…"}
-                                </Btn>
-                            </div>
-                        </div>
-                    </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
-
-        {/* ══ Create Custom Template modal ══ */}
-        <AnimatePresence>
-            {showCreateTpl && (
-                <motion.div initial={{ opacity:0 }} animate={{ opacity:1 }} exit={{ opacity:0 }}
-                    style={{ position:"fixed", inset:0, zIndex:1000, display:"flex", alignItems:"center", justifyContent:"center", padding:20 }}>
-                    <motion.div onClick={() => setShowCreateTpl(false)} style={{ position:"absolute", inset:0, background:"rgba(15,23,42,0.45)", backdropFilter:"blur(6px)" }} />
-                    <motion.div initial={{ opacity:0, scale:0.97, y:14 }} animate={{ opacity:1, scale:1, y:0 }} exit={{ opacity:0 }}
-                        transition={{ type:"spring", damping:26, stiffness:280 }}
-                        style={{ position:"relative", width:"100%", maxWidth:560, background:_darkMode?C.white:T.surfaceCard, borderRadius:20, boxShadow:"0 24px 60px rgba(0,0,0,0.2)", overflow:"hidden" }}>
-
-                        {/* Modal header */}
-                        <div style={{ padding:"18px 24px", borderBottom:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"space-between", alignItems:"center" }}>
-                            <div>
-                                <div style={{ fontSize:16, fontWeight:800, color:_darkMode?C.text:T.onSurface }}>Create Schedule Template</div>
-                                <div style={{ fontSize:12, color:_darkMode?C.textMuted:T.outline, marginTop:2 }}>Define a reusable weekly pattern for your company</div>
-                            </div>
-                            <button onClick={() => setShowCreateTpl(false)} style={{ background:"none", border:"none", cursor:"pointer", color:_darkMode?C.textMuted:T.outline, fontSize:18, lineHeight:1 }}>✕</button>
-                        </div>
-
-                        {/* Name + color */}
-                        <div style={{ padding:"18px 24px 0", display:"flex", gap:14, alignItems:"flex-end" }}>
-                            <div style={{ flex:1 }}>
-                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Template Name</div>
-                                <input value={tplForm.name} onChange={e => setTplForm(p => ({...p, name:e.target.value}))}
-                                    placeholder="e.g. Core Hours Flex, 4-Day Week…"
-                                    style={{ width:"100%", padding:"9px 12px", border:`1px solid ${_darkMode?C.border:T.outlineVar+"50"}`, borderRadius:8, fontSize:13, outline:"none", background:_darkMode?C.bg:T.surfaceLow, color:_darkMode?C.text:T.onSurface, fontFamily:"inherit", boxSizing:"border-box" }} />
-                            </div>
-                            <div>
-                                <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMid:T.onSurfaceVar, marginBottom:5 }}>Colour</div>
-                                <div style={{ display:"flex", gap:6 }}>
-                                    {TPL_COLORS.map(col => (
-                                        <button key={col} onClick={() => setTplForm(p => ({...p, color:col}))}
-                                            style={{ width:26, height:26, borderRadius:"50%", background:col, border:tplForm.color===col?`3px solid ${_darkMode?C.text:T.onSurface}`:"3px solid transparent", cursor:"pointer", flexShrink:0 }} />
-                                    ))}
+                                        );
+                                    })}
                                 </div>
                             </div>
-                        </div>
 
-                        {/* Day-by-day builder */}
-                        <div style={{ padding:"16px 24px" }}>
-                            <div style={{ fontSize:11, fontWeight:700, color:_darkMode?C.textMuted:T.outline, textTransform:"uppercase", letterSpacing:"0.5px", marginBottom:12 }}>Weekly Pattern</div>
-                            <div style={{ display:"flex", flexDirection:"column", gap:6 }}>
-                                {DAYS.map((day, i) => {
-                                    const current   = tplForm.schedule[day] || "Onsite";
-                                    const isWeekend = i >= 5;
-                                    return (
-                                        <div key={day} style={{ display:"flex", alignItems:"center", gap:12, padding:"8px 12px", borderRadius:9, background:isWeekend?(_darkMode?C.bg:T.surfaceLow):(_darkMode?C.white:T.surfaceCard), border:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}` }}>
-                                            <div style={{ width:90, flexShrink:0 }}>
-                                                <div style={{ fontSize:13, fontWeight:700, color:isWeekend?(_darkMode?C.textMuted:T.outline):(_darkMode?C.text:T.onSurface) }}>{DAY_LABELS[day]}</div>
-                                                <div style={{ fontSize:10, color:_darkMode?C.textMuted:T.outline }}>{isWeekend?"Weekend":"Weekday"}</div>
+                            {/* ── Team Schedule Overview ── */}
+                            <div style={{ flexShrink: 0, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                                <div style={{ padding: "14px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                    <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Team Schedule Overview</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>All {employees.length} team members — click a row to edit</div>
+                                </div>
+                                <div style={{ overflowX: "auto" }}>
+                                    <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 12.5, minWidth: 700 }}>
+                                        <thead>
+                                            <tr style={{ background: _darkMode ? C.tableHead : T.surfaceLow }}>
+                                                <th style={{ padding: "9px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}` }}>Employee</th>
+                                                {DAYS.map(d => <th key={d} style={{ padding: "9px 14px", textAlign: "center", fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.06em", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}` }}>{d}</th>)}
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {employees.map((e, i) => {
+                                                const s = (schedules || {})[e.id] || {};
+                                                return (
+                                                    <tr key={e.id} onClick={() => setSelectedId(e.id)}
+                                                        style={{ background: selectedId === e.id ? (_darkMode ? C.primaryLight : T.primaryFixed) : (_darkMode ? i % 2 === 0 ? C.white : C.tableRow : T.surfaceCard), cursor: "pointer", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, transition: "background 0.12s" }}>
+                                                        <td style={{ padding: "9px 20px", whiteSpace: "nowrap" }}>
+                                                            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                                                <Avatar name={e.name} size={28} />
+                                                                <div>
+                                                                    <div style={{ fontWeight: 700, fontSize: 13, color: selectedId === e.id ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.text : T.onSurface) }}>{e.name}</div>
+                                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{e.dept}</div>
+                                                                </div>
+                                                            </div>
+                                                        </td>
+                                                        {DAYS.map((day, di) => {
+                                                            const mode = s[day] || "Onsite";
+                                                            const mc = MODE_CFG[mode] || MODE_CFG["Onsite"];
+                                                            return (
+                                                                <td key={day} style={{ padding: "9px 14px", textAlign: "center", background: di >= 5 ? (_darkMode ? C.bg : T.surfaceLow) : "transparent" }}>
+                                                                    <span style={{ fontSize: 10.5, fontWeight: 700, padding: "3px 10px", borderRadius: 10, background: mc.bg, color: mc.color, border: `1px solid ${mc.border}` }}>{mode}</span>
+                                                                </td>
+                                                            );
+                                                        })}
+                                                    </tr>
+                                                );
+                                            })}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+
+                        </div>
+                    ) : (
+                        /* ── Shifts tab ── */
+                        <div style={{ flex: 1, overflowY: "auto", padding: "22px 28px", display: "flex", gap: 20, alignItems: "flex-start", background: _darkMode ? C.bg : T.surface }}>
+                            <div style={{ width: 300, flexShrink: 0 }}>
+                                <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                        <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Shift Types</div>
+                                        <button onClick={() => setShowShiftForm(v => !v)}
+                                            style={{ padding: "5px 12px", borderRadius: 7, border: `1px solid ${_darkMode ? C.primary : T.primary}`, background: "transparent", color: _darkMode ? C.primary : T.primary, fontSize: 12, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>
+                                            {showShiftForm ? "Cancel" : "+ New"}
+                                        </button>
+                                    </div>
+                                    {showShiftForm && (
+                                        <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, background: _darkMode ? C.bg : T.surfaceLow, display: "flex", flexDirection: "column", gap: 12 }}>
+                                            <div>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 4 }}>Shift Name</div>
+                                                <input value={shiftForm.name} onChange={e => setSF("name", e.target.value)} placeholder="e.g. Morning Shift"
+                                                    style={{ width: "100%", padding: "8px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 7, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
                                             </div>
-                                            <div style={{ display:"flex", gap:6, flexWrap:"wrap" }}>
-                                                {MODES.map(m => {
-                                                    const mc       = MODE_CFG[m];
-                                                    const isActive = current === m;
+                                            <div style={{ display: "flex", gap: 10 }}>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 4 }}>Start</div>
+                                                    <input type="time" value={shiftForm.startTime} onChange={e => setSF("startTime", e.target.value)}
+                                                        style={{ width: "100%", padding: "8px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 7, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
+                                                </div>
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 4 }}>End</div>
+                                                    <input type="time" value={shiftForm.endTime} onChange={e => setSF("endTime", e.target.value)}
+                                                        style={{ width: "100%", padding: "8px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 7, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceCard, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
+                                                </div>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 6 }}>Color</div>
+                                                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                                    {TPL_COLORS.map(col => (
+                                                        <button key={col} onClick={() => setSF("color", col)}
+                                                            style={{ width: 24, height: 24, borderRadius: "50%", background: col, border: shiftForm.color === col ? `3px solid ${_darkMode ? C.text : T.onSurface}` : "3px solid transparent", cursor: "pointer" }} />
+                                                    ))}
+                                                </div>
+                                            </div>
+                                            <Btn variant="primary" size="sm" onClick={addShift}>Create Shift</Btn>
+                                        </div>
+                                    )}
+                                    <div>
+                                        {shifts.length === 0 && <EmptyState icon="clock" title="No shifts defined" subtitle="Create shift templates to start scheduling" />}
+                                        {shifts.map((sh, i) => (
+                                            <div key={sh.id} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 12, borderBottom: i < shifts.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
+                                                <div style={{ width: 10, height: 10, borderRadius: "50%", background: sh.color, flexShrink: 0 }} />
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{sh.name}</div>
+                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{sh.startTime} – {sh.endTime}</div>
+                                                </div>
+                                                <button onClick={() => setShifts(prev => prev.filter(s => s.id !== sh.id))}
+                                                    style={{ background: "none", border: "none", cursor: "pointer", color: _darkMode ? C.textMuted : T.outline, padding: "4px", fontSize: 15, lineHeight: 1 }}>✕</button>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 16 }}>
+                                <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                        <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Assign Shift to Employee</div>
+                                        <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Assigned shifts appear automatically in Timesheet → Calendar</div>
+                                    </div>
+                                    <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 14 }}>
+                                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                            <div>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 5 }}>Employee</div>
+                                                <select value={assignForm.empId} onChange={e => setAF("empId", e.target.value)}
+                                                    style={{ width: "100%", padding: "9px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit" }}>
+                                                    {employees.map(e => <option key={e.id} value={e.id}>{e.name} — {e.dept}</option>)}
+                                                </select>
+                                            </div>
+                                            <div>
+                                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 5 }}>Shift</div>
+                                                <select value={assignForm.shiftId} onChange={e => setAF("shiftId", e.target.value)}
+                                                    style={{ width: "100%", padding: "9px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit" }}>
+                                                    <option value="">Select a shift…</option>
+                                                    {shifts.map(s => <option key={s.id} value={s.id}>{s.name} ({s.startTime}–{s.endTime})</option>)}
+                                                </select>
+                                            </div>
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 6 }}>Schedule Type</div>
+                                            <div style={{ display: "flex", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 9, overflow: "hidden", width: "fit-content" }}>
+                                                {[["permanent", "Permanent"], ["fixed", "Fixed Period"]].map(([val, label]) => (
+                                                    <button key={val} onClick={() => setAF("scheduleType", val)}
+                                                        style={{ padding: "8px 20px", border: "none", background: assignForm.scheduleType === val ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.white : T.surfaceCard), color: assignForm.scheduleType === val ? "#fff" : (_darkMode ? C.textMid : T.onSurfaceVar), fontSize: 12.5, fontWeight: assignForm.scheduleType === val ? 700 : 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s" }}>
+                                                        {label}
+                                                    </button>
+                                                ))}
+                                            </div>
+                                            {assignForm.scheduleType === "permanent" && (
+                                                <div style={{ marginTop: 8, fontSize: 12, color: _darkMode ? C.textMuted : T.outline, display: "flex", alignItems: "center", gap: 6 }}>
+                                                    <Lucide.Repeat size={12} color={_darkMode ? C.textMuted : T.outline} />Repeats every week with no end date
+                                                </div>
+                                            )}
+                                        </div>
+                                        <div>
+                                            <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 6 }}>Active Days</div>
+                                            <div style={{ display: "flex", gap: 6 }}>
+                                                {DAYS.map(d => {
+                                                    const active = (assignForm.days || []).includes(d);
                                                     return (
-                                                        <button key={m} onClick={() => setTD(day, m)}
-                                                            style={{ padding:"5px 14px", borderRadius:7, border:`1.5px solid ${isActive?mc.border:(_darkMode?C.border:T.outlineVar+"50")}`, background:isActive?mc.bg:(_darkMode?C.white:T.surfaceCard), color:isActive?mc.color:(_darkMode?C.textMuted:T.outline), fontSize:12, fontWeight:isActive?700:500, cursor:"pointer", fontFamily:"inherit", transition:"all 0.1s" }}>
-                                                            {m}
+                                                        <button key={d} onClick={() => { const cur = assignForm.days || []; setAF("days", active ? cur.filter(x => x !== d) : [...cur, d]); }}
+                                                            style={{ width: 40, height: 34, borderRadius: 7, border: `1.5px solid ${active ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50")}`, background: active ? (_darkMode ? C.primaryLight : T.primaryFixed) : (_darkMode ? C.white : T.surfaceCard), color: active ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.textMuted : T.outline), fontSize: 11.5, fontWeight: active ? 800 : 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.12s" }}>
+                                                            {d}
                                                         </button>
                                                     );
                                                 })}
                                             </div>
                                         </div>
+                                        {assignForm.scheduleType === "fixed" && (
+                                            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                                <div>
+                                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 5 }}>Start Date</div>
+                                                    <input type="date" value={assignForm.startDate} onChange={e => setAF("startDate", e.target.value)}
+                                                        style={{ width: "100%", padding: "9px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
+                                                </div>
+                                                <div>
+                                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 5 }}>End Date</div>
+                                                    <input type="date" value={assignForm.endDate} onChange={e => setAF("endDate", e.target.value)}
+                                                        style={{ width: "100%", padding: "9px 10px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 13, outline: "none", background: _darkMode ? C.white : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
+                                                </div>
+                                            </div>
+                                        )}
+                                        <Btn variant="primary" onClick={assignShift} disabled={!assignForm.shiftId || (assignForm.scheduleType === "fixed" && (!assignForm.startDate || !assignForm.endDate))}>
+                                            <Icon n="plus" size={13} color="#fff" />Assign Shift
+                                        </Btn>
+                                    </div>
+                                </div>
+
+                                <div style={{ background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                                    <div style={{ padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                        <div style={{ fontSize: 13, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Current Assignments</div>
+                                        <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>{shiftAssignments.length} active — visible in Timesheet → Calendar</div>
+                                    </div>
+                                    <div>
+                                        {shiftAssignments.length === 0 && <EmptyState icon="calendar" title="No shifts assigned" subtitle="Drag employees to shift slots to start scheduling" />}
+                                        {shiftAssignments.map((a, i) => {
+                                            const sh = shifts.find(s => s.id === a.shiftId);
+                                            const empItem = employees.find(e => e.id === a.empId);
+                                            if (!sh || !empItem) return null;
+                                            const isPerm = a.scheduleType === "permanent" || !a.scheduleType;
+                                            return (
+                                                <div key={a.id} style={{ padding: "12px 20px", display: "flex", alignItems: "center", gap: 14, borderBottom: i < shiftAssignments.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
+                                                    <div style={{ width: 10, height: 10, borderRadius: "50%", background: sh.color, flexShrink: 0 }} />
+                                                    <Avatar name={empItem.name} size={28} />
+                                                    <div style={{ flex: 1 }}>
+                                                        <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface, display: "flex", alignItems: "center", gap: 8 }}>
+                                                            {empItem.name} <span style={{ fontWeight: 400, color: _darkMode ? C.textMuted : T.outline }}>·</span> <span style={{ color: sh.color, fontWeight: 700 }}>{sh.name}</span>
+                                                            {isPerm
+                                                                ? <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: _darkMode ? C.primaryLight : T.primaryFixed, color: _darkMode ? C.primary : T.primary, display: "flex", alignItems: "center", gap: 4 }}><Lucide.Repeat size={9} />Permanent</span>
+                                                                : <span style={{ fontSize: 10, fontWeight: 700, padding: "2px 8px", borderRadius: 20, background: C.warningBg, color: C.warning }}>Fixed Period</span>
+                                                            }
+                                                        </div>
+                                                        <div style={{ display: "flex", alignItems: "center", gap: 4, flexWrap: "wrap", marginTop: 3 }}>
+                                                            <span style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{sh.startTime}–{sh.endTime}</span>
+                                                            <span style={{ color: _darkMode ? C.borderLight : T.outlineVar + "44" }}>·</span>
+                                                            {(a.days || ["Mon", "Tue", "Wed", "Thu", "Fri"]).map(d => (
+                                                                <span key={d} style={{ fontSize: 10, fontWeight: 700, padding: "1px 5px", borderRadius: 4, background: _darkMode ? C.primaryLight : T.primaryFixed, color: _darkMode ? C.primary : T.primary }}>{d}</span>
+                                                            ))}
+                                                            {!isPerm && <span style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>· {a.startDate} → {a.endDate}</span>}
+                                                        </div>
+                                                    </div>
+                                                    <button onClick={() => setShiftAssignments(prev => prev.filter(x => x.id !== a.id))}
+                                                        style={{ background: "none", border: "none", cursor: "pointer", color: _darkMode ? C.textMuted : T.outline, padding: "4px", fontSize: 15, lineHeight: 1 }}>✕</button>
+                                                </div>
+                                            );
+                                        })}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    )}
+                </div>
+            </div>
+
+            {/* ══ Bulk apply modal ══ */}
+            <AnimatePresence>
+                {templateToApply && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                        <motion.div onClick={() => setTemplateToApply(null)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(6px)" }} />
+                        <motion.div initial={{ opacity: 0, scale: 0.97, y: 12 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
+                            transition={{ type: "spring", damping: 28, stiffness: 300 }}
+                            style={{ position: "relative", width: "100%", maxWidth: 480, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 18, boxShadow: "0 20px 56px rgba(0,0,0,0.18)", overflow: "hidden" }}>
+                            <div style={{ padding: "18px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Apply Template — {templateToApply.name}</div>
+                                <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 3 }}>{templateToApply.desc}</div>
+                            </div>
+                            <div style={{ padding: "16px 24px", maxHeight: 320, overflowY: "auto" }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 10 }}>Select employees</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    {employees.map(e => {
+                                        const checked = bulkEmpIds.includes(e.id);
+                                        return (
+                                            <label key={e.id} onClick={() => toggleBulkEmp(e.id)}
+                                                style={{ display: "flex", alignItems: "center", gap: 10, padding: "8px 12px", borderRadius: 9, border: `1px solid ${checked ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.border : T.outlineVar + "50")}`, background: checked ? (_darkMode ? C.primaryLight : T.primaryFixed) : (_darkMode ? C.white : T.surfaceCard), cursor: "pointer", transition: "all 0.12s" }}>
+                                                <input type="checkbox" checked={checked} onChange={() => toggleBulkEmp(e.id)} style={{ accentColor: _darkMode ? C.primary : T.primary, width: 14, height: 14, cursor: "pointer" }} />
+                                                <Avatar name={e.name} size={26} />
+                                                <div style={{ flex: 1 }}>
+                                                    <div style={{ fontSize: 13, fontWeight: 700, color: checked ? (_darkMode ? C.primary : T.primary) : (_darkMode ? C.text : T.onSurface) }}>{e.name}</div>
+                                                    <div style={{ fontSize: 11, color: _darkMode ? C.textMuted : T.outline }}>{e.dept}</div>
+                                                </div>
+                                            </label>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                            <div style={{ padding: "14px 24px", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <span style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline }}>{bulkEmpIds.length} selected</span>
+                                <div style={{ display: "flex", gap: 10 }}>
+                                    <Btn variant="outline" onClick={() => setTemplateToApply(null)}>Cancel</Btn>
+                                    <Btn variant="primary" onClick={() => { applyTemplate(templateToApply, bulkEmpIds); handleSave(); }} disabled={bulkEmpIds.length === 0}>
+                                        <Icon n="check" size={13} color="#fff" />Apply to {bulkEmpIds.length || "…"}
+                                    </Btn>
+                                </div>
+                            </div>
+                        </motion.div>
+                    </motion.div>
+                )}
+            </AnimatePresence>
+
+            {/* ══ Create Custom Template modal ══ */}
+            <AnimatePresence>
+                {showCreateTpl && (
+                    <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                        style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                        <motion.div onClick={() => setShowCreateTpl(false)} style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.45)", backdropFilter: "blur(6px)" }} />
+                        <motion.div initial={{ opacity: 0, scale: 0.97, y: 14 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0 }}
+                            transition={{ type: "spring", damping: 26, stiffness: 280 }}
+                            style={{ position: "relative", width: "100%", maxWidth: 560, background: _darkMode ? C.white : T.surfaceCard, borderRadius: 20, boxShadow: "0 24px 60px rgba(0,0,0,0.2)", overflow: "hidden" }}>
+
+                            {/* Modal header */}
+                            <div style={{ padding: "18px 24px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                <div>
+                                    <div style={{ fontSize: 16, fontWeight: 800, color: _darkMode ? C.text : T.onSurface }}>Create Schedule Template</div>
+                                    <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Define a reusable weekly pattern for your company</div>
+                                </div>
+                                <button onClick={() => setShowCreateTpl(false)} style={{ background: "none", border: "none", cursor: "pointer", color: _darkMode ? C.textMuted : T.outline, fontSize: 18, lineHeight: 1 }}>✕</button>
+                            </div>
+
+                            {/* Name + color */}
+                            <div style={{ padding: "18px 24px 0", display: "flex", gap: 14, alignItems: "flex-end" }}>
+                                <div style={{ flex: 1 }}>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 5 }}>Template Name</div>
+                                    <input value={tplForm.name} onChange={e => setTplForm(p => ({ ...p, name: e.target.value }))}
+                                        placeholder="e.g. Core Hours Flex, 4-Day Week…"
+                                        style={{ width: "100%", padding: "9px 12px", border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, borderRadius: 8, fontSize: 13, outline: "none", background: _darkMode ? C.bg : T.surfaceLow, color: _darkMode ? C.text : T.onSurface, fontFamily: "inherit", boxSizing: "border-box" }} />
+                                </div>
+                                <div>
+                                    <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, marginBottom: 5 }}>Colour</div>
+                                    <div style={{ display: "flex", gap: 6 }}>
+                                        {TPL_COLORS.map(col => (
+                                            <button key={col} onClick={() => setTplForm(p => ({ ...p, color: col }))}
+                                                style={{ width: 26, height: 26, borderRadius: "50%", background: col, border: tplForm.color === col ? `3px solid ${_darkMode ? C.text : T.onSurface}` : "3px solid transparent", cursor: "pointer", flexShrink: 0 }} />
+                                        ))}
+                                    </div>
+                                </div>
+                            </div>
+
+                            {/* Day-by-day builder */}
+                            <div style={{ padding: "16px 24px" }}>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>Weekly Pattern</div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+                                    {DAYS.map((day, i) => {
+                                        const current = tplForm.schedule[day] || "Onsite";
+                                        const isWeekend = i >= 5;
+                                        return (
+                                            <div key={day} style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 12px", borderRadius: 9, background: isWeekend ? (_darkMode ? C.bg : T.surfaceLow) : (_darkMode ? C.white : T.surfaceCard), border: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
+                                                <div style={{ width: 90, flexShrink: 0 }}>
+                                                    <div style={{ fontSize: 13, fontWeight: 700, color: isWeekend ? (_darkMode ? C.textMuted : T.outline) : (_darkMode ? C.text : T.onSurface) }}>{DAY_LABELS[day]}</div>
+                                                    <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline }}>{isWeekend ? "Weekend" : "Weekday"}</div>
+                                                </div>
+                                                <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                                                    {MODES.map(m => {
+                                                        const mc = MODE_CFG[m];
+                                                        const isActive = current === m;
+                                                        return (
+                                                            <button key={m} onClick={() => setTD(day, m)}
+                                                                style={{ padding: "5px 14px", borderRadius: 7, border: `1.5px solid ${isActive ? mc.border : (_darkMode ? C.border : T.outlineVar + "50")}`, background: isActive ? mc.bg : (_darkMode ? C.white : T.surfaceCard), color: isActive ? mc.color : (_darkMode ? C.textMuted : T.outline), fontSize: 12, fontWeight: isActive ? 700 : 500, cursor: "pointer", fontFamily: "inherit", transition: "all 0.1s" }}>
+                                                                {m}
+                                                            </button>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+
+                            {/* Preview pill row */}
+                            <div style={{ padding: "0 24px 16px", display: "flex", gap: 8, flexWrap: "wrap" }}>
+                                {MODES.filter(m => DAYS.some(d => tplForm.schedule[d] === m)).map(m => {
+                                    const mc = MODE_CFG[m];
+                                    const count = DAYS.filter(d => tplForm.schedule[d] === m).length;
+                                    return (
+                                        <div key={m} style={{ display: "flex", alignItems: "center", gap: 6, padding: "4px 12px", borderRadius: 20, background: mc.bg, border: `1px solid ${mc.border}` }}>
+                                            <span style={{ width: 6, height: 6, borderRadius: "50%", background: mc.color }} />
+                                            <span style={{ fontSize: 11.5, fontWeight: 700, color: mc.color }}>{m} {count}d/wk</span>
+                                        </div>
                                     );
                                 })}
                             </div>
-                        </div>
 
-                        {/* Preview pill row */}
-                        <div style={{ padding:"0 24px 16px", display:"flex", gap:8, flexWrap:"wrap" }}>
-                            {MODES.filter(m => DAYS.some(d => tplForm.schedule[d]===m)).map(m => {
-                                const mc    = MODE_CFG[m];
-                                const count = DAYS.filter(d => tplForm.schedule[d]===m).length;
-                                return (
-                                    <div key={m} style={{ display:"flex", alignItems:"center", gap:6, padding:"4px 12px", borderRadius:20, background:mc.bg, border:`1px solid ${mc.border}` }}>
-                                        <span style={{ width:6, height:6, borderRadius:"50%", background:mc.color }} />
-                                        <span style={{ fontSize:11.5, fontWeight:700, color:mc.color }}>{m} {count}d/wk</span>
-                                    </div>
-                                );
-                            })}
-                        </div>
-
-                        {/* Footer */}
-                        <div style={{ padding:"14px 24px", borderTop:`1px solid ${_darkMode?C.borderLight:T.outlineVar+"22"}`, display:"flex", justifyContent:"flex-end", gap:10 }}>
-                            <Btn variant="outline" onClick={() => setShowCreateTpl(false)}>Cancel</Btn>
-                            <Btn variant="primary" onClick={saveCustomTemplate} disabled={!tplForm.name.trim()}>
-                                <Icon n="check" size={13} color="#fff" />Save Template
-                            </Btn>
-                        </div>
+                            {/* Footer */}
+                            <div style={{ padding: "14px 24px", borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, display: "flex", justifyContent: "flex-end", gap: 10 }}>
+                                <Btn variant="outline" onClick={() => setShowCreateTpl(false)}>Cancel</Btn>
+                                <Btn variant="primary" onClick={saveCustomTemplate} disabled={!tplForm.name.trim()}>
+                                    <Icon n="check" size={13} color="#fff" />Save Template
+                                </Btn>
+                            </div>
+                        </motion.div>
                     </motion.div>
-                </motion.div>
-            )}
-        </AnimatePresence>
+                )}
+            </AnimatePresence>
         </React.Fragment>
     );
 };
@@ -9860,23 +9967,23 @@ const SettingsPageInner = () => {
     const cfg = companyConfig || {};
 
     // Organisation
-    const [orgName,       setOrgName]       = useState(saved.current.orgName       ?? cfg.companyName ?? "");
-    const [regNumber,     setRegNumber]     = useState(saved.current.regNumber     ?? "");
-    const [contactEmail,  setContactEmail]  = useState(saved.current.contactEmail  ?? cfg.adminEmail  ?? "");
-    const [industry,      setIndustry]      = useState(saved.current.industry      ?? cfg.industry    ?? "");
-    const [timezone,      setTimezone]      = useState(saved.current.timezone      ?? "Asia/Colombo");
-    const [fiscalYear,    setFiscalYear]    = useState(saved.current.fiscalYear    ?? "January");
+    const [orgName, setOrgName] = useState(saved.current.orgName ?? cfg.companyName ?? "");
+    const [regNumber, setRegNumber] = useState(saved.current.regNumber ?? "");
+    const [contactEmail, setContactEmail] = useState(saved.current.contactEmail ?? cfg.adminEmail ?? "");
+    const [industry, setIndustry] = useState(saved.current.industry ?? cfg.industry ?? "");
+    const [timezone, setTimezone] = useState(saved.current.timezone ?? "Asia/Colombo");
+    const [fiscalYear, setFiscalYear] = useState(saved.current.fiscalYear ?? "January");
     // Regional
-    const [market,        setMarket]        = useState(saved.current.market        ?? cfg.country     ?? "Sri Lanka");
-    const [currency,      setCurrency]      = useState(saved.current.currency      ?? cfg.currency    ?? "LKR (Rs)");
-    const [dateFormat,    setDateFormat]    = useState(saved.current.dateFormat    ?? "DD/MM/YYYY");
-    const [language,      setLanguage]      = useState(saved.current.language      ?? "English (UK)");
-    const [numberFormat,  setNumberFormat]  = useState(saved.current.numberFormat  ?? "1,234.56");
+    const [market, setMarket] = useState(saved.current.market ?? cfg.country ?? "Sri Lanka");
+    const [currency, setCurrency] = useState(saved.current.currency ?? cfg.currency ?? "LKR (Rs)");
+    const [dateFormat, setDateFormat] = useState(saved.current.dateFormat ?? "DD/MM/YYYY");
+    const [language, setLanguage] = useState(saved.current.language ?? "English (UK)");
+    const [numberFormat, setNumberFormat] = useState(saved.current.numberFormat ?? "1,234.56");
     // Security
-    const [twoFA,          setTwoFA]         = useState(saved.current.twoFA          ?? false);
-    const [ssoEnabled,     setSsoEnabled]    = useState(saved.current.ssoEnabled     ?? false);
-    const [sessionTimeout, setSessionTimeout]= useState(saved.current.sessionTimeout ?? "1 hour");
-    const [passwordPolicy, setPasswordPolicy]= useState(saved.current.passwordPolicy ?? "Standard");
+    const [twoFA, setTwoFA] = useState(saved.current.twoFA ?? false);
+    const [ssoEnabled, setSsoEnabled] = useState(saved.current.ssoEnabled ?? false);
+    const [sessionTimeout, setSessionTimeout] = useState(saved.current.sessionTimeout ?? "1 hour");
+    const [passwordPolicy, setPasswordPolicy] = useState(saved.current.passwordPolicy ?? "Standard");
     // Notifications
     const NOTIF_DEFAULTS = {
         "Leave approval/rejection": true,
@@ -9896,10 +10003,10 @@ const SettingsPageInner = () => {
         localStorage.setItem(LS_SETTINGS_KEY, JSON.stringify(next));
         saved.current = next;
     };
-    const saveOrg      = () => { persist({ orgName, regNumber, contactEmail, industry, timezone, fiscalYear }); showToast("Organisation profile saved"); };
+    const saveOrg = () => { persist({ orgName, regNumber, contactEmail, industry, timezone, fiscalYear }); showToast("Organisation profile saved"); };
     const saveRegional = () => { persist({ market, currency, dateFormat, language, numberFormat }); showToast("Regional settings saved"); };
     const saveSecurity = () => { persist({ twoFA, ssoEnabled, sessionTimeout, passwordPolicy }); showToast("Security settings saved"); };
-    const saveNotifs   = () => { persist({ notifs }); showToast("Notification preferences saved"); };
+    const saveNotifs = () => { persist({ notifs }); showToast("Notification preferences saved"); };
 
     // ── Shared T-token micro-components ──────────────────────────────────────
     const cardSt = { background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
@@ -10065,11 +10172,11 @@ const SettingsPageInner = () => {
                             <Lbl t="Colour Theme" />
                             <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginTop: 8 }}>
                                 {[
-                                    { key: "teal",   name: "Teal",   color: "#0d9488" },
+                                    { key: "teal", name: "Teal", color: "#0d9488" },
                                     { key: "indigo", name: "Indigo", color: "#6366f1" },
-                                    { key: "blue",   name: "Blue",   color: "#3b82f6" },
+                                    { key: "blue", name: "Blue", color: "#3b82f6" },
                                     { key: "purple", name: "Purple", color: "#8b5cf6" },
-                                    { key: "rose",   name: "Rose",   color: "#f43f5e" },
+                                    { key: "rose", name: "Rose", color: "#f43f5e" },
                                 ].map(t => (
                                     <div key={t.key} onClick={() => setThemeKey(t.key)}
                                         style={{ display: "flex", alignItems: "center", gap: 7, padding: "8px 14px", borderRadius: 9, border: `2px solid ${themeKey === t.key ? t.color : T.outlineVar + "50"}`, cursor: "pointer", background: themeKey === t.key ? t.color + "12" : "transparent", transition: "all 0.15s" }}>
@@ -10132,7 +10239,7 @@ const OrgPage = () => {
     const saveEntities = (ents) => {
         const updated = { ...(companyConfig || {}), entities: ents };
         setCompanyConfig(updated);
-        try { localStorage.setItem(LS_CONFIG_KEY, JSON.stringify(updated)); } catch(e) {}
+        try { localStorage.setItem(LS_CONFIG_KEY, JSON.stringify(updated)); } catch (e) { }
     };
     const [entityForm, setEntityForm] = useState({ name: "", country: "Sri Lanka", registrationNo: "", currency: "LKR", address: "" });
     const [showAddEntity, setShowAddEntity] = useState(false);
@@ -10189,7 +10296,7 @@ const OrgPage = () => {
     const saveDeptToConfig = (depts) => {
         const updated = { ...(companyConfig || {}), departments: depts };
         setCompanyConfig(updated);
-        try { localStorage.setItem(LS_CONFIG_KEY, JSON.stringify(updated)); } catch(e) {}
+        try { localStorage.setItem(LS_CONFIG_KEY, JSON.stringify(updated)); } catch (e) { }
     };
 
     const handleAddDept = () => {
@@ -10625,7 +10732,7 @@ const OrgPage = () => {
                                             ? <select value={newDeptForm.location || configLocations[0]} onChange={e => setNewDeptForm(p => ({ ...p, location: e.target.value }))}
                                                 style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.text, background: C.bg, outline: "none", fontFamily: "inherit" }}>
                                                 {configLocations.map(l => <option key={l}>{l}</option>)}
-                                              </select>
+                                            </select>
                                             : <input value={newDeptForm.location} onChange={e => setNewDeptForm(p => ({ ...p, location: e.target.value }))}
                                                 placeholder="e.g. HQ, London"
                                                 style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.text, background: C.bg, outline: "none", fontFamily: "inherit" }} />
@@ -10635,7 +10742,7 @@ const OrgPage = () => {
                                         <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>Country</div>
                                         <select value={newDeptForm.country} onChange={e => setNewDeptForm(p => ({ ...p, country: e.target.value }))}
                                             style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.text, background: C.bg, outline: "none", fontFamily: "inherit" }}>
-                                            {["Sri Lanka","United Kingdom","United States","Australia","India","Singapore","UAE","Germany","Canada","Other"].map(c => <option key={c}>{c}</option>)}
+                                            {["Sri Lanka", "United Kingdom", "United States", "Australia", "India", "Singapore", "UAE", "Germany", "Canada", "Other"].map(c => <option key={c}>{c}</option>)}
                                         </select>
                                     </div>
                                 </div>
@@ -10703,8 +10810,8 @@ const OrgPage = () => {
                             </div>
 
                             {configEntities.length > 0 ? (() => {
-                                const ENT_COLORS_DUP = ["#6366F1","#0EA5E9","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
-                                const FLAGS = {"Sri Lanka":"🇱🇰","United Kingdom":"🇬🇧","United States":"🇺🇸","Australia":"🇦🇺","India":"🇮🇳","Singapore":"🇸🇬","UAE":"🇦🇪","Germany":"🇩🇪","Canada":"🇨🇦"};
+                                const ENT_COLORS_DUP = ["#6366F1", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
+                                const FLAGS = { "Sri Lanka": "🇱🇰", "United Kingdom": "🇬🇧", "United States": "🇺🇸", "Australia": "🇦🇺", "India": "🇮🇳", "Singapore": "🇸🇬", "UAE": "🇦🇪", "Germany": "🇩🇪", "Canada": "🇨🇦" };
                                 return (
                                     <div>
                                         <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 8 }}>Copy Into Entity</div>
@@ -10780,7 +10887,7 @@ const OrgPage = () => {
                     const srcEnt = configEntities.find(e => e.id === entDupModal);
                     const srcDepts = mergedDepts.filter(d => d.entityId === entDupModal);
                     const otherEnts = configEntities.filter(e => e.id !== entDupModal);
-                    const ENT_COLORS_M = ["#6366F1","#0EA5E9","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                    const ENT_COLORS_M = ["#6366F1", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                     // job families that match selected depts
                     const matchedJFs = jobFamilies.filter(f => entDupSelected.some(dn => f.dept === dn || f.name === dn));
                     // already-existing depts in target entity
@@ -10860,7 +10967,7 @@ const OrgPage = () => {
                                                     <div key={e.id} onClick={() => setEntDupTarget(e.id)}
                                                         style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 14px", borderRadius: 10, border: `1.5px solid ${active ? ec : C.border}`, background: active ? `${ec}10` : C.bg, cursor: "pointer", transition: "all 0.12s" }}>
                                                         <div style={{ width: 32, height: 32, borderRadius: 9, background: `${ec}18`, border: `1.5px solid ${ec}30`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>
-                                                            {{"Sri Lanka":"🇱🇰","United Kingdom":"🇬🇧","United States":"🇺🇸","Australia":"🇦🇺","India":"🇮🇳","Singapore":"🇸🇬","UAE":"🇦🇪","Germany":"🇩🇪","Canada":"🇨🇦"}[e.country] || "🌍"}
+                                                            {{ "Sri Lanka": "🇱🇰", "United Kingdom": "🇬🇧", "United States": "🇺🇸", "Australia": "🇦🇺", "India": "🇮🇳", "Singapore": "🇸🇬", "UAE": "🇦🇪", "Germany": "🇩🇪", "Canada": "🇨🇦" }[e.country] || "🌍"}
                                                         </div>
                                                         <div style={{ flex: 1, minWidth: 0 }}>
                                                             <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? C.text : C.textMid }}>{e.name || `Entity ${i + 2}`}</div>
@@ -10939,7 +11046,7 @@ const OrgPage = () => {
             {view === "departments" && (() => {
                 // Split into two groups for clear display
                 const originalDepts = mergedDepts.filter(d => !newlyDuped.includes(d.name));
-                const dupedDepts    = mergedDepts.filter(d =>  newlyDuped.includes(d.name));
+                const dupedDepts = mergedDepts.filter(d => newlyDuped.includes(d.name));
                 // Combine: duped first (highlighted), then originals
                 const orderedDepts = [...dupedDepts, ...originalDepts];
 
@@ -10984,7 +11091,7 @@ const OrgPage = () => {
                                         </div>
                                         {configEntities.length > 0 && (() => {
                                             const assignedEnt = configEntities.find(e => e.id === dept.entityId);
-                                            const ENT_COLORS_D = ["#6366F1","#0EA5E9","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                                            const ENT_COLORS_D = ["#6366F1", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                                             const entColor = assignedEnt ? ENT_COLORS_D[configEntities.indexOf(assignedEnt) % ENT_COLORS_D.length] : null;
                                             return (
                                                 <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
@@ -11226,7 +11333,7 @@ const OrgPage = () => {
             {/* ── ENTITIES VIEW ──────────────────────────────────────── */}
             {view === "entities" && (() => {
                 const COUNTRY_FLAGS = { "Sri Lanka": "🇱🇰", "United Kingdom": "🇬🇧", "United States": "🇺🇸", "Australia": "🇦🇺", "India": "🇮🇳", "Singapore": "🇸🇬", "UAE": "🇦🇪", "Germany": "🇩🇪", "Canada": "🇨🇦", "Other": "🌍" };
-                const ENT_COLORS = ["#6366F1","#0EA5E9","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                const ENT_COLORS = ["#6366F1", "#0EA5E9", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                 const INP = { padding: "8px 11px", border: `1px solid ${C.border}`, borderRadius: 8, fontSize: 13, background: C.bg, color: C.text, fontFamily: "inherit", outline: "none", width: "100%", boxSizing: "border-box" };
                 return (
                     <div style={{ padding: "0 0 28px" }}>
@@ -11392,20 +11499,20 @@ const OrgPage = () => {
 
 // ── Template color tokens (mapped faithfully from the Selfvora design system) ──
 const T = {
-    surface:      "#f7f9fb",
-    surfaceCard:  "#ffffff",
-    surfaceLow:   "#f2f4f6",
-    surfaceHigh:  "#e6e8ea",
-    outline:      "#737686",
-    outlineVar:   "#c3c6d7",
-    onSurface:    "#191c1e",
+    surface: "#f7f9fb",
+    surfaceCard: "#ffffff",
+    surfaceLow: "#f2f4f6",
+    surfaceHigh: "#e6e8ea",
+    outline: "#737686",
+    outlineVar: "#c3c6d7",
+    onSurface: "#191c1e",
     onSurfaceVar: "#434655",
-    primary:      "#004ac6",
+    primary: "#004ac6",
     primaryFixed: "#dbe1ff",            // "On Time" badge bg
     primaryFixedText: "#003ea8",        // "On Time" badge text
-    tertiaryFixed:    "#ffdbcd",        // "Late" badge bg
-    tertiary:         "#943700",        // "Late" badge text / "Pending Corrections" number
-    inverseS:     "#2d3133",            // dark button bg
+    tertiaryFixed: "#ffdbcd",        // "Late" badge bg
+    tertiary: "#943700",        // "Late" badge text / "Pending Corrections" number
+    inverseS: "#2d3133",            // dark button bg
 };
 
 const TimesheetPage = ({ pageKey }) => {
@@ -11421,18 +11528,18 @@ const TimesheetPage = ({ pageKey }) => {
     const roles = { EMP001: "Staff Engineer", EMP002: "HR Specialist", EMP003: "Product Manager", EMP004: "QA Lead", EMP005: "Backend Engineer", EMP006: "Sales Manager", EMP007: "DevOps Lead" };
 
     const data = [
-        { name: "James Perera",  id: "EMP001", ci: "09:02", co: "17:58", hrs: "8h 56m", mode: "Remote",   status: "Active",   ot: "0h 0m",  src: "gps" },
-        { name: "Nimali Silva",  id: "EMP002", ci: "08:45", co: "17:32", hrs: "8h 47m", mode: "Onsite",   status: "Active",   ot: "0h 15m", src: "biometric" },
-        { name: "David Chen",    id: "EMP003", ci: "09:18", co: "—",     hrs: "Active", mode: "Onsite",   status: "Active",   ot: "0h 0m",  src: "biometric" },
-        { name: "Ayesha Farook", id: "EMP004", ci: "—",     co: "—",     hrs: "0h 0m",  mode: "On Leave", status: "On Leave", ot: "0h 0m",  src: "—" },
-        { name: "Rayan Kumar",   id: "EMP005", ci: "09:32", co: "—",     hrs: "Active", mode: "Remote",   status: "Active",   ot: "0h 0m",  src: "manual" },
-        { name: "Emma Thompson", id: "EMP006", ci: "09:05", co: "17:55", hrs: "8h 50m", mode: "Onsite",   status: "Active",   ot: "0h 20m", src: "biometric" },
-        { name: "Arjun Mehta",   id: "EMP007", ci: "—",     co: "—",     hrs: "0h 0m",  mode: "—",        status: "Absent",   ot: "0h 0m",  src: "—" },
+        { name: "James Perera", id: "EMP001", ci: "09:02", co: "17:58", hrs: "8h 56m", mode: "Remote", status: "Active", ot: "0h 0m", src: "gps" },
+        { name: "Nimali Silva", id: "EMP002", ci: "08:45", co: "17:32", hrs: "8h 47m", mode: "Onsite", status: "Active", ot: "0h 15m", src: "biometric" },
+        { name: "David Chen", id: "EMP003", ci: "09:18", co: "—", hrs: "Active", mode: "Onsite", status: "Active", ot: "0h 0m", src: "biometric" },
+        { name: "Ayesha Farook", id: "EMP004", ci: "—", co: "—", hrs: "0h 0m", mode: "On Leave", status: "On Leave", ot: "0h 0m", src: "—" },
+        { name: "Rayan Kumar", id: "EMP005", ci: "09:32", co: "—", hrs: "Active", mode: "Remote", status: "Active", ot: "0h 0m", src: "manual" },
+        { name: "Emma Thompson", id: "EMP006", ci: "09:05", co: "17:55", hrs: "8h 50m", mode: "Onsite", status: "Active", ot: "0h 20m", src: "biometric" },
+        { name: "Arjun Mehta", id: "EMP007", ci: "—", co: "—", hrs: "0h 0m", mode: "—", status: "Absent", ot: "0h 0m", src: "—" },
     ];
 
     const getAttendanceStatus = (r) => {
         if (r.status === "On Leave") return "On Leave";
-        if (r.status === "Absent")   return "Absent";
+        if (r.status === "Absent") return "Absent";
         if (r.ci === "—") return "Absent";
         const h = parseInt(r.ci.split(":")[0], 10);
         const m = parseInt(r.ci.split(":")[1], 10);
@@ -11440,10 +11547,10 @@ const TimesheetPage = ({ pageKey }) => {
     };
 
     const statusStyle = {
-        "On Time":  { bg: C.primary + "18",  color: C.primary,  label: "On Time"  },
-        "Late":     { bg: C.warning + "20",  color: C.warning,  label: "Late"     },
-        "On Leave": { bg: C.textMuted + "20",color: C.textMid,  label: "On Leave" },
-        "Absent":   { bg: C.danger + "18",   color: C.danger,   label: "Absent"   },
+        "On Time": { bg: C.primary + "18", color: C.primary, label: "On Time" },
+        "Late": { bg: C.warning + "20", color: C.warning, label: "Late" },
+        "On Leave": { bg: C.textMuted + "20", color: C.textMid, label: "On Leave" },
+        "Absent": { bg: C.danger + "18", color: C.danger, label: "Absent" },
     };
 
     const filteredData = (isCorrections
@@ -11455,19 +11562,19 @@ const TimesheetPage = ({ pageKey }) => {
 
     // ── Status badge definitions — exact color tokens from template ──
     const attStatusBadge = {
-        "On Time":  { bg: T.primaryFixed,   color: T.primaryFixedText, label: "On Time"  },
-        "Late":     { bg: T.tertiaryFixed,  color: T.tertiary,         label: "Late"     },
-        "On Leave": { bg: T.surfaceHigh,    color: T.onSurfaceVar,     label: "On Leave" },
-        "Absent":   { bg: "#ffdad6",        color: "#ba1a1a",          label: "Absent"   },
+        "On Time": { bg: T.primaryFixed, color: T.primaryFixedText, label: "On Time" },
+        "Late": { bg: T.tertiaryFixed, color: T.tertiary, label: "Late" },
+        "On Leave": { bg: T.surfaceHigh, color: T.onSurfaceVar, label: "On Leave" },
+        "Absent": { bg: "#ffdad6", color: "#ba1a1a", label: "Absent" },
     };
 
     // bar heights match template proportions
     const shiftBars = [
-        { label: "06:00", trackH: "75%",  fillH: "67%",  color: T.primary },
-        { label: "09:00", trackH: "100%", fillH: "88%",  color: T.primary },
-        { label: "12:00", trackH: "63%",  fillH: "38%",  color: T.primary },
-        { label: "15:00", trackH: "75%",  fillH: "31%",  color: T.tertiary },
-        { label: "18:00", trackH: "88%",  fillH: "63%",  color: T.tertiary },
+        { label: "06:00", trackH: "75%", fillH: "67%", color: T.primary },
+        { label: "09:00", trackH: "100%", fillH: "88%", color: T.primary },
+        { label: "12:00", trackH: "63%", fillH: "38%", color: T.primary },
+        { label: "15:00", trackH: "75%", fillH: "31%", color: T.tertiary },
+        { label: "18:00", trackH: "88%", fillH: "63%", color: T.tertiary },
     ];
 
     const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 16, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)" };
@@ -11654,9 +11761,9 @@ const TimesheetPage = ({ pageKey }) => {
                                                 {/* Work Mode */}
                                                 <td style={{ padding: "16px 24px" }}>
                                                     <div style={{ display: "flex", alignItems: "center", gap: 6, color: isGhosted ? T.outlineVar : T.onSurfaceVar }}>
-                                                        {r.mode === "Remote"   && <Lucide.Home      size={16} />}
-                                                        {r.mode === "Onsite"   && <Lucide.Building2 size={16} />}
-                                                        {r.mode === "On Leave" && <Lucide.Palmtree  size={16} />}
+                                                        {r.mode === "Remote" && <Lucide.Home size={16} />}
+                                                        {r.mode === "Onsite" && <Lucide.Building2 size={16} />}
+                                                        {r.mode === "On Leave" && <Lucide.Palmtree size={16} />}
                                                         <span style={{ fontSize: 13.5, fontWeight: 500 }}>{r.mode === "—" ? "—" : r.mode === "On Leave" ? "Vacation" : r.mode}</span>
                                                     </div>
                                                 </td>
@@ -11692,7 +11799,7 @@ const TimesheetPage = ({ pageKey }) => {
                         <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                             <Lucide.ChevronLeft size={16} color={T.onSurfaceVar} />
                         </motion.button>
-                        {[1,2,3].map(p => (
+                        {[1, 2, 3].map(p => (
                             <button key={p} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: p === 1 ? T.primary : "transparent", color: p === 1 ? "#fff" : T.onSurfaceVar, fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>{p}</button>
                         ))}
                         <motion.button whileHover={{ backgroundColor: T.surfaceHigh }} style={{ width: 32, height: 32, borderRadius: 6, border: "none", background: "transparent", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
@@ -12719,27 +12826,27 @@ const TeamsPage = () => {
     const totalMembers = (teams || []).reduce((a, t) => a + (t.members?.length || 0), 0);
 
     /* ── T-token shorthands ── */
-    const surf  = _darkMode ? C.white     : T.surfaceCard;
-    const bdr   = _darkMode ? C.border    : T.outlineVar + "28";
-    const bdrSm = _darkMode ? C.border    : T.outlineVar + "22";
-    const txt   = _darkMode ? C.text      : T.onSurface;
+    const surf = _darkMode ? C.white : T.surfaceCard;
+    const bdr = _darkMode ? C.border : T.outlineVar + "28";
+    const bdrSm = _darkMode ? C.border : T.outlineVar + "22";
+    const txt = _darkMode ? C.text : T.onSurface;
     const muted = _darkMode ? C.textMuted : T.onSurfaceVar;
-    const low   = _darkMode ? C.bg        : T.surfaceLow;
+    const low = _darkMode ? C.bg : T.surfaceLow;
     const cardSt = { background: surf, border: `1px solid ${bdr}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
 
     /* ── Dept → icon/color map ── */
     const getDeptStyle = (dept) => {
         const map = {
-            "Engineering": { LIcon: Lucide.Code2,       color: "#6366f1", bg: "#eef2ff" },
-            "DevOps":      { LIcon: Lucide.Server,       color: "#f97316", bg: "#fff7ed" },
-            "HR & Admin":  { LIcon: Lucide.Users,        color: "#10b981", bg: "#ecfdf5" },
-            "Sales":       { LIcon: Lucide.TrendingUp,   color: "#0ea5e9", bg: "#e0f2fe" },
-            "Product":     { LIcon: Lucide.Layers,       color: "#3b82f6", bg: "#eff6ff" },
-            "Finance":     { LIcon: Lucide.DollarSign,   color: "#f59e0b", bg: "#fffbeb" },
-            "Design":      { LIcon: Lucide.Palette,      color: "#8b5cf6", bg: "#f5f3ff" },
-            "QA":          { LIcon: Lucide.CheckCircle2, color: "#10b981", bg: "#ecfdf5" },
-            "Operations":  { LIcon: Lucide.Settings2,    color: "#64748b", bg: "#f1f5f9" },
-            "Marketing":   { LIcon: Lucide.Megaphone,    color: "#ec4899", bg: "#fdf2f8" },
+            "Engineering": { LIcon: Lucide.Code2, color: "#6366f1", bg: "#eef2ff" },
+            "DevOps": { LIcon: Lucide.Server, color: "#f97316", bg: "#fff7ed" },
+            "HR & Admin": { LIcon: Lucide.Users, color: "#10b981", bg: "#ecfdf5" },
+            "Sales": { LIcon: Lucide.TrendingUp, color: "#0ea5e9", bg: "#e0f2fe" },
+            "Product": { LIcon: Lucide.Layers, color: "#3b82f6", bg: "#eff6ff" },
+            "Finance": { LIcon: Lucide.DollarSign, color: "#f59e0b", bg: "#fffbeb" },
+            "Design": { LIcon: Lucide.Palette, color: "#8b5cf6", bg: "#f5f3ff" },
+            "QA": { LIcon: Lucide.CheckCircle2, color: "#10b981", bg: "#ecfdf5" },
+            "Operations": { LIcon: Lucide.Settings2, color: "#64748b", bg: "#f1f5f9" },
+            "Marketing": { LIcon: Lucide.Megaphone, color: "#ec4899", bg: "#fdf2f8" },
         };
         return map[dept] || { LIcon: Lucide.Users, color: "#6366f1", bg: "#eef2ff" };
     };
@@ -12759,7 +12866,7 @@ const TeamsPage = () => {
                     {filtered.length === 0 && <div style={{ padding: "14px", textAlign: "center", fontSize: 12, color: muted }}>No employees found</div>}
                     {filtered.map(e => {
                         const checked = selectedMembers.includes(e.id);
-                        const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                        const avColors = ["#6366F1", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                         const avBg = avColors[e.name.charCodeAt(0) % avColors.length];
                         return (
                             <div key={e.id} onClick={() => onToggle(e.id)}
@@ -12768,7 +12875,7 @@ const TeamsPage = () => {
                                     {checked && <Lucide.Check size={10} color="#fff" strokeWidth={3} />}
                                 </div>
                                 <div style={{ width: 28, height: 28, borderRadius: 8, background: avBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{e.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
+                                    <span style={{ fontSize: 10, fontWeight: 700, color: "#fff" }}>{e.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
                                 </div>
                                 <div style={{ minWidth: 0 }}>
                                     <div style={{ fontSize: 12, fontWeight: 600, color: txt }}>{e.name}</div>
@@ -12812,9 +12919,9 @@ const TeamsPage = () => {
                 {/* ── Stat Cards ── */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 16, marginBottom: 28 }}>
                     {[
-                        { label: "TOTAL TEAMS",   value: teams?.length || 0,  sub: `+${Math.max(1, (teams?.length||0) % 3)} this month`,   subColor: "#10b981", SubIcon: Lucide.TrendingUp, iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.Network },
-                        { label: "TOTAL MEMBERS", value: totalMembers,         sub: "+4% vs last Q",                                         subColor: "#10b981", SubIcon: Lucide.TrendingUp, iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.Users },
-                        { label: "OPEN ROLES",    value: totalOpenRoles,       sub: `${Math.ceil(totalOpenRoles * 0.4) || 1} urgent needs`,  subColor: "#f59e0b", SubIcon: Lucide.AlertCircle, iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.UserPlus },
+                        { label: "TOTAL TEAMS", value: teams?.length || 0, sub: `+${Math.max(1, (teams?.length || 0) % 3)} this month`, subColor: "#10b981", SubIcon: Lucide.TrendingUp, iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.Network },
+                        { label: "TOTAL MEMBERS", value: totalMembers, sub: "+4% vs last Q", subColor: "#10b981", SubIcon: Lucide.TrendingUp, iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.Users },
+                        { label: "OPEN ROLES", value: totalOpenRoles, sub: `${Math.ceil(totalOpenRoles * 0.4) || 1} urgent needs`, subColor: "#f59e0b", SubIcon: Lucide.AlertCircle, iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.UserPlus },
                     ].map(s => (
                         <motion.div key={s.label} whileHover={{ y: -2 }} style={{ ...cardSt, padding: "22px 24px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                             <div>
@@ -12837,7 +12944,7 @@ const TeamsPage = () => {
                     {(teams || []).map((t, tIdx) => {
                         const leadEmp = employees.find(e => e.id === t.lead);
                         const { LIcon, color: dColor, bg: dBg } = getDeptStyle(t.dept);
-                        const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                        const avColors = ["#6366F1", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                         const leadBg = leadEmp ? avColors[leadEmp.name.charCodeAt(0) % avColors.length] : "#6366f1";
                         const openRoles = getOpenRoles(t);
                         return (
@@ -13001,12 +13108,12 @@ const TeamsPage = () => {
                                                 <div style={{ fontSize: 10.5, fontWeight: 700, color: muted, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 10 }}>Team Lead</div>
                                                 {(() => {
                                                     const lead = employees.find(e => e.id === viewTeam.lead);
-                                                    const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                                                    const avColors = ["#6366F1", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                                                     const lBg = lead ? avColors[lead.name.charCodeAt(0) % avColors.length] : "#6366f1";
                                                     return lead ? (
                                                         <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "12px 14px", background: T.primaryFixed + "60", borderRadius: 12, border: `1px solid ${T.primaryFixed}`, marginBottom: 20 }}>
                                                             <div style={{ width: 40, height: 40, borderRadius: "50%", background: lBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                                                <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{lead.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
+                                                                <span style={{ fontSize: 13, fontWeight: 700, color: "#fff" }}>{lead.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
                                                             </div>
                                                             <div style={{ flex: 1 }}>
                                                                 <div style={{ fontSize: 14, fontWeight: 700, color: txt, fontFamily: "Manrope, sans-serif" }}>{lead.name}</div>
@@ -13026,12 +13133,12 @@ const TeamsPage = () => {
                                                     {(viewTeam.members || []).filter(m => m !== viewTeam.lead).map(mid => {
                                                         const m = employees.find(e => e.id === mid);
                                                         if (!m) return null;
-                                                        const avColors = ["#6366F1","#3B82F6","#10B981","#F59E0B","#EF4444","#8B5CF6","#0891B2","#D97706"];
+                                                        const avColors = ["#6366F1", "#3B82F6", "#10B981", "#F59E0B", "#EF4444", "#8B5CF6", "#0891B2", "#D97706"];
                                                         const mBg = avColors[m.name.charCodeAt(0) % avColors.length];
                                                         return (
                                                             <div key={mid} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", background: low, borderRadius: 10, border: `1px solid ${bdrSm}` }}>
                                                                 <div style={{ width: 34, height: 34, borderRadius: "50%", background: mBg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
-                                                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{m.name.split(" ").map(n => n[0]).join("").slice(0,2)}</span>
+                                                                    <span style={{ fontSize: 11, fontWeight: 700, color: "#fff" }}>{m.name.split(" ").map(n => n[0]).join("").slice(0, 2)}</span>
                                                                 </div>
                                                                 <div style={{ flex: 1, minWidth: 0 }}>
                                                                     <div style={{ fontSize: 13, fontWeight: 600, color: txt }}>{m.name}</div>
@@ -13045,7 +13152,7 @@ const TeamsPage = () => {
                                             </div>
                                             <div style={{ padding: "14px 24px", borderTop: `1px solid ${bdrSm}`, display: "flex", justifyContent: "flex-end", gap: 10, background: low }}>
                                                 <button onClick={() => setViewTeam(null)} style={{ padding: "9px 18px", borderRadius: 9, border: `1px solid ${T.outlineVar + "60"}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit" }}>Close</button>
-                                                <button onClick={() => { setViewTeam(null); setEditTeam({ ...viewTeam, projects: (viewTeam.projects||[]).join(", ") }); setEditMemberSearch(""); }}
+                                                <button onClick={() => { setViewTeam(null); setEditTeam({ ...viewTeam, projects: (viewTeam.projects || []).join(", ") }); setEditMemberSearch(""); }}
                                                     style={{ display: "flex", alignItems: "center", gap: 7, padding: "9px 20px", borderRadius: 9, border: "none", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 3px 10px #004ac640" }}>
                                                     <Lucide.Pencil size={13} color="#fff" strokeWidth={2} />
                                                     Edit Team
@@ -14224,43 +14331,43 @@ const SkillDevelopmentPage = () => {
                 <div>
                     {/* existing employee skills tab content begins below — close this div at the very end of the page */}
                     <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 14, marginBottom: 22 }}>
-                <StatCard label="Avg Coverage" value={`${avgCoverage}%`} variant={avgCoverage >= 70 ? "success" : "warning"} />
-                <StatCard label="Fully Covered" value={String(empSkillData.filter(e => e.coverage === 100).length)} variant="success" />
-                <StatCard label="With Gaps" value={String(empSkillData.filter(e => e.missing.length > 0).length)} variant="danger" />
-                <StatCard label="No Skills Yet" value={String(empSkillData.filter(e => e.skillCount === 0).length)} variant="default" />
-            </div>
+                        <StatCard label="Avg Coverage" value={`${avgCoverage}%`} variant={avgCoverage >= 70 ? "success" : "warning"} />
+                        <StatCard label="Fully Covered" value={String(empSkillData.filter(e => e.coverage === 100).length)} variant="success" />
+                        <StatCard label="With Gaps" value={String(empSkillData.filter(e => e.missing.length > 0).length)} variant="danger" />
+                        <StatCard label="No Skills Yet" value={String(empSkillData.filter(e => e.skillCount === 0).length)} variant="default" />
+                    </div>
 
-            <div style={{ marginBottom: 16 }}>
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px", maxWidth: 300 }}>
-                    <Icon n="search" size={14} color={C.textMuted} />
-                    <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, width: "100%", fontFamily: "inherit" }} />
-                </div>
-            </div>
+                    <div style={{ marginBottom: 16 }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: 8, background: C.white, border: `1px solid ${C.border}`, borderRadius: 8, padding: "7px 12px", maxWidth: 300 }}>
+                            <Icon n="search" size={14} color={C.textMuted} />
+                            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Search employees…" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, width: "100%", fontFamily: "inherit" }} />
+                        </div>
+                    </div>
 
-            <Card>
-                <table style={{ width: "100%", borderCollapse: "collapse" }}>
-                    <TableHead cols={["Employee", "Job Family", "Skills", "Coverage", "Gaps", ""]} />
-                    <tbody>
-                        {filteredEmployees.sort((a, b) => a.coverage - b.coverage).map((emp, i) => (
-                            <tr key={emp.id} style={{ background: i % 2 === 0 ? C.white : C.tableRow, cursor: "pointer" }} onClick={() => setSelectedEmp(emp.id)}>
-                                <Td><div style={{ display: "flex", alignItems: "center", gap: 9 }}><Avatar name={emp.name} size={30} /><div><span style={{ fontWeight: 600 }}>{emp.name}</span><div style={{ fontSize: 11, color: C.textMuted }}>{emp.level}</div></div></div></Td>
-                                <Td><Badge label={emp.familyName} variant="primary" /></Td>
-                                <Td><span style={{ fontWeight: 700 }}>{emp.skillCount}</span></Td>
-                                <Td>
-                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                                        <div style={{ width: 60, height: 6, background: C.borderLight, borderRadius: 3, overflow: "hidden" }}>
-                                            <div style={{ height: "100%", width: `${emp.coverage}%`, background: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger, borderRadius: 3 }} />
-                                        </div>
-                                        <span style={{ fontSize: 12, fontWeight: 700, color: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger }}>{emp.coverage}%</span>
-                                    </div>
-                                </Td>
-                                <Td>{emp.missing.length > 0 ? <Badge label={`${emp.missing.length} gaps`} variant="danger" /> : <Badge label="All met" variant="success" />}</Td>
-                                <Td><Btn variant="outline" size="sm">View →</Btn></Td>
-                            </tr>
-                        ))}
-                    </tbody>
-                </table>
-            </Card>
+                    <Card>
+                        <table style={{ width: "100%", borderCollapse: "collapse" }}>
+                            <TableHead cols={["Employee", "Job Family", "Skills", "Coverage", "Gaps", ""]} />
+                            <tbody>
+                                {filteredEmployees.sort((a, b) => a.coverage - b.coverage).map((emp, i) => (
+                                    <tr key={emp.id} style={{ background: i % 2 === 0 ? C.white : C.tableRow, cursor: "pointer" }} onClick={() => setSelectedEmp(emp.id)}>
+                                        <Td><div style={{ display: "flex", alignItems: "center", gap: 9 }}><Avatar name={emp.name} size={30} /><div><span style={{ fontWeight: 600 }}>{emp.name}</span><div style={{ fontSize: 11, color: C.textMuted }}>{emp.level}</div></div></div></Td>
+                                        <Td><Badge label={emp.familyName} variant="primary" /></Td>
+                                        <Td><span style={{ fontWeight: 700 }}>{emp.skillCount}</span></Td>
+                                        <Td>
+                                            <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                                <div style={{ width: 60, height: 6, background: C.borderLight, borderRadius: 3, overflow: "hidden" }}>
+                                                    <div style={{ height: "100%", width: `${emp.coverage}%`, background: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger, borderRadius: 3 }} />
+                                                </div>
+                                                <span style={{ fontSize: 12, fontWeight: 700, color: emp.coverage >= 75 ? C.success : emp.coverage >= 50 ? C.warning : C.danger }}>{emp.coverage}%</span>
+                                            </div>
+                                        </Td>
+                                        <Td>{emp.missing.length > 0 ? <Badge label={`${emp.missing.length} gaps`} variant="danger" /> : <Badge label="All met" variant="success" />}</Td>
+                                        <Td><Btn variant="outline" size="sm">View →</Btn></Td>
+                                    </tr>
+                                ))}
+                            </tbody>
+                        </table>
+                    </Card>
                 </div>
             )}
         </div>
@@ -15304,44 +15411,44 @@ const INTEGRATIONS_DATA = [
          Employee Opens Course → Completion Syncs → Skill Upgrade
    ═══════════════════════════════════════════════════════════════ */
 const LEARNING_PROVIDERS = [
-    { id: "internal",   name: "Internal Content", color: "#6366F1", icon: "book",      type: "Skill Library + Uploads", integrationId: null, alwaysActive: true },
-    { id: "thinkific",  name: "Thinkific",        color: "#4A90D9", icon: "globe",     type: "Headless LMS API",        integrationId: "thinkific" },
-    { id: "linkedin",   name: "LinkedIn Learning", color: "#0A66C2", icon: "briefcase", type: "Enterprise API",          integrationId: "linkedin_learning" },
-    { id: "scorm",      name: "SCORM Cloud",      color: "#E67E22", icon: "database",  type: "SCORM/xAPI",              integrationId: "scorm_cloud" },
+    { id: "internal", name: "Internal Content", color: "#6366F1", icon: "book", type: "Skill Library + Uploads", integrationId: null, alwaysActive: true },
+    { id: "thinkific", name: "Thinkific", color: "#4A90D9", icon: "globe", type: "Headless LMS API", integrationId: "thinkific" },
+    { id: "linkedin", name: "LinkedIn Learning", color: "#0A66C2", icon: "briefcase", type: "Enterprise API", integrationId: "linkedin_learning" },
+    { id: "scorm", name: "SCORM Cloud", color: "#E67E22", icon: "database", type: "SCORM/xAPI", integrationId: "scorm_cloud" },
 ];
 
 const MOCK_COURSES = [
-    { id: "c1",  title: "Advanced React Patterns",         provider: "thinkific", skill: "React",       level: 4, duration: "8h 30m", modules: 12, enrolled: 6,  completed: 3,  thumbnail: "code",     status: "active",    avgScore: 87, dueDate: "2026-04-15", assignments: ["Build custom hook library", "Implement render prop pattern"], desc: "Master advanced React concepts including compound components, render props, custom hooks, and state machines." },
-    { id: "c2",  title: "AWS Solutions Architect",          provider: "linkedin",  skill: "AWS",         level: 4, duration: "24h",    modules: 18, enrolled: 4,  completed: 1,  thumbnail: "globe",    status: "active",    avgScore: 72, dueDate: "2026-05-01", assignments: ["Design a multi-AZ VPC", "Implement IAM policies"], desc: "Prepare for the AWS Solutions Architect certification with hands-on labs and architecture exercises." },
-    { id: "c3",  title: "Workplace Safety & Compliance",    provider: "scorm",     skill: null,          level: 0, duration: "2h 15m", modules: 5,  enrolled: 15, completed: 11, thumbnail: "shield",   status: "mandatory", avgScore: 94, dueDate: "2026-03-31", assignments: [], desc: "Annual mandatory compliance training covering workplace safety, emergency procedures, and reporting." },
-    { id: "c4",  title: "Leadership & People Management",   provider: "linkedin",  skill: "Recruitment",  level: 3, duration: "12h",    modules: 10, enrolled: 5,  completed: 2,  thumbnail: "user",     status: "active",    avgScore: 81, dueDate: "2026-04-30", assignments: ["Complete 360° feedback exercise", "Conduct mock performance review"], desc: "Develop essential leadership skills: delegation, feedback, conflict resolution, and team motivation." },
-    { id: "c5",  title: "JavaScript Testing Masterclass",   provider: "thinkific", skill: "JavaScript",  level: 3, duration: "6h",     modules: 8,  enrolled: 7,  completed: 5,  thumbnail: "code",     status: "active",    avgScore: 90, dueDate: "2026-04-10", assignments: ["Write unit tests for API module", "Set up CI test pipeline"], desc: "Unit testing, integration testing, and E2E testing with Jest, Testing Library, and Cypress." },
-    { id: "c6",  title: "Data Privacy & GDPR Essentials",   provider: "scorm",     skill: null,          level: 0, duration: "1h 30m", modules: 4,  enrolled: 15, completed: 13, thumbnail: "shield",   status: "mandatory", avgScore: 96, dueDate: "2026-03-28", assignments: [], desc: "Understand data protection regulations, individual rights, and your responsibilities under GDPR." },
-    { id: "c7",  title: "Figma for Design Systems",         provider: "internal",     skill: "Figma",       level: 3, duration: "4h 45m", modules: 6,  enrolled: 3,  completed: 1,  thumbnail: "edit",     status: "active",    avgScore: 85, dueDate: "2026-05-15", assignments: ["Build a component library", "Create design tokens"], desc: "Create scalable design systems in Figma with auto layout, variants, and design tokens." },
-    { id: "c8",  title: "SQL Performance & Optimization",   provider: "thinkific", skill: "SQL",         level: 4, duration: "5h",     modules: 7,  enrolled: 4,  completed: 0,  thumbnail: "database", status: "active",    avgScore: null, dueDate: "2026-05-20", assignments: ["Optimize slow queries", "Design indexing strategy"], desc: "Deep dive into query plans, indexing strategies, partitioning, and database performance tuning." },
-    { id: "c9",  title: "Kubernetes for DevOps Engineers",   provider: "linkedin",  skill: "AWS",         level: 5, duration: "18h",    modules: 14, enrolled: 2,  completed: 0,  thumbnail: "globe",    status: "active",    avgScore: null, dueDate: "2026-06-01", assignments: ["Deploy multi-service app to k8s", "Implement auto-scaling"], desc: "From pods and services to Helm charts, service meshes, and production-grade cluster management." },
-    { id: "c10", title: "Negotiation & Closing Strategies",  provider: "internal",     skill: "Negotiation", level: 3, duration: "3h 20m", modules: 5,  enrolled: 4,  completed: 2,  thumbnail: "trending", status: "active",    avgScore: 78, dueDate: "2026-04-20", assignments: ["Role-play negotiation scenario", "Analyse case study"], desc: "Video-based course on BATNA, anchoring, concession strategy, and closing techniques for sales teams." },
+    { id: "c1", title: "Advanced React Patterns", provider: "thinkific", skill: "React", level: 4, duration: "8h 30m", modules: 12, enrolled: 6, completed: 3, thumbnail: "code", status: "active", avgScore: 87, dueDate: "2026-04-15", assignments: ["Build custom hook library", "Implement render prop pattern"], desc: "Master advanced React concepts including compound components, render props, custom hooks, and state machines." },
+    { id: "c2", title: "AWS Solutions Architect", provider: "linkedin", skill: "AWS", level: 4, duration: "24h", modules: 18, enrolled: 4, completed: 1, thumbnail: "globe", status: "active", avgScore: 72, dueDate: "2026-05-01", assignments: ["Design a multi-AZ VPC", "Implement IAM policies"], desc: "Prepare for the AWS Solutions Architect certification with hands-on labs and architecture exercises." },
+    { id: "c3", title: "Workplace Safety & Compliance", provider: "scorm", skill: null, level: 0, duration: "2h 15m", modules: 5, enrolled: 15, completed: 11, thumbnail: "shield", status: "mandatory", avgScore: 94, dueDate: "2026-03-31", assignments: [], desc: "Annual mandatory compliance training covering workplace safety, emergency procedures, and reporting." },
+    { id: "c4", title: "Leadership & People Management", provider: "linkedin", skill: "Recruitment", level: 3, duration: "12h", modules: 10, enrolled: 5, completed: 2, thumbnail: "user", status: "active", avgScore: 81, dueDate: "2026-04-30", assignments: ["Complete 360° feedback exercise", "Conduct mock performance review"], desc: "Develop essential leadership skills: delegation, feedback, conflict resolution, and team motivation." },
+    { id: "c5", title: "JavaScript Testing Masterclass", provider: "thinkific", skill: "JavaScript", level: 3, duration: "6h", modules: 8, enrolled: 7, completed: 5, thumbnail: "code", status: "active", avgScore: 90, dueDate: "2026-04-10", assignments: ["Write unit tests for API module", "Set up CI test pipeline"], desc: "Unit testing, integration testing, and E2E testing with Jest, Testing Library, and Cypress." },
+    { id: "c6", title: "Data Privacy & GDPR Essentials", provider: "scorm", skill: null, level: 0, duration: "1h 30m", modules: 4, enrolled: 15, completed: 13, thumbnail: "shield", status: "mandatory", avgScore: 96, dueDate: "2026-03-28", assignments: [], desc: "Understand data protection regulations, individual rights, and your responsibilities under GDPR." },
+    { id: "c7", title: "Figma for Design Systems", provider: "internal", skill: "Figma", level: 3, duration: "4h 45m", modules: 6, enrolled: 3, completed: 1, thumbnail: "edit", status: "active", avgScore: 85, dueDate: "2026-05-15", assignments: ["Build a component library", "Create design tokens"], desc: "Create scalable design systems in Figma with auto layout, variants, and design tokens." },
+    { id: "c8", title: "SQL Performance & Optimization", provider: "thinkific", skill: "SQL", level: 4, duration: "5h", modules: 7, enrolled: 4, completed: 0, thumbnail: "database", status: "active", avgScore: null, dueDate: "2026-05-20", assignments: ["Optimize slow queries", "Design indexing strategy"], desc: "Deep dive into query plans, indexing strategies, partitioning, and database performance tuning." },
+    { id: "c9", title: "Kubernetes for DevOps Engineers", provider: "linkedin", skill: "AWS", level: 5, duration: "18h", modules: 14, enrolled: 2, completed: 0, thumbnail: "globe", status: "active", avgScore: null, dueDate: "2026-06-01", assignments: ["Deploy multi-service app to k8s", "Implement auto-scaling"], desc: "From pods and services to Helm charts, service meshes, and production-grade cluster management." },
+    { id: "c10", title: "Negotiation & Closing Strategies", provider: "internal", skill: "Negotiation", level: 3, duration: "3h 20m", modules: 5, enrolled: 4, completed: 2, thumbnail: "trending", status: "active", avgScore: 78, dueDate: "2026-04-20", assignments: ["Role-play negotiation scenario", "Analyse case study"], desc: "Video-based course on BATNA, anchoring, concession strategy, and closing techniques for sales teams." },
 ];
 
 const MOCK_ENROLLMENTS = [
-    { empId: "EMP001", courseId: "c1", progress: 75, score: 92,   startedAt: "2026-02-10", lastAccessed: "2026-03-18", status: "in_progress" },
-    { empId: "EMP001", courseId: "c5", progress: 100, score: 95,  startedAt: "2026-01-15", lastAccessed: "2026-03-05", status: "completed", completedAt: "2026-03-05" },
-    { empId: "EMP001", courseId: "c3", progress: 100, score: 98,  startedAt: "2026-03-01", lastAccessed: "2026-03-10", status: "completed", completedAt: "2026-03-10" },
-    { empId: "EMP005", courseId: "c1", progress: 42, score: null,  startedAt: "2026-02-20", lastAccessed: "2026-03-15", status: "in_progress" },
-    { empId: "EMP005", courseId: "c9", progress: 10, score: null,  startedAt: "2026-03-10", lastAccessed: "2026-03-17", status: "in_progress" },
-    { empId: "EMP007", courseId: "c2", progress: 60, score: 78,    startedAt: "2026-01-20", lastAccessed: "2026-03-19", status: "in_progress" },
-    { empId: "EMP007", courseId: "c9", progress: 25, score: null,  startedAt: "2026-03-05", lastAccessed: "2026-03-16", status: "in_progress" },
-    { empId: "EMP010", courseId: "c1", progress: 30, score: null,  startedAt: "2026-03-01", lastAccessed: "2026-03-14", status: "in_progress" },
-    { empId: "EMP010", courseId: "c5", progress: 88, score: 85,    startedAt: "2026-02-05", lastAccessed: "2026-03-12", status: "in_progress" },
-    { empId: "EMP012", courseId: "c7", progress: 100, score: 91,   startedAt: "2026-02-01", lastAccessed: "2026-03-08", status: "completed", completedAt: "2026-03-08" },
-    { empId: "EMP002", courseId: "c4", progress: 55, score: null,   startedAt: "2026-02-15", lastAccessed: "2026-03-17", status: "in_progress" },
-    { empId: "EMP006", courseId: "c10", progress: 100, score: 82,  startedAt: "2026-02-10", lastAccessed: "2026-03-06", status: "completed", completedAt: "2026-03-06" },
-    { empId: "EMP006", courseId: "c4", progress: 70, score: null,   startedAt: "2026-02-20", lastAccessed: "2026-03-18", status: "in_progress" },
-    { empId: "EMP003", courseId: "c3", progress: 100, score: 100,  startedAt: "2026-03-02", lastAccessed: "2026-03-05", status: "completed", completedAt: "2026-03-05" },
-    { empId: "EMP003", courseId: "c6", progress: 100, score: 94,   startedAt: "2026-03-08", lastAccessed: "2026-03-12", status: "completed", completedAt: "2026-03-12" },
-    { empId: "EMP013", courseId: "c5", progress: 15, score: null,   startedAt: "2026-03-10", lastAccessed: "2026-03-16", status: "in_progress" },
-    { empId: "EMP008", courseId: "c4", progress: 30, score: null,   startedAt: "2026-03-01", lastAccessed: "2026-03-13", status: "in_progress" },
-    { empId: "EMP011", courseId: "c10", progress: 45, score: null,  startedAt: "2026-03-05", lastAccessed: "2026-03-18", status: "in_progress" },
+    { empId: "EMP001", courseId: "c1", progress: 75, score: 92, startedAt: "2026-02-10", lastAccessed: "2026-03-18", status: "in_progress" },
+    { empId: "EMP001", courseId: "c5", progress: 100, score: 95, startedAt: "2026-01-15", lastAccessed: "2026-03-05", status: "completed", completedAt: "2026-03-05" },
+    { empId: "EMP001", courseId: "c3", progress: 100, score: 98, startedAt: "2026-03-01", lastAccessed: "2026-03-10", status: "completed", completedAt: "2026-03-10" },
+    { empId: "EMP005", courseId: "c1", progress: 42, score: null, startedAt: "2026-02-20", lastAccessed: "2026-03-15", status: "in_progress" },
+    { empId: "EMP005", courseId: "c9", progress: 10, score: null, startedAt: "2026-03-10", lastAccessed: "2026-03-17", status: "in_progress" },
+    { empId: "EMP007", courseId: "c2", progress: 60, score: 78, startedAt: "2026-01-20", lastAccessed: "2026-03-19", status: "in_progress" },
+    { empId: "EMP007", courseId: "c9", progress: 25, score: null, startedAt: "2026-03-05", lastAccessed: "2026-03-16", status: "in_progress" },
+    { empId: "EMP010", courseId: "c1", progress: 30, score: null, startedAt: "2026-03-01", lastAccessed: "2026-03-14", status: "in_progress" },
+    { empId: "EMP010", courseId: "c5", progress: 88, score: 85, startedAt: "2026-02-05", lastAccessed: "2026-03-12", status: "in_progress" },
+    { empId: "EMP012", courseId: "c7", progress: 100, score: 91, startedAt: "2026-02-01", lastAccessed: "2026-03-08", status: "completed", completedAt: "2026-03-08" },
+    { empId: "EMP002", courseId: "c4", progress: 55, score: null, startedAt: "2026-02-15", lastAccessed: "2026-03-17", status: "in_progress" },
+    { empId: "EMP006", courseId: "c10", progress: 100, score: 82, startedAt: "2026-02-10", lastAccessed: "2026-03-06", status: "completed", completedAt: "2026-03-06" },
+    { empId: "EMP006", courseId: "c4", progress: 70, score: null, startedAt: "2026-02-20", lastAccessed: "2026-03-18", status: "in_progress" },
+    { empId: "EMP003", courseId: "c3", progress: 100, score: 100, startedAt: "2026-03-02", lastAccessed: "2026-03-05", status: "completed", completedAt: "2026-03-05" },
+    { empId: "EMP003", courseId: "c6", progress: 100, score: 94, startedAt: "2026-03-08", lastAccessed: "2026-03-12", status: "completed", completedAt: "2026-03-12" },
+    { empId: "EMP013", courseId: "c5", progress: 15, score: null, startedAt: "2026-03-10", lastAccessed: "2026-03-16", status: "in_progress" },
+    { empId: "EMP008", courseId: "c4", progress: 30, score: null, startedAt: "2026-03-01", lastAccessed: "2026-03-13", status: "in_progress" },
+    { empId: "EMP011", courseId: "c10", progress: 45, score: null, startedAt: "2026-03-05", lastAccessed: "2026-03-18", status: "in_progress" },
 ];
 
 const LearningHubPage = () => {
@@ -15986,20 +16093,20 @@ const LearningHubPage = () => {
 // SimpleIcons CDN (free, no API key): https://cdn.simpleicons.org/{slug}/{hexcolor}
 // Google Favicon API used for brands not on SimpleIcons
 const INTEGRATION_LOGOS = {
-    deel:             "https://cdn.simpleicons.org/deel/000000",
-    xero:             "https://cdn.simpleicons.org/xero/1AB4D7",
-    adp:              "https://www.google.com/s2/favicons?domain=adp.com&sz=128",
-    gcal:             "https://cdn.simpleicons.org/googlecalendar/4285F4",
-    outlook:          "https://cdn.simpleicons.org/microsoftoutlook/0078D4",
-    gsso:             "https://cdn.simpleicons.org/google/4285F4",
-    azure:            "https://cdn.simpleicons.org/okta/007DC1",
-    thinkific:        "https://www.google.com/s2/favicons?domain=thinkific.com&sz=128",
-    linkedin_learning:"https://cdn.simpleicons.org/linkedin/0A66C2",
-    scorm_cloud:      "https://www.google.com/s2/favicons?domain=scorm.com&sz=128",
-    stripe:           "https://cdn.simpleicons.org/stripe/635BFF",
-    dpo:              "https://www.google.com/s2/favicons?domain=directpayonline.co.ke&sz=128",
-    fcm:              "https://cdn.simpleicons.org/firebase/FF6F00",
-    sendgrid:         "https://cdn.simpleicons.org/sendgrid/1A82E2",
+    deel: "https://cdn.simpleicons.org/deel/000000",
+    xero: "https://cdn.simpleicons.org/xero/1AB4D7",
+    adp: "https://www.google.com/s2/favicons?domain=adp.com&sz=128",
+    gcal: "https://cdn.simpleicons.org/googlecalendar/4285F4",
+    outlook: "https://cdn.simpleicons.org/microsoftoutlook/0078D4",
+    gsso: "https://cdn.simpleicons.org/google/4285F4",
+    azure: "https://cdn.simpleicons.org/okta/007DC1",
+    thinkific: "https://www.google.com/s2/favicons?domain=thinkific.com&sz=128",
+    linkedin_learning: "https://cdn.simpleicons.org/linkedin/0A66C2",
+    scorm_cloud: "https://www.google.com/s2/favicons?domain=scorm.com&sz=128",
+    stripe: "https://cdn.simpleicons.org/stripe/635BFF",
+    dpo: "https://www.google.com/s2/favicons?domain=directpayonline.co.ke&sz=128",
+    fcm: "https://cdn.simpleicons.org/firebase/FF6F00",
+    sendgrid: "https://cdn.simpleicons.org/sendgrid/1A82E2",
 };
 
 const IntegrationsPage = () => {
@@ -16063,10 +16170,10 @@ const IntegrationsPage = () => {
             {/* ── Stat row ── */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16, marginBottom: 28 }}>
                 {[
-                    { label: "CONNECTED",       value: String(connected),                               sub: "Active integrations" },
-                    { label: "AVAILABLE",        value: String(INTEGRATIONS_DATA.length - connected),   sub: "Ready to connect"   },
-                    { label: "API CALLS TODAY",  value: "3k",                                           sub: ""                   },
-                    { label: "DATA SYNCED",      value: "2 MB",                                         sub: ""                   },
+                    { label: "CONNECTED", value: String(connected), sub: "Active integrations" },
+                    { label: "AVAILABLE", value: String(INTEGRATIONS_DATA.length - connected), sub: "Ready to connect" },
+                    { label: "API CALLS TODAY", value: "3k", sub: "" },
+                    { label: "DATA SYNCED", value: "2 MB", sub: "" },
                 ].map(s => (
                     <div key={s.label} style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 16, padding: "22px 24px", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                         <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 12 }}>{s.label}</div>
@@ -16321,25 +16428,25 @@ const JobFamiliesPage = () => {
     };
 
     /* ── T-token shorthands ── */
-    const surf  = _darkMode ? C.white     : T.surfaceCard;
-    const bdr   = _darkMode ? C.border    : T.outlineVar + "28";
-    const bdrSm = _darkMode ? C.border    : T.outlineVar + "22";
-    const txt   = _darkMode ? C.text      : T.onSurface;
+    const surf = _darkMode ? C.white : T.surfaceCard;
+    const bdr = _darkMode ? C.border : T.outlineVar + "28";
+    const bdrSm = _darkMode ? C.border : T.outlineVar + "22";
+    const txt = _darkMode ? C.text : T.onSurface;
     const muted = _darkMode ? C.textMuted : T.onSurfaceVar;
-    const low   = _darkMode ? C.bg        : T.surfaceLow;
+    const low = _darkMode ? C.bg : T.surfaceLow;
     const cardSt = { background: surf, border: `1px solid ${bdr}`, borderRadius: 16, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
 
     const getDeptStyle = (dept) => {
         const map = {
-            "Engineering": { LIcon: Lucide.Code2,       color: "#6366f1" },
-            "DevOps":      { LIcon: Lucide.Server,       color: "#8b5cf6" },
-            "HR & Admin":  { LIcon: Lucide.Users,        color: "#10b981" },
-            "Sales":       { LIcon: Lucide.TrendingUp,   color: "#f59e0b" },
-            "Product":     { LIcon: Lucide.Layers,       color: "#3b82f6" },
-            "Finance":     { LIcon: Lucide.DollarSign,   color: "#059669" },
-            "Design":      { LIcon: Lucide.Palette,      color: "#ec4899" },
-            "QA":          { LIcon: Lucide.CheckCircle2, color: "#ef4444" },
-            "Operations":  { LIcon: Lucide.Settings2,    color: "#64748b" },
+            "Engineering": { LIcon: Lucide.Code2, color: "#6366f1" },
+            "DevOps": { LIcon: Lucide.Server, color: "#8b5cf6" },
+            "HR & Admin": { LIcon: Lucide.Users, color: "#10b981" },
+            "Sales": { LIcon: Lucide.TrendingUp, color: "#f59e0b" },
+            "Product": { LIcon: Lucide.Layers, color: "#3b82f6" },
+            "Finance": { LIcon: Lucide.DollarSign, color: "#059669" },
+            "Design": { LIcon: Lucide.Palette, color: "#ec4899" },
+            "QA": { LIcon: Lucide.CheckCircle2, color: "#ef4444" },
+            "Operations": { LIcon: Lucide.Settings2, color: "#64748b" },
         };
         return map[dept] || { LIcon: Lucide.Briefcase, color: "#64748b" };
     };
@@ -16474,10 +16581,10 @@ const JobFamiliesPage = () => {
                 {/* ── Stat Cards ── */}
                 <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 16, marginBottom: 28 }}>
                     {[
-                        { label: "JOB FAMILIES",      value: jobFamilies.length,                                                        sub: `${new Set(jobFamilies.map(f => f.dept)).size} departments`,   iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.Briefcase },
-                        { label: "CAREER LEVELS",      value: jobFamilies.reduce((a, f) => a + f.levels.length, 0),                      sub: "Progression steps",                                         iconBg: "#eff6ff", iconColor: "#3b82f6", LIcon: Lucide.Layers },
-                        { label: "LINKED EMPLOYEES",   value: employees.filter(e => jobFamilies.some(f => f.id === e.familyId)).length,  sub: "With assigned families",                                    iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.Users },
-                        { label: "SKILL REQUIREMENTS", value: jobFamilies.reduce((a, f) => a + (f.requiredSkills || []).length, 0),       sub: "Across all families",                                       iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.Zap },
+                        { label: "JOB FAMILIES", value: jobFamilies.length, sub: `${new Set(jobFamilies.map(f => f.dept)).size} departments`, iconBg: "#eef2ff", iconColor: "#6366f1", LIcon: Lucide.Briefcase },
+                        { label: "CAREER LEVELS", value: jobFamilies.reduce((a, f) => a + f.levels.length, 0), sub: "Progression steps", iconBg: "#eff6ff", iconColor: "#3b82f6", LIcon: Lucide.Layers },
+                        { label: "LINKED EMPLOYEES", value: employees.filter(e => jobFamilies.some(f => f.id === e.familyId)).length, sub: "With assigned families", iconBg: "#ecfdf5", iconColor: "#10b981", LIcon: Lucide.Users },
+                        { label: "SKILL REQUIREMENTS", value: jobFamilies.reduce((a, f) => a + (f.requiredSkills || []).length, 0), sub: "Across all families", iconBg: "#fff7ed", iconColor: "#f97316", LIcon: Lucide.Zap },
                     ].map(s => (
                         <motion.div key={s.label} whileHover={{ y: -2 }} style={{ ...cardSt, padding: "20px 22px", display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
                             <div>
@@ -16703,10 +16810,10 @@ const JobFamiliesPage = () => {
                                                                 </div>
                                                                 <div style={{ display: "flex", gap: 6 }}>
                                                                     <input value={modalRoleInput[expKey] || ""} onChange={e => setModalRoleInput(prev => ({ ...prev, [expKey]: e.target.value }))}
-                                                                        onKeyDown={e => { if (e.key === "Enter") { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); }}}}
+                                                                        onKeyDown={e => { if (e.key === "Enter") { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); } } }}
                                                                         placeholder="Type skill and press Enter…"
                                                                         style={{ flex: 1, padding: "8px 12px", border: `1px solid ${bdrSm}`, borderRadius: 8, fontSize: 12.5, outline: "none", background: surf, color: txt, fontFamily: "inherit" }} />
-                                                                    <button onClick={() => { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); }}}
+                                                                    <button onClick={() => { const s = (modalRoleInput[expKey] || "").trim(); if (s && !(modalRoleSkills[lvl] || []).includes(s)) { setModalRoleSkills(prev => ({ ...prev, [lvl]: [...(prev[lvl] || []), s] })); setModalRoleInput(prev => ({ ...prev, [expKey]: "" })); } }}
                                                                         style={{ padding: "8px 14px", borderRadius: 8, border: "none", background: col, color: "#fff", fontSize: 12.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit" }}>Add</button>
                                                                 </div>
                                                             </div>
@@ -17038,7 +17145,7 @@ const EmployeeDashboard = ({ user, onStartOnboarding, empRecord, onNav, clockedI
                         <div style={{ fontSize: 12, color: C.textMuted, fontWeight: 500, marginTop: 2 }}>{new Date().toLocaleDateString("en-GB", { weekday: "short", month: "short", year: "numeric" })}</div>
                     </div>
                     <div style={{ display: "flex", gap: 4 }}>
-                        {["M","T","W","T","F"].map((d, i) => {
+                        {["M", "T", "W", "T", "F"].map((d, i) => {
                             const dayIndex = i + 1; // Mon=1 … Fri=5
                             const isTodayDay = todayDow === dayIndex;
                             const isPast = todayDow > dayIndex;
@@ -17589,10 +17696,12 @@ const EmployeeSkillsPage = ({ empRecord, setEmpRecord }) => {
                             const hasIt = mySkillNames.includes(sk);
                             const isPending = pendingUpgradeSet.has(sk);
                             return (
-                                <span key={sk} style={{ padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600,
+                                <span key={sk} style={{
+                                    padding: "4px 12px", borderRadius: 20, fontSize: 12, fontWeight: 600,
                                     background: hasIt ? C.successBg : isPending ? C.primaryLight : C.dangerBg,
                                     color: hasIt ? C.success : isPending ? C.primary : C.danger,
-                                    border: `1px solid ${hasIt ? C.successBorder : isPending ? C.primaryMid : C.dangerBorder}` }}>
+                                    border: `1px solid ${hasIt ? C.successBorder : isPending ? C.primaryMid : C.dangerBorder}`
+                                }}>
                                     {hasIt ? "✓ " : isPending ? "⏳ " : "○ "}{sk}
                                 </span>
                             );
@@ -17781,11 +17890,13 @@ const EmployeeSkillsPage = ({ empRecord, setEmpRecord }) => {
                                         const isCurrentOrBelow = i <= upgradingSkill.currentProf;
                                         return (
                                             <button key={i} disabled={isCurrentOrBelow} onClick={() => setUpgradeToLevel(i)}
-                                                style={{ flex: 1, padding: "9px 0", borderRadius: 8,
+                                                style={{
+                                                    flex: 1, padding: "9px 0", borderRadius: 8,
                                                     border: `2px solid ${i === upgradeToLevel ? PROF_COLORS[i] : isCurrentOrBelow ? C.borderLight : C.border}`,
                                                     background: isCurrentOrBelow ? C.bg : i === upgradeToLevel ? `${PROF_COLORS[i]}18` : C.white,
                                                     color: isCurrentOrBelow ? C.textMuted : i === upgradeToLevel ? PROF_COLORS[i] : C.textMid,
-                                                    fontSize: 11, fontWeight: 700, cursor: isCurrentOrBelow ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: isCurrentOrBelow ? 0.5 : 1 }}>{i}</button>
+                                                    fontSize: 11, fontWeight: 700, cursor: isCurrentOrBelow ? "not-allowed" : "pointer", fontFamily: "inherit", opacity: isCurrentOrBelow ? 0.5 : 1
+                                                }}>{i}</button>
                                         );
                                     })}
                                 </div>
@@ -17807,9 +17918,11 @@ const EmployeeSkillsPage = ({ empRecord, setEmpRecord }) => {
                                             const isTarget = lvl === upgradeToLevel;
                                             const isDone = lvl < upgradingSkill.currentProf;
                                             return (
-                                                <div key={idx} style={{ display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 10px", borderRadius: 8,
+                                                <div key={idx} style={{
+                                                    display: "flex", gap: 10, alignItems: "flex-start", padding: "8px 10px", borderRadius: 8,
                                                     background: isTarget ? `${PROF_COLORS[lvl]}10` : "transparent",
-                                                    border: `1px solid ${isTarget ? PROF_COLORS[lvl] + "40" : "transparent"}` }}>
+                                                    border: `1px solid ${isTarget ? PROF_COLORS[lvl] + "40" : "transparent"}`
+                                                }}>
                                                     <div style={{ width: 22, height: 22, borderRadius: 6, background: isDone ? C.successBg : isCurrent ? C.primaryLight : isTarget ? `${PROF_COLORS[lvl]}18` : C.bg, border: `1px solid ${isDone ? C.successBorder : isCurrent ? C.primaryMid : isTarget ? PROF_COLORS[lvl] + "40" : C.border}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1, fontSize: 10, fontWeight: 800, color: isDone ? C.success : isCurrent ? C.primary : isTarget ? PROF_COLORS[lvl] : C.textMuted }}>
                                                         {isDone ? "✓" : lvl}
                                                     </div>
@@ -18174,8 +18287,8 @@ const FullEmployeeProfile = () => {
         { key: "documents", label: "Documents", icon: "invoices" },
     ];
 
-    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
-    const cardHeaderStyle = { padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface };
+    const cardStyle = { background: _darkMode ? C.white : T.surfaceCard, borderRadius: 14, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, boxShadow: "0 1px 3px rgba(0,0,0,0.06)", overflow: "hidden" };
+    const cardHeaderStyle = { padding: "14px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}`, fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface };
     const fieldLabel = { fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 4 };
     const fieldValue = { fontSize: 14, fontWeight: 600, color: _darkMode ? C.text : T.onSurface };
     const primaryColor = _darkMode ? C.primary : T.primary;
@@ -18224,11 +18337,11 @@ const FullEmployeeProfile = () => {
                             <AnimatePresence>
                                 {showActions && (
                                     <motion.div initial={{ opacity: 0, y: 5 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 5 }}
-                                        style={{ position: "absolute", top: "110%", right: 0, width: 180, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.12)", zIndex: 100, padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
+                                        style={{ position: "absolute", top: "110%", right: 0, width: 180, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 12, boxShadow: "0 10px 30px rgba(0,0,0,0.12)", zIndex: 100, padding: 8, display: "flex", flexDirection: "column", gap: 2 }}>
                                         {[
-                                            { l: "Promote",     i: "trending", c: primaryColor,                    onClick: () => setShowActions(false) },
-                                            { l: "Edit Profile",i: "edit",     c: _darkMode ? C.text : T.onSurface, onClick: () => setShowActions(false) },
-                                            { l: "Offboard",    i: "sign",     c: C.danger,                        onClick: () => { setShowActions(false); setShowOffboardConfirm(true); } },
+                                            { l: "Promote", i: "trending", c: primaryColor, onClick: () => setShowActions(false) },
+                                            { l: "Edit Profile", i: "edit", c: _darkMode ? C.text : T.onSurface, onClick: () => setShowActions(false) },
+                                            { l: "Offboard", i: "sign", c: C.danger, onClick: () => { setShowActions(false); setShowOffboardConfirm(true); } },
                                         ].map(a => (
                                             <div key={a.l} onClick={a.onClick}
                                                 style={{ padding: "8px 12px", borderRadius: 8, fontSize: 13, fontWeight: 600, color: a.c, cursor: "pointer", display: "flex", alignItems: "center", gap: 10, transition: "background 0.12s" }}
@@ -18244,7 +18357,7 @@ const FullEmployeeProfile = () => {
                     </div>
 
                     {/* Quick stats strip */}
-                    <div style={{ display: "flex", gap: 32, marginTop: 22, paddingTop: 20, borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                    <div style={{ display: "flex", gap: 32, marginTop: 22, paddingTop: 20, borderTop: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                         {[
                             { label: "Tenure", value: (() => { const start = new Date(emp.startDate); const now = new Date(); const months = (now.getFullYear() - start.getFullYear()) * 12 + now.getMonth() - start.getMonth(); return months >= 12 ? `${Math.floor(months / 12)}y ${months % 12}m` : `${months}m`; })() },
                             { label: "Salary", value: emp.salary ? `${emp.salary.toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "—" },
@@ -18262,7 +18375,7 @@ const FullEmployeeProfile = () => {
             </div>
 
             {/* ── Tab bar ── */}
-            <div style={{ display: "flex", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, marginBottom: 24 }}>
+            <div style={{ display: "flex", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, marginBottom: 24 }}>
                 {TABS.map(t => (
                     <button key={t.key} onClick={() => setTab(t.key)}
                         style={{ display: "flex", alignItems: "center", gap: 7, padding: "11px 18px", background: "none", border: "none", borderBottom: tab === t.key ? `2px solid ${primaryColor}` : "2px solid transparent", color: tab === t.key ? primaryColor : (_darkMode ? C.textMuted : T.outline), fontWeight: tab === t.key ? 700 : 500, fontSize: 13.5, cursor: "pointer", fontFamily: "inherit", transition: "all 0.15s", whiteSpace: "nowrap" }}>
@@ -18290,7 +18403,7 @@ const FullEmployeeProfile = () => {
                                         ["Current Salary", emp.salary ? `${emp.salary.toLocaleString()} ${emp.bankDetails?.currency || "LKR"}` : "Confidential"],
                                         ["Reporting Manager", employees.find(m => m.id === emp.managerId)?.name || "—"],
                                     ].map(([l, v], i) => (
-                                        <div key={l} style={{ padding: "16px 20px", borderBottom: i < 4 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none", borderRight: i % 2 === 0 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                        <div key={l} style={{ padding: "16px 20px", borderBottom: i < 4 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none", borderRight: i % 2 === 0 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
                                             <div style={fieldLabel}>{l}</div>
                                             <div style={fieldValue}>{v}</div>
                                         </div>
@@ -18307,7 +18420,7 @@ const FullEmployeeProfile = () => {
                                         ["Work Location", emp.country === "LK" ? "Colombo, Sri Lanka" : "United Kingdom"],
                                         ["Emergency Contact", "Priya Perera (Spouse)"],
                                     ].map(([l, v], i) => (
-                                        <div key={l} style={{ padding: "16px 20px", borderBottom: i < 2 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none", borderRight: i % 2 === 0 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                        <div key={l} style={{ padding: "16px 20px", borderBottom: i < 2 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none", borderRight: i % 2 === 0 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
                                             <div style={fieldLabel}>{l}</div>
                                             <div style={fieldValue}>{v}</div>
                                         </div>
@@ -18322,13 +18435,13 @@ const FullEmployeeProfile = () => {
                                 <div style={{ padding: "16px 20px" }}>
                                     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10, marginBottom: 14 }}>
                                         {Object.entries(emp.leaveBalance || {}).map(([type, days]) => (
-                                            <div key={type} style={{ padding: "16px 10px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 12, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, textAlign: "center" }}>
+                                            <div key={type} style={{ padding: "16px 10px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 12, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, textAlign: "center" }}>
                                                 <div style={{ fontSize: 26, fontWeight: 900, color: _darkMode ? C.text : T.onSurface }}>{days}</div>
                                                 <div style={{ fontSize: 10, color: _darkMode ? C.textMuted : T.outline, marginTop: 3, textTransform: "uppercase", fontWeight: 700, letterSpacing: "0.4px" }}>{type}</div>
                                             </div>
                                         ))}
                                     </div>
-                                    <button style={{ width: "100%", padding: "8px 0", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit" }}>
+                                    <button style={{ width: "100%", padding: "8px 0", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit" }}>
                                         View Full Calculator
                                     </button>
                                 </div>
@@ -18342,7 +18455,7 @@ const FullEmployeeProfile = () => {
                                             <span key={s} style={{ padding: "5px 13px", borderRadius: 20, fontSize: 12, fontWeight: 600, background: _darkMode ? C.primaryLight : T.primaryFixed, color: primaryColor, border: `1px solid ${primaryColor}22` }}>{s}</span>
                                         ))}
                                     </div>
-                                    <button style={{ width: "100%", padding: "8px 0", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit" }}>
+                                    <button style={{ width: "100%", padding: "8px 0", borderRadius: 8, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit" }}>
                                         Endorse Skills
                                     </button>
                                 </div>
@@ -18356,7 +18469,7 @@ const FullEmployeeProfile = () => {
                         <div style={cardHeaderStyle}>Timeline of Changes</div>
                         <div style={{ padding: "20px 28px" }}>
                             {(emp.history || []).length === 0 && <div style={{ textAlign: "center", padding: "32px 0", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>No history recorded.</div>}
-                            <div style={{ display: "flex", flexDirection: "column", borderLeft: `2px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, marginLeft: 8, paddingLeft: 28, gap: 28 }}>
+                            <div style={{ display: "flex", flexDirection: "column", borderLeft: `2px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, marginLeft: 8, paddingLeft: 28, gap: 28 }}>
                                 {(emp.history || []).sort((a, b) => b.date.localeCompare(a.date)).map((h, i) => (
                                     <div key={i} style={{ position: "relative" }}>
                                         <div style={{ position: "absolute", left: -37, top: 3, width: 16, height: 16, borderRadius: "50%", background: _darkMode ? C.white : T.surfaceCard, border: `3px solid ${i === 0 ? primaryColor : (_darkMode ? C.border : T.outlineVar)}` }} />
@@ -18387,13 +18500,13 @@ const FullEmployeeProfile = () => {
                                 <thead>
                                     <tr style={{ background: _darkMode ? C.tableHead : T.surfaceLow }}>
                                         {["Type", "Days", "Period", "Status"].map(h => (
-                                            <th key={h} style={{ padding: "10px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>{h}</th>
+                                            <th key={h} style={{ padding: "10px 20px", textAlign: "left", fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMid : T.onSurfaceVar, textTransform: "uppercase", letterSpacing: "0.5px", borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}` }}>{h}</th>
                                         ))}
                                     </tr>
                                 </thead>
                                 <tbody>
                                     {myLeaves.map((l, i) => (
-                                        <tr key={l.id} style={{ borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                        <tr key={l.id} style={{ borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` }}>
                                             <td style={{ padding: "13px 20px", fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{l.type}</td>
                                             <td style={{ padding: "13px 20px", fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{l.days} days</td>
                                             <td style={{ padding: "13px 20px", fontSize: 13, color: _darkMode ? C.textMid : T.onSurfaceVar }}>{l.from || l.start} → {l.to || l.end}</td>
@@ -18432,7 +18545,7 @@ const FullEmployeeProfile = () => {
                                 <div style={cardHeaderStyle}>Peer Recognitions</div>
                                 <div style={{ padding: "16px 20px", display: "flex", flexDirection: "column", gap: 10 }}>
                                     {myRecognitions.map(r => (
-                                        <div key={r.id} style={{ display: "flex", gap: 12, background: _darkMode ? C.bg : T.surfaceLow, padding: "12px 14px", borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>
+                                        <div key={r.id} style={{ display: "flex", gap: 12, background: _darkMode ? C.bg : T.surfaceLow, padding: "12px 14px", borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}` }}>
                                             <div style={{ fontSize: 22 }}>{r.badge}</div>
                                             <div>
                                                 <div style={{ fontSize: 13, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{r.title}</div>
@@ -18448,7 +18561,7 @@ const FullEmployeeProfile = () => {
                             <div style={cardHeaderStyle}>Performance Review History</div>
                             <div style={{ padding: "0 20px" }}>
                                 {myReviews.map((r, i) => (
-                                    <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", borderBottom: i < myReviews.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
+                                    <div key={r.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "16px 0", borderBottom: i < myReviews.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar + "22"}` : "none" }}>
                                         <div>
                                             <div style={{ fontSize: 14, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>{r.cycle} cycle</div>
                                             <div style={{ fontSize: 12, color: _darkMode ? C.textMuted : T.outline, marginTop: 2 }}>Reviewer: {r.reviewer}</div>
@@ -18477,11 +18590,11 @@ const FullEmployeeProfile = () => {
                                     <div style={{ fontSize: 11, fontWeight: 700, color: _darkMode ? C.textMuted : T.outline, textTransform: "uppercase", letterSpacing: "0.5px", marginBottom: 12 }}>{cat.cat}</div>
                                     <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
                                         {cat.items.map(s => (
-                                            <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}` }}>
+                                            <div key={s} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "10px 14px", background: _darkMode ? C.bg : T.surfaceLow, borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}` }}>
                                                 <span style={{ fontSize: 13, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{s}</span>
                                                 <div style={{ display: "flex", gap: 4 }}>
                                                     {[1, 2, 3, 4, 5].map(v => (
-                                                        <div key={v} style={{ width: 8, height: 8, borderRadius: "50%", background: v <= 4 ? primaryColor : (_darkMode ? C.border : T.outlineVar+"60") }} />
+                                                        <div key={v} style={{ width: 8, height: 8, borderRadius: "50%", background: v <= 4 ? primaryColor : (_darkMode ? C.border : T.outlineVar + "60") }} />
                                                     ))}
                                                 </div>
                                             </div>
@@ -18504,8 +18617,8 @@ const FullEmployeeProfile = () => {
                                     { name: "Background Check", type: "PDF", size: "1.8 MB" },
                                     { name: "Signed Contract", type: "PDF", size: "1.2 MB" },
                                 ].map(d => (
-                                    <div key={d.name} style={{ padding: "14px 16px", background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 12, display: "flex", gap: 12, alignItems: "center" }}>
-                                        <div style={{ width: 36, height: 36, borderRadius: 9, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                    <div key={d.name} style={{ padding: "14px 16px", background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, borderRadius: 12, display: "flex", gap: 12, alignItems: "center" }}>
+                                        <div style={{ width: 36, height: 36, borderRadius: 9, background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "28"}`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                                             <Icon n="invoices" size={17} color={primaryColor} />
                                         </div>
                                         <div style={{ flex: 1, minWidth: 0 }}>
@@ -18517,7 +18630,7 @@ const FullEmployeeProfile = () => {
                                 ))}
                             </div>
                             <div style={{ textAlign: "center" }}>
-                                <button style={{ padding: "9px 20px", borderRadius: 9, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 7 }}>
+                                <button style={{ padding: "9px 20px", borderRadius: 9, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "50"}`, background: "transparent", fontSize: 13, fontWeight: 600, color: primaryColor, cursor: "pointer", fontFamily: "inherit", display: "inline-flex", alignItems: "center", gap: 7 }}>
                                     <Lucide.Plus size={14} color={primaryColor} strokeWidth={2.5} />Request New Document
                                 </button>
                             </div>
@@ -18543,7 +18656,7 @@ const FullEmployeeProfile = () => {
                             </div>
                             <div style={{ display: "flex", gap: 10, justifyContent: "flex-end" }}>
                                 <button onClick={() => setShowOffboardConfirm(false)}
-                                    style={{ padding: "10px 20px", borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"60"}`, background: "transparent", fontSize: 13.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, cursor: "pointer", fontFamily: "inherit" }}>
+                                    style={{ padding: "10px 20px", borderRadius: 10, border: `1px solid ${_darkMode ? C.border : T.outlineVar + "60"}`, background: "transparent", fontSize: 13.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, cursor: "pointer", fontFamily: "inherit" }}>
                                     Cancel
                                 </button>
                                 <button onClick={() => {
@@ -19164,8 +19277,8 @@ const EmployeeApp = ({ user, onLogout, isDark, setIsDark, dataCtxValue }) => {
 
 
 export default function App() {
-    const [isDark, setIsDark]       = useState(() => localStorage.getItem("selfvora_dark") === "true");
-    const [themeKey, setThemeKey]   = useState(() => localStorage.getItem("selfvora_theme") || "teal");
+    const [isDark, setIsDark] = useState(() => localStorage.getItem("selfvora_dark") === "true");
+    const [themeKey, setThemeKey] = useState(() => localStorage.getItem("selfvora_theme") || "teal");
     const [showLanding, setShowLanding] = useState(true);
     const [showLogin, setShowLogin] = useState(false);
     const [showSetupWizard, setShowSetupWizard] = useState(false);
@@ -19205,9 +19318,9 @@ export default function App() {
         { id: 5, type: "performance", msg: "Q1 performance reviews due by Mar 31", time: "2 days ago", read: true },
     ]);
     const [skillRequests, setSkillRequests] = useState([
-        { id: "SR001", empId: "EMP010", empName: "Priya Nair",      skillName: "TypeScript",   skill: "TypeScript → Advanced",   fromLevel: 2, toLevel: 4, evidence: "Completed internal TypeScript bootcamp",    validatorId: "EMP001", validatorName: "James Perera",  requiresEvidence: true,  status: "pending", submittedAt: "10 Mar 2026", requestedAt: "10 Mar 2026", reviewNote: "" },
-        { id: "SR002", empId: "EMP013", empName: "Saman Wijesinghe", skillName: "React",        skill: "React → Competent",        fromLevel: 1, toLevel: 3, evidence: "Built internal dashboard component",         validatorId: "EMP001", validatorName: "James Perera",  requiresEvidence: true,  status: "pending", submittedAt: "12 Mar 2026", requestedAt: "12 Mar 2026", reviewNote: "" },
-        { id: "SR003", empId: "EMP005", empName: "Rayan Kumar",      skillName: "Kubernetes",   skill: "Kubernetes → Advanced",    fromLevel: 2, toLevel: 4, evidence: "Deployed staging cluster on k8s",            validatorId: "EMP007", validatorName: "Arjun Mehta",   requiresEvidence: true,  status: "pending", submittedAt: "14 Mar 2026", requestedAt: "14 Mar 2026", reviewNote: "" },
+        { id: "SR001", empId: "EMP010", empName: "Priya Nair", skillName: "TypeScript", skill: "TypeScript → Advanced", fromLevel: 2, toLevel: 4, evidence: "Completed internal TypeScript bootcamp", validatorId: "EMP001", validatorName: "James Perera", requiresEvidence: true, status: "pending", submittedAt: "10 Mar 2026", requestedAt: "10 Mar 2026", reviewNote: "" },
+        { id: "SR002", empId: "EMP013", empName: "Saman Wijesinghe", skillName: "React", skill: "React → Competent", fromLevel: 1, toLevel: 3, evidence: "Built internal dashboard component", validatorId: "EMP001", validatorName: "James Perera", requiresEvidence: true, status: "pending", submittedAt: "12 Mar 2026", requestedAt: "12 Mar 2026", reviewNote: "" },
+        { id: "SR003", empId: "EMP005", empName: "Rayan Kumar", skillName: "Kubernetes", skill: "Kubernetes → Advanced", fromLevel: 2, toLevel: 4, evidence: "Deployed staging cluster on k8s", validatorId: "EMP007", validatorName: "Arjun Mehta", requiresEvidence: true, status: "pending", submittedAt: "14 Mar 2026", requestedAt: "14 Mar 2026", reviewNote: "" },
     ]);
     const [sharedDocuments, setSharedDocuments] = useState([
         { id: "doc_001", name: "Q1 2026 Performance Review Guidelines", type: "Policy", description: "Step-by-step guidelines for the Q1 performance review process.", senderName: "HR Admin", sentTo: "all", sentAt: "2026-03-01T09:00:00", readBy: [], requiresAck: true, ackedBy: [], size: "245 KB" },
@@ -19215,18 +19328,18 @@ export default function App() {
         { id: "doc_003", name: "Engineering Team Onboarding Pack", type: "Template", description: "Onboarding checklist and resource links for new engineering hires.", senderName: "HR Admin", sentTo: "Engineering", sentAt: "2026-03-10T10:00:00", readBy: [], requiresAck: false, ackedBy: [], size: "512 KB" },
     ]);
     const [shifts, setShifts] = useState([
-        { id: "sh1", name: "Morning Shift",  startTime: "07:00", endTime: "15:00", color: "#10B981" },
-        { id: "sh2", name: "General Shift",  startTime: "09:00", endTime: "17:00", color: "#6366F1" },
-        { id: "sh3", name: "Evening Shift",  startTime: "14:00", endTime: "22:00", color: "#F59E0B" },
-        { id: "sh4", name: "Night Shift",    startTime: "22:00", endTime: "06:00", color: "#8B5CF6" },
+        { id: "sh1", name: "Morning Shift", startTime: "07:00", endTime: "15:00", color: "#10B981" },
+        { id: "sh2", name: "General Shift", startTime: "09:00", endTime: "17:00", color: "#6366F1" },
+        { id: "sh3", name: "Evening Shift", startTime: "14:00", endTime: "22:00", color: "#F59E0B" },
+        { id: "sh4", name: "Night Shift", startTime: "22:00", endTime: "06:00", color: "#8B5CF6" },
     ]);
     const [shiftAssignments, setShiftAssignments] = useState([]);
 
     // ── Rehydrate from localStorage on mount ─────────────────────
     useEffect(() => {
-        const savedConfig  = lsLoad(LS_CONFIG_KEY);
+        const savedConfig = lsLoad(LS_CONFIG_KEY);
         const savedSession = lsLoad(LS_SESSION_KEY);
-        if (savedConfig)  setCompanyConfig(savedConfig);
+        if (savedConfig) setCompanyConfig(savedConfig);
         if (savedSession) {
             setCurrentUser(savedSession);
             setShowLanding(false);
@@ -19322,6 +19435,7 @@ export default function App() {
         "payroll_Sync_History": "payroll_page",
         "payroll_Field_Mapping": "payroll_page",
         "payroll_Settings": "payroll_page",
+        "payroll_integrations": "payroll_page",
 
         // ── Legacy admin/settings routes ──
         org: OrgPage,
@@ -19371,21 +19485,21 @@ export default function App() {
     const deptCountries = companyConfig?.departments
         ? Object.fromEntries(companyConfig.departments.map(d => [d.name, d.country || "Sri Lanka"]))
         : {};
-    _darkMode  = isDark;
-    _themeKey  = themeKey;
+    _darkMode = isDark;
+    _themeKey = themeKey;
 
     return (
         <ToastProvider>
-        <PayrollIntegrationCtx.Provider value={{ connectedPayrollId, setConnectedPayrollId }}>
-            <ThemeCtx.Provider value={{
-                isDark,
-                toggleTheme: () => { const next = !isDark; setIsDark(next); localStorage.setItem("selfvora_dark", String(next)); },
-                themeKey,
-                setThemeKey: (k) => { setThemeKey(k); localStorage.setItem("selfvora_theme", k); }
-            }}>
-                <UserCtx.Provider value={currentUser}>
-                <DataCtx.Provider value={dataCtxValue}>
-                    <style>{`
+            <PayrollIntegrationCtx.Provider value={{ connectedPayrollId, setConnectedPayrollId }}>
+                <ThemeCtx.Provider value={{
+                    isDark,
+                    toggleTheme: () => { const next = !isDark; setIsDark(next); localStorage.setItem("selfvora_dark", String(next)); },
+                    themeKey,
+                    setThemeKey: (k) => { setThemeKey(k); localStorage.setItem("selfvora_theme", k); }
+                }}>
+                    <UserCtx.Provider value={currentUser}>
+                        <DataCtx.Provider value={dataCtxValue}>
+                            <style>{`
       ${isDark ? `
         select, select option { background: #111827 !important; color: #F1F5F9 !important; }
         input[type="date"] { background: #111827 !important; color: #F1F5F9 !important; color-scheme: dark; }
@@ -19403,32 +19517,32 @@ export default function App() {
         tbody tr:hover { background: #F0F2FF !important; }
       `}
     `}</style>
-                    <div style={{ display: "flex", height: "100vh", background: _darkMode ? "#0C1118" : C.bg, fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
-                        <Sidebar active={page} onNav={setPage} onLogout={handleLogout} onNexisAI={() => setNexisTrigger(n => n + 1)} />
-                        <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                            <TopBar onNav={setPage} onLogout={handleLogout} page={page} onAction={() => {
-                                const leavePages = ["leave", "leave_My_Requests", "leave_All_Leave_Requests", "leave_Leave_Types", "calendar"];
-                                if (leavePages.includes(page)) setLeaveApplyTrigger(n => n + 1);
-                                else if (page === "people" || page.startsWith("people")) setPage("people_Onboarding");
-                                else if (page === "performance" || page.startsWith("performance")) setPage("performance_Reviews");
-                                else if (page === "skills" || page.startsWith("skills")) setPage("skills");
-                            }} />
-                            <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", position: "relative" }}>
-                                <AnimatePresence mode="wait">
-                                    <motion.div key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2, ease: "easeOut" }}>
-                                        {isPayrollPage
-                                            ? <PayrollPageComponent C={C} employees={employees} pageKey={page} onSubNavChange={setPayrollSubNav} connectedPayrollId={connectedPayrollId} deptCountries={deptCountries} />
-                                            : <PageComp pageKey={page} leaveApplyTrigger={PageComp === LeavePage ? leaveApplyTrigger : undefined} />}
-                                    </motion.div>
-                                </AnimatePresence>
-                            </main>
-                        </div>
-                    </div>
-                    <NexisAIWidget sidebarTrigger={nexisTrigger} />
-                </DataCtx.Provider>
-                </UserCtx.Provider>
-            </ThemeCtx.Provider>
-        </PayrollIntegrationCtx.Provider>
+                            <div style={{ display: "flex", height: "100vh", background: _darkMode ? "#0C1118" : C.bg, fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
+                                <Sidebar active={page} onNav={setPage} onLogout={handleLogout} onNexisAI={() => setNexisTrigger(n => n + 1)} />
+                                <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
+                                    <TopBar onNav={setPage} onLogout={handleLogout} page={page} onAction={() => {
+                                        const leavePages = ["leave", "leave_My_Requests", "leave_All_Leave_Requests", "leave_Leave_Types", "calendar"];
+                                        if (leavePages.includes(page)) setLeaveApplyTrigger(n => n + 1);
+                                        else if (page === "people" || page.startsWith("people")) setPage("people_Onboarding");
+                                        else if (page === "performance" || page.startsWith("performance")) setPage("performance_Reviews");
+                                        else if (page === "skills" || page.startsWith("skills")) setPage("skills");
+                                    }} />
+                                    <main style={{ flex: 1, overflowY: "auto", overflowX: "hidden", position: "relative" }}>
+                                        <AnimatePresence mode="wait">
+                                            <motion.div key={page} initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: -10 }} transition={{ duration: 0.2, ease: "easeOut" }}>
+                                                {isPayrollPage
+                                                    ? <PayrollPageComponent C={C} employees={employees} pageKey={page} onSubNavChange={setPayrollSubNav} connectedPayrollId={connectedPayrollId} deptCountries={deptCountries} />
+                                                    : <PageComp pageKey={page} leaveApplyTrigger={PageComp === LeavePage ? leaveApplyTrigger : undefined} />}
+                                            </motion.div>
+                                        </AnimatePresence>
+                                    </main>
+                                </div>
+                            </div>
+                            <NexisAIWidget sidebarTrigger={nexisTrigger} />
+                        </DataCtx.Provider>
+                    </UserCtx.Provider>
+                </ThemeCtx.Provider>
+            </PayrollIntegrationCtx.Provider>
         </ToastProvider>
     );
 }
