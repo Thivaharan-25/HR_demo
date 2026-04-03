@@ -3183,7 +3183,7 @@ const DashboardPage = () => {
 
     // ── Dashboard widget prefs ──────────────────────────────────
     const DEFAULT_PREFS = {
-        selectedKpis: ["headcount","here_today","on_leave","goals","pending_leave","skill_reviews"],
+        selectedKpis: ["headcount","here_today","on_leave","goals"],
         charts: true,
         pending: true,
     };
@@ -3200,6 +3200,25 @@ const DashboardPage = () => {
         const sel = dashPrefs.selectedKpis;
         const next = sel.includes(id) ? sel.filter(k => k !== id) : [...sel, id];
         savePrefs({ ...dashPrefs, selectedKpis: next });
+    };
+
+    /* ── Dept drill-down + leave tooltip state ── */
+    const [selectedDept, setSelectedDept]   = useState(null);
+    const [hoveredLeaveId, setHoveredLeaveId] = useState(null);
+
+    /* ── KPI threshold alert colours ── */
+    const KPI_ALERT_RULES = {
+        at_risk:      { danger: v => parseInt(v) > 3 },
+        pending_leave:{ warn:   v => parseInt(v) >= 3 },
+        payroll_pend: { warn:   v => parseInt(v) > 0  },
+        absent_cost:  { warn:   v => parseFloat((v + "").replace(/[^0-9.]/g, "")) > 50000 },
+    };
+    const getKpiAlert = (id, value) => {
+        const rule = KPI_ALERT_RULES[id];
+        if (!rule) return null;
+        if (rule.danger && rule.danger(value)) return { color: "#ef4444", bg: "#fef2f200", accent: "#ef4444" };
+        if (rule.warn   && rule.warn(value))   return { color: "#f59e0b", bg: "#fffbeb00", accent: "#f59e0b" };
+        return null;
     };
 
     return (
@@ -3287,30 +3306,53 @@ const DashboardPage = () => {
                 </div>
             </div>
 
-            {/* ── KPI strip (user-selected) ────────────────────────── */}
+            {/* ── KPI Bento Grid ── */}
             {dashPrefs.selectedKpis.length > 0 && (() => {
-                const selected = KPI_POOL.filter(k => dashPrefs.selectedKpis.includes(k.id));
-                const cols = Math.min(selected.length, 6);
+                const selected = KPI_POOL.filter(k => dashPrefs.selectedKpis.includes(k.id)).slice(0, 7);
+                const KPI_IC = {
+                    headcount:    { bg: "#eef2ff", color: "#6366f1" }, here_today:   { bg: "#ecfdf5", color: "#10b981" },
+                    on_leave:     { bg: "#eff6ff", color: "#3b82f6" }, attendance:   { bg: "#ecfdf5", color: "#10b981" },
+                    goals:        { bg: "#eef2ff", color: "#6366f1" }, pending_leave:{ bg: "#fffbeb", color: "#f59e0b" },
+                    skill_reviews:{ bg: "#eff6ff", color: "#3b82f6" }, at_risk:      { bg: "#fef2f2", color: "#ef4444" },
+                    chemistry:    { bg: "#fdf4ff", color: "#a855f7" }, payroll_pend: { bg: "#f5f3ff", color: "#8b5cf6" },
+                    avg_rating:   { bg: "#fffbeb", color: "#f59e0b" }, absent_cost:  { bg: "#fef2f2", color: "#ef4444" },
+                };
                 return (
-                    <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, marginBottom: 18, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
-                        <div style={{ display: "grid", gridTemplateColumns: `repeat(${cols}, 1fr)` }}>
-                            {selected.map((s, i) => {
-                                const KIcon = Lucide[s.icon] || Lucide.Circle;
-                                return (
-                                    <div key={s.id} style={{ padding: "18px 20px", borderRight: i < selected.length - 1 ? `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` : "none" }}>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 8 }}>
-                                            <KIcon size={13} color={_darkMode ? C.textMuted : T.outline} strokeWidth={2} />
-                                            <span style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>{s.label}</span>
-                                        </div>
-                                        <div style={{ fontSize: 26, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, letterSpacing: "-0.5px", lineHeight: 1 }}>{s.value}</div>
-                                        <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 5 }}>
-                                            {s.up ? <Lucide.TrendingUp size={11} color={C.success} /> : <Lucide.TrendingDown size={11} color={C.warning} />}
-                                            <span style={{ fontSize: 11, color: s.up ? C.success : (_darkMode ? C.textMuted : T.outline), fontWeight: 500 }}>{s.sub}</span>
+                    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 12, marginBottom: 18 }}>
+                        {selected.map((s, i) => {
+                            const KIcon   = Lucide[s.icon] || Lucide.Circle;
+                            const ic      = KPI_IC[s.id]  || { bg: "#eef2ff", color: "#6366f1" };
+                            const alert   = getKpiAlert(s.id, s.value);
+                            const isHero  = i === 0;
+                            const leftColor = alert ? alert.accent : (isHero ? (_darkMode ? C.primary : T.primary) : "transparent");
+                            const cardBg  = _darkMode ? C.white : T.surfaceCard;
+                            return (
+                                <motion.div key={s.id}
+                                    initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: i * 0.05, duration: 0.3 }}
+                                    whileHover={{ y: -2, boxShadow: "0 6px 18px rgba(0,0,0,0.09)" }}
+                                    style={{
+                                        background: cardBg,
+                                        borderTop:    `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`,
+                                        borderRight:  `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`,
+                                        borderBottom: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`,
+                                        borderLeft:   `4px solid ${leftColor}`,
+                                        borderRadius: 14, padding: isHero ? "18px 20px" : "15px 18px",
+                                        boxShadow: "0 1px 3px rgba(0,0,0,0.06)",
+                                    }}>
+                                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 10 }}>
+                                        <span style={{ fontSize: 10.5, fontWeight: 700, color: alert ? alert.color : (_darkMode ? C.textMuted : T.outline), textTransform: "uppercase", letterSpacing: "0.07em" }}>{s.label}</span>
+                                        <div style={{ width: 30, height: 30, borderRadius: "50%", background: alert ? alert.color + "18" : ic.bg, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                                            <KIcon size={13} color={alert ? alert.color : ic.color} strokeWidth={1.75} />
                                         </div>
                                     </div>
-                                );
-                            })}
-                        </div>
+                                    <div style={{ fontSize: isHero ? 30 : 24, fontWeight: 800, color: alert ? alert.color : (_darkMode ? C.text : T.onSurface), letterSpacing: "-0.5px", lineHeight: 1, fontFamily: "Manrope, sans-serif" }}>{s.value}</div>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 3, marginTop: 7 }}>
+                                        {s.up ? <Lucide.TrendingUp size={10} color={C.success} strokeWidth={2.5} /> : <Lucide.TrendingDown size={10} color={alert ? alert.color : C.warning} strokeWidth={2.5} />}
+                                        <span style={{ fontSize: 10.5, fontWeight: 500, color: s.up ? C.success : (alert ? alert.color : (_darkMode ? C.textMuted : T.outline)) }}>{s.sub}</span>
+                                    </div>
+                                </motion.div>
+                            );
+                        })}
                     </div>
                 );
             })()}
@@ -3465,28 +3507,44 @@ const DashboardPage = () => {
                 const primaryColor = _darkMode ? C.primary : T.primary;
                 return (
                     <div style={{ display: "grid", gridTemplateColumns: "1.65fr 1fr", gap: 16 }}>
-                        {/* Left: Market / Department overview */}
+                        {/* Left: Department overview with unique colours + drill-down */}
                         <div style={{ background: _darkMode ? C.white : T.surfaceCard, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"28"}`, borderRadius: 14, overflow: "hidden", boxShadow: "0 1px 3px rgba(0,0,0,0.06)" }}>
                             <div style={{ padding: "16px 20px", borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                                 <div style={{ fontSize: 15, fontWeight: 700, color: _darkMode ? C.text : T.onSurface }}>Department Overview</div>
-                                <div style={{ display: "flex", alignItems: "center", gap: 6, background: _darkMode ? C.bg : T.surfaceLow, border: `1px solid ${_darkMode ? C.border : T.outlineVar+"50"}`, borderRadius: 8, padding: "5px 10px", cursor: "pointer" }}>
-                                    <span style={{ fontSize: 12, color: _darkMode ? C.textMid : T.onSurfaceVar, fontWeight: 500 }}>This month</span>
-                                    <Lucide.ChevronDown size={12} color={_darkMode ? C.textMuted : T.outline} />
+                                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                    {selectedDept && (
+                                        <motion.div initial={{ opacity: 0, scale: 0.9 }} animate={{ opacity: 1, scale: 1 }}
+                                            onClick={() => setSelectedDept(null)}
+                                            style={{ display: "flex", alignItems: "center", gap: 5, padding: "3px 10px", borderRadius: 20, background: primaryColor + "14", border: `1px solid ${primaryColor}44`, cursor: "pointer", fontSize: 11.5, fontWeight: 700, color: primaryColor }}>
+                                            {selectedDept} <Lucide.X size={11} color={primaryColor} strokeWidth={2.5} />
+                                        </motion.div>
+                                    )}
+                                    <span style={{ fontSize: 11.5, color: _darkMode ? C.textMuted : T.outline, fontWeight: 500 }}>Click to filter</span>
                                 </div>
                             </div>
                             <div style={{ padding: "14px 20px" }}>
-                                {deptEntries.slice(0, 6).map(([dept, count]) => (
-                                    <div key={dept} style={{ marginBottom: 12 }}>
-                                        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
-                                            <span style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface }}>{dept}</span>
-                                            <span style={{ fontSize: 12, fontWeight: 700, color: primaryColor }}>{count}</span>
-                                        </div>
-                                        <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : T.surfaceLow, borderRadius: 4, overflow: "hidden" }}>
-                                            <motion.div initial={{ width: 0 }} animate={{ width: `${(count / maxDept) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
-                                                style={{ height: "100%", background: `linear-gradient(90deg, ${primaryColor}, ${primaryColor}cc)`, borderRadius: 4 }} />
-                                        </div>
-                                    </div>
-                                ))}
+                                {(() => {
+                                    const DEPT_PALETTE = ["#6366f1","#0d9488","#3b82f6","#f59e0b","#ef4444","#8b5cf6","#0891b2","#d97706"];
+                                    return deptEntries.slice(0, 7).map(([dept, count], di) => {
+                                        const barColor  = DEPT_PALETTE[di % DEPT_PALETTE.length];
+                                        const isActive  = selectedDept === dept;
+                                        const isDimmed  = selectedDept && !isActive;
+                                        return (
+                                            <motion.div key={dept} animate={{ opacity: isDimmed ? 0.35 : 1 }} transition={{ duration: 0.2 }}
+                                                onClick={() => setSelectedDept(isActive ? null : dept)}
+                                                style={{ marginBottom: 11, cursor: "pointer" }}>
+                                                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+                                                    <span style={{ fontSize: 12.5, fontWeight: isActive ? 700 : 600, color: isActive ? barColor : (_darkMode ? C.text : T.onSurface) }}>{dept}</span>
+                                                    <span style={{ fontSize: 12, fontWeight: 700, color: barColor }}>{count}</span>
+                                                </div>
+                                                <div style={{ height: 7, background: _darkMode ? "rgba(255,255,255,0.07)" : T.surfaceLow, borderRadius: 4, overflow: "hidden" }}>
+                                                    <motion.div initial={{ width: 0 }} animate={{ width: `${(count / maxDept) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }}
+                                                        style={{ height: "100%", background: isActive ? barColor : barColor + "bb", borderRadius: 4 }} />
+                                                </div>
+                                            </motion.div>
+                                        );
+                                    });
+                                })()}
                             </div>
                         </div>
 
@@ -3499,11 +3557,17 @@ const DashboardPage = () => {
                                 </div>
                                 <div>
                                     {pendingLeaveList.length === 0
-                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>No pending requests</div>
+                                        ? <div style={{ padding: "24px 18px", textAlign: "center", color: _darkMode ? C.textMuted : T.outline, fontSize: 13 }}>
+                                            <Lucide.CalendarCheck size={24} color={_darkMode ? C.border : T.outlineVar} strokeWidth={1.5} style={{ margin: "0 auto 8px", display: "block" }} />
+                                            All caught up — no pending requests
+                                          </div>
                                         : pendingLeaveList.slice(0, 4).map(lr => {
-                                            const emp = employees.find(e => e.id === lr.empId);
+                                            const emp     = employees.find(e => e.id === lr.empId);
+                                            const manager = employees.find(e => e.id === emp?.managerId);
+                                            const isHov   = hoveredLeaveId === lr.id;
                                             return (
-                                                <div key={lr.id} style={{ padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}` }}>
+                                                <div key={lr.id} onMouseEnter={() => setHoveredLeaveId(lr.id)} onMouseLeave={() => setHoveredLeaveId(null)}
+                                                    style={{ position: "relative", padding: "10px 18px", display: "flex", alignItems: "center", gap: 10, borderBottom: `1px solid ${_darkMode ? C.borderLight : T.outlineVar+"22"}`, background: isHov ? (_darkMode ? "rgba(255,255,255,0.03)" : T.surfaceLow) : "transparent", transition: "background 0.15s" }}>
                                                     <Avatar name={emp?.name || "?"} size={28} />
                                                     <div style={{ flex: 1, minWidth: 0 }}>
                                                         <div style={{ fontSize: 12.5, fontWeight: 600, color: _darkMode ? C.text : T.onSurface, overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{emp?.name || "Employee"}</div>
@@ -3513,6 +3577,18 @@ const DashboardPage = () => {
                                                         <Btn variant="primary" size="sm" onClick={() => approveLeave(lr.id)}><Icon n="check" size={11} color="#fff" /></Btn>
                                                         <Btn variant="danger" size="sm" onClick={() => rejectLeave(lr.id)}><Icon n="close" size={11} /></Btn>
                                                     </div>
+                                                    {/* Quick-view tooltip */}
+                                                    <AnimatePresence>
+                                                        {isHov && (
+                                                            <motion.div initial={{ opacity: 0, y: 4, scale: 0.97 }} animate={{ opacity: 1, y: 0, scale: 1 }} exit={{ opacity: 0, y: 4, scale: 0.97 }} transition={{ duration: 0.12 }}
+                                                                style={{ position: "absolute", left: 18, bottom: "calc(100% + 8px)", zIndex: 60, background: _darkMode ? "#1e293b" : T.onSurface, color: "#fff", borderRadius: 10, padding: "9px 13px", fontSize: 11.5, fontWeight: 500, boxShadow: "0 6px 20px rgba(0,0,0,0.22)", whiteSpace: "nowrap", pointerEvents: "none" }}>
+                                                                <div style={{ fontWeight: 700, marginBottom: 4, fontSize: 12 }}>{emp?.dept} · {emp?.level || emp?.type}</div>
+                                                                <div style={{ opacity: 0.8, marginBottom: 2 }}>Manager: {manager?.name || "—"}</div>
+                                                                <div style={{ opacity: 0.8 }}>{lr.from} → {lr.to}</div>
+                                                                <div style={{ position: "absolute", bottom: -5, left: 18, width: 10, height: 10, background: _darkMode ? "#1e293b" : T.onSurface, transform: "rotate(45deg)", borderRadius: 2 }} />
+                                                            </motion.div>
+                                                        )}
+                                                    </AnimatePresence>
                                                 </div>
                                             );
                                         })
@@ -10127,7 +10203,7 @@ const OrgPage = () => {
     const [dragId, setDragId] = useState(null);
     const [moveLog, setMoveLog] = useState(null);
 
-    // ── Legal Entities state ──────────────────────────────────────
+    // ── Organizations state ───────────────────────────────────────
     const configEntities = companyConfig?.entities || [];
     const saveEntities = (ents) => {
         const updated = { ...(companyConfig || {}), entities: ents };
@@ -10566,7 +10642,7 @@ const OrgPage = () => {
                             <Btn variant="outline" onClick={() => { setDupSelected(mergedDepts.map(d => d.name)); setDupModal(true); }}><Icon n="org" size={13} />Duplicate Structure</Btn>
                         </>
                     ) : view === "entities" ? (
-                        <Btn variant="primary" onClick={() => setShowAddEntity(true)}><Icon n="plus" size={13} />{configEntities.length === 0 ? "Add First Entity" : "Add Entity"}</Btn>
+                        <Btn variant="primary" onClick={() => setShowAddEntity(true)}><Icon n="plus" size={13} />{configEntities.length === 0 ? "Add First Organization" : "Add Organization"}</Btn>
                     ) : (
                         <>
                             <Btn variant="outline" onClick={expandAll}><Icon n="plus" size={13} />Expand All</Btn>
@@ -10574,7 +10650,7 @@ const OrgPage = () => {
                         </>
                     )}
                     <div style={{ display: "flex", gap: 0, border: `1px solid ${C.border}`, borderRadius: 9, overflow: "hidden" }}>
-                        {[["chart", "Chart"], ["list", "List"], ["matrix", "Matrix"], ["departments", "Departments"], ["entities", "Entities"]].map(([v, label]) => (
+                        {[["chart", "Chart"], ["list", "List"], ["matrix", "Matrix"], ["departments", "Departments"], ["entities", "Organizations"]].map(([v, label]) => (
                             <button key={v} onClick={() => setView(v)} style={{ padding: "7px 14px", border: "none", background: view === v ? C.primary : C.white, color: view === v ? "#fff" : C.textMid, fontSize: 12, fontWeight: view === v ? 700 : 500, cursor: "pointer", fontFamily: "inherit" }}>{label}</button>
                         ))}
                     </div>
@@ -10642,11 +10718,11 @@ const OrgPage = () => {
                             </div>
                             {configEntities.length > 0 && (
                                 <div style={{ marginTop: 10 }}>
-                                    <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>Legal Entity <span style={{ fontWeight: 400, color: C.textMuted }}>(optional)</span></div>
+                                    <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 5 }}>Organization <span style={{ fontWeight: 400, color: C.textMuted }}>(optional)</span></div>
                                     <select value={newDeptForm.entityId} onChange={e => setNewDeptForm(p => ({ ...p, entityId: e.target.value }))}
                                         style={{ width: "100%", padding: "9px 12px", border: `1.5px solid ${C.border}`, borderRadius: 9, fontSize: 13, color: C.text, background: C.bg, outline: "none", fontFamily: "inherit" }}>
-                                        <option value="">— No entity —</option>
-                                        {configEntities.map(e => <option key={e.id} value={e.id}>{e.name || `Entity`}</option>)}
+                                        <option value="">— No organization —</option>
+                                        {configEntities.map(e => <option key={e.id} value={e.id}>{e.name || `Organization`}</option>)}
                                     </select>
                                 </div>
                             )}
@@ -10669,7 +10745,7 @@ const OrgPage = () => {
                             onClick={e => e.stopPropagation()}
                             style={{ background: C.white, borderRadius: 20, padding: 28, width: 480, boxShadow: C.shadowLg }}>
                             <div style={{ fontSize: 17, fontWeight: 800, color: C.text, marginBottom: 4 }}>Duplicate Structure</div>
-                            <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 16 }}>Select which departments to copy to the new entity or location.</div>
+                            <div style={{ fontSize: 12, color: C.textMuted, marginBottom: 16 }}>Select which departments to copy into a target Organization.</div>
 
                             {/* Department selection checklist */}
                             <div style={{ marginBottom: 16 }}>
@@ -10707,7 +10783,7 @@ const OrgPage = () => {
                                 const FLAGS = {"Sri Lanka":"🇱🇰","United Kingdom":"🇬🇧","United States":"🇺🇸","Australia":"🇦🇺","India":"🇮🇳","Singapore":"🇸🇬","UAE":"🇦🇪","Germany":"🇩🇪","Canada":"🇨🇦"};
                                 return (
                                     <div>
-                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 8 }}>Copy Into Entity</div>
+                                        <div style={{ fontSize: 12, fontWeight: 600, color: C.textMid, marginBottom: 8 }}>Copy Into Organization</div>
                                         <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
                                             {configEntities.map((ent, ei) => {
                                                 const ec = ENT_COLORS_DUP[ei % ENT_COLORS_DUP.length];
@@ -10720,7 +10796,7 @@ const OrgPage = () => {
                                                             {FLAGS[ent.country] || "🌍"}
                                                         </div>
                                                         <div style={{ flex: 1, minWidth: 0 }}>
-                                                            <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? C.text : C.textMid }}>{ent.name || `Entity ${ei + 1}`}</div>
+                                                            <div style={{ fontSize: 13, fontWeight: active ? 700 : 500, color: active ? C.text : C.textMid }}>{ent.name || `Organization ${ei + 1}`}</div>
                                                             <div style={{ fontSize: 11, color: C.textMuted }}>{ent.country} · {ent.currency}{alreadyCount > 0 ? ` · ${alreadyCount} dept${alreadyCount !== 1 ? "s" : ""} already here` : ""}</div>
                                                         </div>
                                                         <div style={{ width: 18, height: 18, borderRadius: "50%", border: `2px solid ${active ? ec : C.border}`, background: active ? ec : "transparent", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.12s" }}>
@@ -12678,7 +12754,7 @@ const DocumentsPage = () => {
 
 /* ─── PAGE: TEAMS ─────────────────────────────────────────────── */
 const TeamsPage = () => {
-    const { teams, setTeams, employees } = React.useContext(DataCtx);
+    const { teams, setTeams, employees, navigate, companyConfig } = React.useContext(DataCtx);
     const [showModal, setShowModal] = useState(false);
     const [viewTeam, setViewTeam] = useState(null);
     const [editTeam, setEditTeam] = useState(null);
@@ -12687,7 +12763,11 @@ const TeamsPage = () => {
     const BLANK = { name: "", dept: "Engineering", lead: "", projects: "", members: [] };
     const [form, setForm] = useState(BLANK);
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design", "Marketing"];
+    const configDepts = companyConfig?.departments?.map(d => d.name) || [];
+    const liveDepts = employees.map(e => e.dept).filter(Boolean);
+    const DEPTS = [...new Set([...configDepts, ...liveDepts])].length > 0
+        ? [...new Set([...configDepts, ...liveDepts])]
+        : ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design", "Marketing"];
 
     const toggleMember = (empId) => setForm(p => ({
         ...p, members: p.members.includes(empId) ? p.members.filter(m => m !== empId) : [...p.members, empId]
@@ -12802,11 +12882,18 @@ const TeamsPage = () => {
                         <h1 style={{ fontSize: 30, fontWeight: 800, color: txt, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Teams</h1>
                         <p style={{ fontSize: 14, color: muted, margin: "8px 0 0" }}>Manage and orchestrate your organizational units.</p>
                     </div>
-                    <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowModal(true)}
-                        style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
-                        <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
-                        Create Team
-                    </motion.button>
+                    <div style={{ display: "flex", gap: 12 }}>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => navigate("org")}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: surf, color: txt, border: `1px solid ${bdr}`, borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 2px 8px rgba(0,0,0,0.05)" }}>
+                            <Lucide.GitBranch size={16} color={txt} strokeWidth={2} />
+                            Organization Structure
+                        </motion.button>
+                        <motion.button whileHover={{ scale: 1.02 }} whileTap={{ scale: 0.97 }} onClick={() => setShowModal(true)}
+                            style={{ display: "flex", alignItems: "center", gap: 8, padding: "11px 22px", background: "linear-gradient(to right, #004ac6, #2563eb)", color: "#fff", border: "none", borderRadius: 999, fontSize: 13.5, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px #004ac650" }}>
+                            <Lucide.Plus size={16} color="#fff" strokeWidth={2.5} />
+                            Create Team
+                        </motion.button>
+                    </div>
                 </div>
 
                 {/* ── Stat Cards ── */}
@@ -16270,7 +16357,14 @@ const IntegrationCard = ({ item, isConnected, isPayroll, isThisPayrollConnected,
 };
 /* ─── PAGE: JOB FAMILIES ─────────────────────────────────────── */
 const JobFamiliesPage = () => {
-    const { jobFamilies, setJobFamilies, employees } = React.useContext(DataCtx);
+    const { jobFamilies, setJobFamilies, employees, companyConfig, setCompanyConfig } = React.useContext(DataCtx);
+    const [showDeptModal, setShowDeptModal] = useState(false);
+    const [newDeptName, setNewDeptName] = useState("");
+    const [newDeptParent, setNewDeptParent] = useState("");
+    const [newDeptColor, setNewDeptColor] = useState("#6366F1");
+    const [newDeptLocation, setNewDeptLocation] = useState("");
+    const [newDeptCountry, setNewDeptCountry] = useState("Sri Lanka");
+    const [newDeptEntityId, setNewDeptEntityId] = useState("");
     const [showModal, setShowModal] = useState(false);
     const [editingFamily, setEditingFamily] = useState(null);
     const [viewingFamily, setViewingFamily] = useState(null);
@@ -16281,8 +16375,44 @@ const JobFamiliesPage = () => {
     const [modalRoleInput, setModalRoleInput] = useState({});
     const [modalExpandedRole, setModalExpandedRole] = useState({});
     const setF = (k, v) => setForm(p => ({ ...p, [k]: v }));
-    const DEPTS = ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design"];
-    const DEPT_COLORS = { Engineering: "#6366F1", "HR & Admin": "#10B981", DevOps: "#8B5CF6", Sales: "#F59E0B", Product: "#3B82F6", QA: "#EF4444", Finance: "#059669", Operations: "#64748B", Design: "#EC4899" };
+    const configDepts = companyConfig?.departments?.map(d => d.name) || [];
+    const liveDepts = employees.map(e => e.dept).filter(Boolean);
+    const DEPTS = [...new Set([...configDepts, ...liveDepts])].length > 0
+        ? [...new Set([...configDepts, ...liveDepts])]
+        : ["Engineering", "HR & Admin", "DevOps", "Sales", "Product", "QA", "Finance", "Operations", "Design"];
+
+    const DEPT_COLORS = React.useMemo(() => {
+        const base = { Engineering: "#6366F1", "HR & Admin": "#10B981", DevOps: "#8B5CF6", Sales: "#F59E0B", Product: "#3B82F6", QA: "#EF4444", Finance: "#059669", Operations: "#64748B", Design: "#EC4899" };
+        const fromConfig = (companyConfig?.departments || []).reduce((acc, d) => {
+            if (d.color) acc[d.name] = d.color;
+            return acc;
+        }, {});
+        return { ...base, ...fromConfig };
+    }, [companyConfig]);
+
+    const handleSaveNewDept = () => {
+        const name = newDeptName.trim();
+        if (!name) return;
+        const newDept = {
+            id: `d_${Date.now()}`,
+            name,
+            parent: newDeptParent || null,
+            color: newDeptColor,
+            location: newDeptLocation || "HQ",
+            locations: [newDeptLocation || "HQ"],
+            country: newDeptCountry,
+            entityId: newDeptEntityId || null
+        };
+        const updatedDepts = [...(companyConfig?.departments || []), newDept];
+        const updatedConfig = { ...(companyConfig || {}), departments: updatedDepts };
+        setCompanyConfig(updatedConfig);
+        try { localStorage.setItem(LS_CONFIG_KEY, JSON.stringify(updatedConfig)); } catch (e) { }
+
+        setF("dept", name);
+        setNewDeptName(""); setNewDeptParent(""); setNewDeptColor("#6366F1");
+        setNewDeptLocation(""); setNewDeptCountry("Sri Lanka"); setNewDeptEntityId("");
+        setShowDeptModal(false);
+    };
 
     React.useEffect(() => {
         if (!openMenuId) return;
@@ -16626,9 +16756,15 @@ const JobFamiliesPage = () => {
                                                 </div>
                                                 <div>
                                                     <label style={{ fontSize: 12, fontWeight: 600, color: muted, display: "block", marginBottom: 6 }}>Department</label>
-                                                    <select value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
-                                                        {DEPTS.map(d => <option key={d}>{d}</option>)}
-                                                    </select>
+                                                    <div style={{ display: "flex", gap: 8 }}>
+                                                        <select value={form.dept} onChange={e => setF("dept", e.target.value)} style={{ ...inpSt, cursor: "pointer", flex: 1 }}>
+                                                            {DEPTS.map(d => <option key={d}>{d}</option>)}
+                                                        </select>
+                                                        <button onClick={() => setShowDeptModal(true)}
+                                                            style={{ width: 38, height: 38, borderRadius: 9, border: "none", background: T.primary, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: `0 2px 8px ${T.primary}40` }}>
+                                                            <Lucide.Plus size={18} color="#fff" strokeWidth={3} />
+                                                        </button>
+                                                    </div>
                                                 </div>
                                             </div>
                                             <div>
@@ -16726,6 +16862,83 @@ const JobFamiliesPage = () => {
                                         {editingFamily ? <Lucide.Save size={14} color="#fff" strokeWidth={2} /> : <Lucide.Plus size={14} color="#fff" strokeWidth={2.5} />}
                                         {editingFamily ? "Save Changes" : "Create Job Family"}
                                     </button>
+                                </div>
+                            </motion.div>
+                        </div>
+                    )}
+                </AnimatePresence>
+
+                {/* ── Mini-Modal for Adding Department ── */}
+                <AnimatePresence>
+                    {showDeptModal && (
+                        <div style={{ position: "fixed", inset: 0, zIndex: 1100, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
+                            <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                                onClick={() => setShowDeptModal(false)}
+                                style={{ position: "absolute", inset: 0, background: "rgba(15,23,42,0.6)", backdropFilter: "blur(4px)" }} />
+                            <motion.div initial={{ opacity: 0, scale: 0.95, y: 10 }} animate={{ opacity: 1, scale: 1, y: 0 }} exit={{ opacity: 0, scale: 0.95, y: 10 }}
+                                style={{ position: "relative", width: "100%", maxWidth: 400, background: surf, borderRadius: 18, boxShadow: "0 20px 40px rgba(0,0,0,0.30)", overflow: "hidden" }}>
+                                <div style={{ padding: "16px 20px", borderBottom: `1px solid ${bdrSm}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                        <div style={{ width: 32, height: 32, borderRadius: 8, background: T.primaryFixed, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                            <Lucide.GitBranch size={16} color={T.primary} strokeWidth={2} />
+                                        </div>
+                                        <div style={{ fontSize: 15, fontWeight: 800, color: txt }}>New Department</div>
+                                    </div>
+                                    <button onClick={() => setShowDeptModal(false)} style={{ border: "none", background: low, borderRadius: "50%", width: 28, height: 28, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                                        <Lucide.X size={14} color={muted} />
+                                    </button>
+                                </div>
+                                <div style={{ padding: "20px", display: "flex", flexDirection: "column", gap: 16 }}>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Department Name <span style={{ color: "#ef4444" }}>*</span></label>
+                                        <input autoFocus placeholder="e.g. Growth & Marketing" value={newDeptName} onChange={e => setNewDeptName(e.target.value)} style={inpSt} />
+                                    </div>
+                                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 14 }}>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Location</label>
+                                            <input placeholder="e.g. HQ, London" value={newDeptLocation} onChange={e => setNewDeptLocation(e.target.value)} style={inpSt} />
+                                        </div>
+                                        <div>
+                                            <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Country</label>
+                                            <select value={newDeptCountry} onChange={e => setNewDeptCountry(e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                                {["Sri Lanka", "India", "United Kingdom", "United States", "Singapore", "Australia", "Germany"].map(c => <option key={c}>{c}</option>)}
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Organization <span style={{ fontSize: 11, fontWeight: 400 }}>(optional)</span></label>
+                                        <select value={newDeptEntityId} onChange={e => setNewDeptEntityId(e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                            <option value="">— No organization —</option>
+                                            {(companyConfig?.entities || []).map(ent => <option key={ent.id} value={ent.id}>{ent.name}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Parent Department <span style={{ fontSize: 11, fontWeight: 400 }}>(optional)</span></label>
+                                        <select value={newDeptParent} onChange={e => setNewDeptParent(e.target.value)} style={{ ...inpSt, cursor: "pointer" }}>
+                                            <option value="">— None (Top Level) —</option>
+                                            {DEPTS.map(d => <option key={d} value={d}>{d}</option>)}
+                                        </select>
+                                    </div>
+                                    <div>
+                                        <label style={{ fontSize: 12, fontWeight: 700, color: muted, marginBottom: 8, display: "block" }}>Color Theme</label>
+                                        <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+                                            {["#6366F1", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4", "#64748B"].map(c => (
+                                                <motion.button key={c} onClick={() => setNewDeptColor(c)}
+                                                    whileHover={{ scale: 1.1 }}
+                                                    style={{ width: 28, height: 28, borderRadius: "50%", background: c, border: newDeptColor === c ? `3px solid ${txt}` : "2px solid transparent", cursor: "pointer", padding: 0, transition: "transform 0.1s" }} />
+                                            ))}
+                                            <div style={{ position: "relative", width: 28, height: 28, borderRadius: "50%", overflow: "hidden", border: !["#6366F1", "#10B981", "#F59E0B", "#EF4444", "#3B82F6", "#8B5CF6", "#EC4899", "#06B6D4", "#64748B"].includes(newDeptColor) ? `3px solid ${txt}` : `1px solid ${bdrSm}` }}>
+                                                <input type="color" value={newDeptColor} onChange={e => setNewDeptColor(e.target.value)} style={{ position: "absolute", inset: -5, width: 40, height: 40, cursor: "pointer" }} />
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div style={{ display: "flex", justifyContent: "flex-end", gap: 10, marginTop: 10 }}>
+                                        <button onClick={() => setShowDeptModal(false)} style={{ padding: "8px 16px", borderRadius: 9, border: `1px solid ${bdrSm}`, background: "transparent", color: muted, fontSize: 13, fontWeight: 600, cursor: "pointer" }}>Cancel</button>
+                                        <button onClick={handleSaveNewDept} disabled={!newDeptName.trim()}
+                                            style={{ padding: "8px 20px", borderRadius: 9, border: "none", background: T.primary, color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", opacity: !newDeptName.trim() ? 0.5 : 1 }}>
+                                            Save Department
+                                        </button>
+                                    </div>
                                 </div>
                             </motion.div>
                         </div>
