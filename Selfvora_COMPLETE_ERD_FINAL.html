@@ -1,0 +1,2523 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Selfvora — Complete ER Diagram (All Modules)</title>
+<style>
+:root{
+  --bg:#fafaf8;--card:#fff;--text:#2c2c2a;--muted:#73726c;--border:#e5e4e0;
+  --shadow:0 1px 4px rgba(0,0,0,.08);
+  --c-infra:#6B7280;--c-org:#0F6E56;--c-auth:#A32D2D;--c-hr:#185FA5;
+  --c-att:#D85A30;--c-leave:#639922;--c-pay:#BA7517;--c-perf:#534AB7;
+  --c-skills:#0891B2;--c-ai:#7C3AED;--c-docs:#0F766E;
+  --c-notif:#E11D48;--c-config:#9333EA;--c-cal:#0284C7;--c-rpt:#B45309;--c-common:#059669;--c-miss:#DC2626;
+}
+@media(prefers-color-scheme:dark){
+  :root{--bg:#141413;--card:#1e1e1c;--text:#e0dfd8;--muted:#9c9a92;--border:#333330;--shadow:0 1px 4px rgba(0,0,0,.4);}
+}
+*{box-sizing:border-box;margin:0;padding:0;}
+body{font-family:'Inter',system-ui,sans-serif;background:var(--bg);color:var(--text);line-height:1.5;font-size:14px;}
+a{color:inherit;}
+
+/* ── Header ── */
+.header{padding:28px 32px 20px;border-bottom:1px solid var(--border);}
+.header h1{font-size:24px;font-weight:700;letter-spacing:-.4px;}
+.header .sub{color:var(--muted);font-size:13px;margin-top:4px;}
+.badge-conf{display:inline-block;background:#A32D2D;color:#fff;font-size:11px;font-weight:600;padding:2px 8px;border-radius:3px;margin-left:10px;vertical-align:middle;letter-spacing:.5px;}
+
+/* ── Stats row ── */
+.stats{display:flex;flex-wrap:wrap;gap:8px;padding:16px 32px;border-bottom:1px solid var(--border);}
+.stat-box{display:flex;align-items:center;gap:6px;padding:6px 12px;border-radius:6px;font-size:12px;font-weight:600;color:#fff;white-space:nowrap;}
+.stat-box .n{font-size:16px;font-weight:700;}
+.stat-total{background:#2c2c2a;color:#fff;}
+@media(prefers-color-scheme:dark){.stat-total{background:#444;}}
+
+/* ── Tabs ── */
+.tabs{display:flex;flex-wrap:wrap;gap:2px;padding:12px 32px 0;border-bottom:1px solid var(--border);background:var(--bg);}
+.tab-btn{background:none;border:none;cursor:pointer;padding:8px 14px;font-size:13px;font-weight:500;color:var(--muted);border-radius:6px 6px 0 0;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;}
+.tab-btn:hover{color:var(--text);background:var(--border);}
+.tab-btn.active{color:var(--text);border-bottom-color:currentColor;background:var(--card);}
+
+/* ── Tab panels ── */
+.tab-panel{display:none;padding:28px 32px;}
+.tab-panel.active{display:block;}
+
+/* ── Module header ── */
+.mod-header{display:flex;align-items:center;gap:12px;margin-bottom:16px;}
+.mod-dot{width:12px;height:12px;border-radius:50%;flex-shrink:0;}
+.mod-title{font-size:18px;font-weight:700;}
+.mod-desc{color:var(--muted);font-size:13px;margin-bottom:20px;max-width:780px;}
+
+/* ── Diagram container ── */
+.erd-wrap{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:20px;margin-bottom:24px;overflow-x:auto;box-shadow:var(--shadow);}
+.erd-wrap h3{font-size:13px;font-weight:600;color:var(--muted);margin-bottom:14px;text-transform:uppercase;letter-spacing:.6px;}
+
+/* ── Table listing ── */
+.mod-table{width:100%;border-collapse:collapse;font-size:13px;margin-bottom:32px;}
+.mod-table th{text-align:left;padding:8px 12px;border-bottom:2px solid var(--border);color:var(--muted);font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.5px;}
+.mod-table td{padding:7px 12px;border-bottom:1px solid var(--border);}
+.mod-table tr:last-child td{border-bottom:none;}
+.mod-table tr:hover td{background:var(--bg);}
+.tname{font-weight:600;font-family:'Fira Code',monospace;}
+.badge{display:inline-block;font-size:11px;font-weight:600;padding:1px 6px;border-radius:3px;margin-right:3px;}
+.badge-pk{background:#185FA5;color:#fff;}
+.badge-fk{background:#D85A30;color:#fff;}
+.badge-xm{background:#7C3AED;color:#fff;}
+
+/* ── Cross-module section ── */
+.xm-section{margin-bottom:32px;}
+.xm-section h3{font-size:15px;font-weight:700;margin-bottom:12px;}
+.xm-table{width:100%;border-collapse:collapse;font-size:12.5px;}
+.xm-table th{text-align:left;padding:7px 10px;border-bottom:2px solid var(--border);color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.4px;font-size:11px;}
+.xm-table td{padding:6px 10px;border-bottom:1px solid var(--border);font-family:'Fira Code',monospace;font-size:12px;}
+.xm-table td.label{font-family:inherit;font-size:13px;}
+.xm-table tr:last-child td{border-bottom:none;}
+.xm-bridge{background:rgba(124,58,237,.08);}
+.note{font-size:12px;color:var(--muted);font-style:italic;margin-top:6px;}
+
+/* ── Module color overrides for tab active state ── */
+[data-mod="infra"].active{color:var(--c-infra);border-bottom-color:var(--c-infra);}
+[data-mod="found"].active{color:var(--c-infra);border-bottom-color:var(--c-infra);}
+[data-mod="hr"].active{color:var(--c-hr);border-bottom-color:var(--c-hr);}
+[data-mod="att"].active{color:var(--c-att);border-bottom-color:var(--c-att);}
+[data-mod="leave"].active{color:var(--c-leave);border-bottom-color:var(--c-leave);}
+[data-mod="pay"].active{color:var(--c-pay);border-bottom-color:var(--c-pay);}
+[data-mod="perf"].active{color:var(--c-perf);border-bottom-color:var(--c-perf);}
+[data-mod="skills"].active{color:var(--c-skills);border-bottom-color:var(--c-skills);}
+[data-mod="ai"].active{color:var(--c-ai);border-bottom-color:var(--c-ai);}
+[data-mod="docs"].active{color:var(--c-docs);border-bottom-color:var(--c-docs);}
+[data-mod="xm"].active{color:#2c2c2a;border-bottom-color:#2c2c2a;}
+[data-mod="miss"].active{color:var(--c-miss);border-bottom-color:var(--c-miss);}
+[data-mod="common"].active{color:var(--c-common);border-bottom-color:var(--c-common);}
+
+/* mermaid dark mode */
+@media(prefers-color-scheme:dark){
+  .mermaid svg{background:var(--card) !important;}
+}
+
+/* overview grid */
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:14px;margin-top:16px;}
+.ov-card{background:var(--card);border:1px solid var(--border);border-radius:10px;padding:16px;box-shadow:var(--shadow);}
+.ov-card .ov-top{display:flex;align-items:center;gap:8px;margin-bottom:8px;}
+.ov-card .ov-dot{width:10px;height:10px;border-radius:50%;}
+.ov-card .ov-name{font-weight:700;font-size:14px;}
+.ov-card .ov-count{font-size:22px;font-weight:700;margin-bottom:4px;}
+.ov-card .ov-tables{font-size:11px;color:var(--muted);line-height:1.7;}
+.ov-card code{font-size:11px;background:var(--bg);border-radius:3px;padding:1px 4px;}
+
+.footer{text-align:center;padding:24px;color:var(--muted);font-size:12px;border-top:1px solid var(--border);margin-top:16px;}
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1>Selfvora — Complete ER Diagram <span class="badge-conf">CONFIDENTIAL</span></h1>
+  <p class="sub">HR SaaS Platform &nbsp;·&nbsp; 15 modules &nbsp;·&nbsp; 102 tables (all integrated — 83 HR module tables + 19 shared platform) &nbsp;·&nbsp; Service-Oriented Monolithic Architecture &nbsp;·&nbsp; Updated 2026-04-04 &nbsp;·&nbsp; <strong style="color:var(--c-common)">All FKs resolved — no (ext) references remaining</strong></p>
+</div>
+
+<div class="stats">
+  <div class="stat-box" style="background:var(--c-infra)"><span class="n">4</span> Infrastructure</div>
+  <div class="stat-box" style="background:var(--c-org)"><span class="n">8</span> Org Structure</div>
+  <div class="stat-box" style="background:var(--c-auth)"><span class="n">8</span> Auth &amp; Security</div>
+  <div class="stat-box" style="background:var(--c-hr)"><span class="n">9</span> Core HR</div>
+  <div class="stat-box" style="background:var(--c-att)"><span class="n">13</span> Attendance</div>
+  <div class="stat-box" style="background:var(--c-leave)"><span class="n">5</span> Leave</div>
+  <div class="stat-box" style="background:var(--c-pay)"><span class="n">11</span> Payroll</div>
+  <div class="stat-box" style="background:var(--c-perf)"><span class="n">7</span> Performance</div>
+  <div class="stat-box" style="background:var(--c-skills)"><span class="n">11</span> Skills</div>
+  <div class="stat-box" style="background:var(--c-ai)"><span class="n">5</span> AI / Nexis</div>
+  <div class="stat-box" style="background:var(--c-docs)"><span class="n">5</span> Documents</div>
+  <div class="stat-box" style="background:var(--c-notif)"><span class="n">2</span> Notifications</div>
+  <div class="stat-box" style="background:var(--c-config)"><span class="n">3</span> Configuration</div>
+  <div class="stat-box" style="background:var(--c-cal)"><span class="n">1</span> Calendar</div>
+  <div class="stat-box" style="background:var(--c-rpt)"><span class="n">2</span> Reports</div>
+  <div class="stat-box" style="background:var(--c-common)"><span class="n">19</span> Shared Platform</div>
+  <div class="stat-box stat-total"><span class="n">102</span>&nbsp;Total Tables</div>
+</div>
+
+<!-- ══════════════════ TAB NAV ══════════════════ -->
+<nav class="tabs" id="tabNav">
+  <button class="tab-btn active" data-tab="overview" data-mod="infra">📊 Overview</button>
+  <button class="tab-btn" data-tab="foundation" data-mod="found">🏗️ Foundation</button>
+  <button class="tab-btn" data-tab="corehr" data-mod="hr">👤 Core HR</button>
+  <button class="tab-btn" data-tab="attendance" data-mod="att">📋 Attendance</button>
+  <button class="tab-btn" data-tab="leave" data-mod="leave">🌴 Leave</button>
+  <button class="tab-btn" data-tab="payroll" data-mod="pay">💰 Payroll</button>
+  <button class="tab-btn" data-tab="performance" data-mod="perf">🎯 Performance</button>
+  <button class="tab-btn" data-tab="skills" data-mod="skills">🧠 Skills</button>
+  <button class="tab-btn" data-tab="ai" data-mod="ai">🤖 AI / Nexis</button>
+  <button class="tab-btn" data-tab="docs" data-mod="docs">📄 Documents</button>
+  <button class="tab-btn" data-tab="missing" data-mod="miss">🔴 New Module Tables</button>
+  <button class="tab-btn" data-tab="common" data-mod="common">⚙️ Shared Platform (S1–S8)</button>
+  <button class="tab-btn" data-tab="crossmodule" data-mod="xm">🔗 Cross-Module</button>
+</nav>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 1 — OVERVIEW
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel active" id="panel-overview">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:#2c2c2a;"></div>
+    <span class="mod-title">Platform Overview</span>
+  </div>
+  <p class="mod-desc">Selfvora is a multi-tenant HR SaaS platform built on a Service-Oriented Monolithic Architecture. Every table is tenant-scoped. <code>employees.id</code> is the primary cross-module foreign key. All PKs are UUIDs. The canonical top-level table is <code>tenants</code>. <strong style="color:var(--c-miss)">20 missing HR tables</strong> were identified from UI analysis + <strong style="color:var(--c-common)">19 shared platform tables</strong> across 8 services (S1–S8) that power both HR and Work Management.</p>
+
+  <div class="overview-grid">
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-infra)"></div><span class="ov-name">Infrastructure</span></div>
+      <div class="ov-count" style="color:var(--c-infra)">4</div>
+      <div class="ov-tables"><code>tenants</code> · <code>users</code> · <code>file_records</code> · <code>countries</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-org)"></div><span class="ov-name">Org Structure</span></div>
+      <div class="ov-count" style="color:var(--c-org)">8</div>
+      <div class="ov-tables"><code>legal_entities</code> · <code>office_locations</code> · <code>departments</code> · <code>job_families</code> · <code>job_family_levels</code> · <code>job_titles</code> · <code>teams</code> · <code>team_members</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-auth)"></div><span class="ov-name">Auth &amp; Security</span></div>
+      <div class="ov-count" style="color:var(--c-auth)">8</div>
+      <div class="ov-tables"><code>user_sessions</code> · <code>user_mfa</code> · <code>roles</code> · <code>permissions</code> · <code>role_permissions</code> · <code>user_roles</code> · <code>audit_logs</code> · <code>consent_records</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-hr)"></div><span class="ov-name">Core HR</span></div>
+      <div class="ov-count" style="color:var(--c-hr)">9</div>
+      <div class="ov-tables"><code>employees</code> · <code>salary_history</code> · <code>employee_emergency_contacts</code> · <code>employee_bank_details</code> · <code>onboarding_steps</code> · <code>offboarding_cases</code> · <code>offboarding_tasks</code> · <code>offboarding_penalties</code> · <code>employee_lifecycle_events</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-att)"></div><span class="ov-name">Attendance</span></div>
+      <div class="ov-count" style="color:var(--c-att)">13</div>
+      <div class="ov-tables"><code>shifts</code> · <code>work_schedules</code> · <code>employee_shift_assignments</code> · <code>holidays</code> · <code>biometric_devices</code> · <code>biometric_enrollments</code> · <code>biometric_events</code> · <code>attendance_records</code> · <code>overtime_requests</code> · <code>biometric_audit_logs</code> · <code>attendance_corrections</code> · <code>schedule_templates</code> · <code>employee_work_schedules</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-leave)"></div><span class="ov-name">Leave Management</span></div>
+      <div class="ov-count" style="color:var(--c-leave)">5</div>
+      <div class="ov-tables"><code>leave_types</code> · <code>leave_type_employment_types</code> · <code>leave_policies</code> · <code>leave_entitlements</code> · <code>leave_requests</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-pay)"></div><span class="ov-name">Payroll &amp; Compensation</span></div>
+      <div class="ov-count" style="color:var(--c-pay)">11</div>
+      <div class="ov-tables"><code>payroll_providers</code> · <code>payroll_connections</code> · <code>tax_engines</code> · <code>allowance_types</code> · <code>allowance_type_job_families</code> · <code>employee_allowances</code> · <code>pension_plans</code> · <code>employee_pension_enrollments</code> · <code>payroll_runs</code> · <code>payroll_line_items</code> · <code>payroll_leave_adjustments</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-perf)"></div><span class="ov-name">Performance</span></div>
+      <div class="ov-count" style="color:var(--c-perf)">7</div>
+      <div class="ov-tables"><code>review_cycles</code> · <code>review_participants</code> · <code>peer_feedbacks</code> · <code>goals</code> · <code>recognitions</code> · <code>succession_plans</code> · <code>succession_candidates</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-skills)"></div><span class="ov-name">Skills &amp; Learning</span></div>
+      <div class="ov-count" style="color:var(--c-skills)">11</div>
+      <div class="ov-tables"><code>skill_categories</code> · <code>skills</code> · <code>employee_skills</code> · <code>job_family_required_skills</code> · <code>lms_providers</code> · <code>courses</code> · <code>course_skill_tags</code> · <code>course_assignments</code> · <code>development_plans</code> · <code>development_milestones</code> · <code>skill_validation_requests</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-ai)"></div><span class="ov-name">AI / Nexis</span></div>
+      <div class="ov-count" style="color:var(--c-ai)">5</div>
+      <div class="ov-tables"><code>ai_features</code> · <code>ai_feature_permissions</code> · <code>ai_prompt_templates</code> · <code>ai_interactions</code> · <code>ai_suggestions</code></div>
+    </div>
+    <div class="ov-card">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-docs)"></div><span class="ov-name">Documents</span></div>
+      <div class="ov-count" style="color:var(--c-docs)">5</div>
+      <div class="ov-tables"><code>document_categories</code> · <code>documents</code> · <code>document_versions</code> · <code>document_acknowledgements</code> · <code>document_access_logs</code></div>
+    </div>
+    <div class="ov-card" style="border:2px solid var(--c-miss);">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-notif)"></div><span class="ov-name">Notifications <span style="font-size:10px;color:var(--c-miss)">NEW</span></span></div>
+      <div class="ov-count" style="color:var(--c-notif)">2</div>
+      <div class="ov-tables"><code style="color:var(--c-miss)">notifications</code> · <code style="color:var(--c-miss)">notification_preferences</code></div>
+    </div>
+    <div class="ov-card" style="border:2px solid var(--c-miss);">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-config)"></div><span class="ov-name">Configuration <span style="font-size:10px;color:var(--c-miss)">NEW</span></span></div>
+      <div class="ov-count" style="color:var(--c-config)">3</div>
+      <div class="ov-tables"><code style="color:var(--c-miss)">tenant_settings</code> · <code style="color:var(--c-miss)">integration_connections</code> · <code style="color:var(--c-miss)">digital_signature_configs</code></div>
+    </div>
+    <div class="ov-card" style="border:2px solid var(--c-miss);">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-cal)"></div><span class="ov-name">Calendar <span style="font-size:10px;color:var(--c-miss)">NEW</span></span></div>
+      <div class="ov-count" style="color:var(--c-cal)">1</div>
+      <div class="ov-tables"><code style="color:var(--c-miss)">calendar_events</code></div>
+    </div>
+    <div class="ov-card" style="border:2px solid var(--c-miss);">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-rpt)"></div><span class="ov-name">Reports <span style="font-size:10px;color:var(--c-miss)">NEW</span></span></div>
+      <div class="ov-count" style="color:var(--c-rpt)">2</div>
+      <div class="ov-tables"><code style="color:var(--c-miss)">scheduled_reports</code> · <code style="color:var(--c-miss)">report_executions</code></div>
+    </div>
+    <div class="ov-card" style="border:2px solid var(--c-common);grid-column:span 2;">
+      <div class="ov-top"><div class="ov-dot" style="background:var(--c-common)"></div><span class="ov-name">Shared Platform (S1–S8) <span style="font-size:10px;color:var(--c-common)">HR + WORK MGMT</span></span></div>
+      <div class="ov-count" style="color:var(--c-common)">19</div>
+      <div class="ov-tables"><strong style="font-size:10px;color:var(--c-common)">S1</strong> <code style="color:var(--c-common)">sso_providers</code> · <code style="color:var(--c-common)">refresh_tokens</code> · <code style="color:var(--c-common)">hardware_terminals</code> · <strong style="font-size:10px;color:var(--c-common)">S2</strong> <code style="color:var(--c-common)">subscription_plans</code> · <code style="color:var(--c-common)">tenant_subscriptions</code> · <code style="color:var(--c-common)">feature_flags</code> · <code style="color:var(--c-common)">tenant_branding</code> · <strong style="font-size:10px;color:var(--c-common)">S3</strong> <code style="color:var(--c-common)">notification_templates</code> · <code style="color:var(--c-common)">notification_channels</code> · <code style="color:var(--c-common)">escalation_rules</code> · <strong style="font-size:10px;color:var(--c-common)">S4</strong> <code style="color:var(--c-common)">legal_holds</code> · <code style="color:var(--c-common)">retention_policies</code> · <code style="color:var(--c-common)">compliance_exports</code> · <strong style="font-size:10px;color:var(--c-common)">S6</strong> <code style="color:var(--c-common)">user_preferences</code> · <strong style="font-size:10px;color:var(--c-common)">S7</strong> <code style="color:var(--c-common)">workflow_definitions</code> · <code style="color:var(--c-common)">workflow_steps</code> · <code style="color:var(--c-common)">workflow_instances</code> · <code style="color:var(--c-common)">approval_actions</code> · <strong style="font-size:10px;color:var(--c-common)">S8</strong> <code style="color:var(--c-common)">presence_sessions</code></div>
+    </div>
+  </div>
+
+  <div style="margin-top:28px;">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:10px;">Key Architectural Decisions</h3>
+    <ul style="color:var(--muted);font-size:13px;line-height:2;padding-left:20px;">
+      <li><strong style="color:var(--text)">Canonical naming:</strong> <code>tenants</code> is the single top-level table. Some modules reference it as <code>organisation_id</code> — same FK target.</li>
+      <li><strong style="color:var(--text)">UUID PKs:</strong> All tables use <code>uuid</code> primary keys.</li>
+      <li><strong style="color:var(--text)">Cross-module anchor:</strong> <code>employees.id</code> is referenced by every module after Infrastructure/Org/Auth.</li>
+      <li><strong style="color:var(--text)">Leave ↔ Payroll bridge:</strong> <code>payroll_leave_adjustments</code> is the explicit cross-module bridge table.</li>
+      <li><strong style="color:var(--text)">Biometric circular ref:</strong> <code>biometric_events.attendance_record_id</code> is set after processing — back-reference within Attendance module.</li>
+      <li><strong style="color:var(--text)">App-layer FK:</strong> <code>payroll_line_items.attendance_record_ref_id</code> is a UUID column with no DB-level FK constraint.</li>
+      <li><strong style="color:var(--c-common)">All tables integrated:</strong> 12 previously-missing tables have been integrated into their module tabs with proper FK references. 8 new-module tables (Notifications, Configuration, Calendar, Reports) remain in the New Module Tables tab. <code>job_families</code> ↔ <code>departments</code> ↔ <code>employees</code> chain is now fully connected. All <code>(ext)</code> FK markers have been resolved to proper FK references.</li>
+      <li><strong style="color:var(--c-common)">Shared Platform (S1–S8):</strong> 19 tables across 8 services powering both HR and Work Management. Covers SSO/auth extensions (S1), tenant billing &amp; feature flags (S2), notification engine (S3), audit compliance (S4), people directory (S6), workflow engine for all approval chains (S7), and real-time presence (S8). File storage (S5) is already handled by <code>file_records</code>.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 2 — FOUNDATION (Infra + Org + Auth)
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-foundation">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-infra)"></div>
+    <span class="mod-title">Foundation — Infrastructure, Org Structure &amp; Auth</span>
+  </div>
+  <p class="mod-desc">The platform foundation: tenants (top-level), users, files, countries reference table, organisational hierarchy (legal entities → offices → departments → job families → job family levels → teams), job titles linked to job families, and the full auth/security stack (roles, permissions, sessions, MFA, audit, consent). <strong>20 tables total.</strong></p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Foundation (20 tables)</h3>
+    <div class="mermaid" id="erd-foundation">
+erDiagram
+    Tenant {
+        uuid id PK
+        string name
+        string slug
+        string plan
+        string status
+    }
+    User {
+        uuid id PK
+        uuid tenant_id FK
+        string email
+        string first_name
+        string last_name
+        uuid avatar_file_record_id FK
+        string status
+    }
+    FileRecord {
+        uuid id PK
+        uuid tenant_id FK
+        uuid uploaded_by FK
+        string file_path
+        string mime_type
+        string scan_status
+    }
+    Country {
+        uuid id PK
+        string code
+        string name
+        string currency_code
+        string timezone
+        string tax_regime
+        boolean is_active
+    }
+    LegalEntity {
+        uuid id PK
+        uuid tenant_id FK
+        uuid country_id FK
+        string name
+        boolean is_active
+    }
+    OfficeLocation {
+        uuid id PK
+        uuid tenant_id FK
+        uuid legal_entity_id FK
+        uuid country_id FK
+        string name
+        string city
+    }
+    Department {
+        uuid id PK
+        uuid tenant_id FK
+        uuid legal_entity_id FK
+        uuid parent_department_id FK
+        uuid office_location_id FK
+        uuid head_employee_id FK
+        string name
+        string code
+    }
+    JobFamily {
+        uuid id PK
+        uuid tenant_id FK
+        uuid department_id FK
+        string name
+        string code
+        string description
+        string color
+        boolean is_active
+        uuid created_by_id FK
+    }
+    JobFamilyLevel {
+        uuid id PK
+        uuid tenant_id FK
+        uuid job_family_id FK
+        string name
+        int rank_order
+        string description
+        int min_experience_years
+        boolean is_active
+    }
+    JobTitle {
+        uuid id PK
+        uuid tenant_id FK
+        uuid job_family_id FK
+        string name
+        string code
+        string level
+    }
+    Team {
+        uuid id PK
+        uuid tenant_id FK
+        uuid department_id FK
+        string name
+        boolean is_active
+    }
+    TeamMember {
+        uuid id PK
+        uuid tenant_id FK
+        uuid team_id FK
+        uuid employee_id FK
+        string role
+        boolean is_active
+    }
+    UserSession {
+        uuid id PK
+        uuid user_id FK
+        uuid tenant_id FK
+        string device_type
+        string ip_address
+        timestamp expires_at
+    }
+    UserMfa {
+        uuid id PK
+        uuid user_id FK
+        uuid tenant_id FK
+        string method
+        boolean is_active
+    }
+    Role {
+        uuid id PK
+        uuid tenant_id FK
+        string name
+        boolean is_system_role
+    }
+    Permission {
+        uuid id PK
+        string resource
+        string action
+        boolean is_active
+    }
+    RolePermission {
+        uuid id PK
+        uuid role_id FK
+        uuid permission_id FK
+        uuid granted_by FK
+    }
+    UserRole {
+        uuid id PK
+        uuid user_id FK
+        uuid role_id FK
+        uuid tenant_id FK
+        uuid assigned_by FK
+        timestamp expires_at
+    }
+    AuditLog {
+        uuid id PK
+        uuid tenant_id FK
+        uuid user_id FK
+        string resource_type
+        string action
+        jsonb old_values
+        jsonb new_values
+    }
+    ConsentRecord {
+        uuid id PK
+        uuid tenant_id FK
+        uuid user_id FK
+        string consent_type
+        string version
+        timestamp given_at
+    }
+
+    Tenant ||--o{ User : "has"
+    Tenant ||--o{ FileRecord : "owns"
+    Tenant ||--o{ LegalEntity : "has"
+    Tenant ||--o{ OfficeLocation : "has"
+    Tenant ||--o{ Department : "has"
+    Tenant ||--o{ JobFamily : "has"
+    Tenant ||--o{ JobFamilyLevel : "scopes"
+    Tenant ||--o{ JobTitle : "has"
+    Tenant ||--o{ Team : "has"
+    Tenant ||--o{ TeamMember : "scopes"
+    Tenant ||--o{ UserSession : "scopes"
+    Tenant ||--o{ Role : "has"
+    Tenant ||--o{ AuditLog : "logs"
+    Tenant ||--o{ ConsentRecord : "stores"
+    Tenant ||--o{ UserRole : "scopes"
+    User ||--o{ FileRecord : "uploads"
+    User |o--o| FileRecord : "avatar"
+    User ||--o{ UserSession : "has"
+    User ||--o{ UserMfa : "has"
+    User ||--o{ RolePermission : "grants"
+    User ||--o{ UserRole : "assigned_to"
+    User ||--o{ UserRole : "assigns"
+    User |o--o{ AuditLog : "actor"
+    User ||--o{ ConsentRecord : "gives"
+    Country |o--o{ LegalEntity : "registered_in"
+    Country |o--o{ OfficeLocation : "located_in"
+    LegalEntity ||--o{ OfficeLocation : "has"
+    LegalEntity ||--o{ Department : "has"
+    OfficeLocation |o--o{ Department : "hosts"
+    Department |o--o{ Department : "parent"
+    Department |o--o{ JobFamily : "contains"
+    Department ||--o{ Team : "has"
+    JobFamily ||--o{ JobFamilyLevel : "has_levels"
+    JobFamily |o--o{ JobTitle : "categorises"
+    Role ||--o{ RolePermission : "grants"
+    Role ||--o{ UserRole : "assigned_via"
+    Permission ||--o{ RolePermission : "used_in"
+    Team ||--o{ TeamMember : "has"
+    </div>
+  </div>
+
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;">Infrastructure Tables</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">tenants</td><td>8</td><td><span class="badge badge-pk">id</span></td><td>0</td><td>— (root table)</td></tr>
+      <tr><td class="tname">users</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">avatar_file_record_id</span></td><td>None</td></tr>
+      <tr><td class="tname">file_records</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">uploaded_by→users</span></td><td>Used by: employees.avatar, documents module</td></tr>
+      <tr><td class="tname">countries</td><td>7</td><td><span class="badge badge-pk">id</span></td><td>0</td><td>Global reference table — referenced by legal_entities, office_locations, holidays, tax_engines, leave_policies, pension_plans, payroll_connections, employees</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;">Org Structure Tables</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">legal_entities</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">country_id→countries</span></td><td><span class="badge badge-xm">country_id → Infrastructure</span></td></tr>
+      <tr><td class="tname">office_locations</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">legal_entity_id</span> <span class="badge badge-fk">country_id→countries</span></td><td><span class="badge badge-xm">country_id → Infrastructure</span></td></tr>
+      <tr><td class="tname">departments</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">legal_entity_id</span> <span class="badge badge-fk">parent_department_id(self)</span> <span class="badge badge-fk">office_location_id</span> <span class="badge badge-fk">head_employee_id</span></td><td>head_employee_id → employees (cross-module)</td></tr>
+      <tr><td class="tname">job_families</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">department_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">department_id → departments · created_by_id → Core HR</span> — Career ladder grouping (Engineering, Sales, HR, etc.)</td></tr>
+      <tr><td class="tname">job_family_levels</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">job_family_id</span></td><td>Ordered career levels per family (Junior → Mid → Senior → Staff → Principal)</td></tr>
+      <tr><td class="tname">job_titles</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">job_family_id→job_families</span></td><td>job_family_id links title to its career family</td></tr>
+      <tr><td class="tname">teams</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">department_id</span></td><td></td></tr>
+      <tr><td class="tname">team_members</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">team_id</span> <span class="badge badge-fk">employee_id</span></td><td>employee_id → employees (cross-module)</td></tr>
+    </tbody>
+  </table>
+
+  <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;">Auth &amp; Security Tables</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Notes</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">user_sessions</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">user_id</span> <span class="badge badge-fk">tenant_id</span></td><td></td></tr>
+      <tr><td class="tname">user_mfa</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">user_id</span></td><td></td></tr>
+      <tr><td class="tname">roles</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span></td><td></td></tr>
+      <tr><td class="tname">permissions</td><td>5</td><td><span class="badge badge-pk">id</span></td><td>0</td><td>Global reference table</td></tr>
+      <tr><td class="tname">role_permissions</td><td>5</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">role_id</span> <span class="badge badge-fk">permission_id</span> <span class="badge badge-fk">granted_by→users</span></td><td>Junction table</td></tr>
+      <tr><td class="tname">user_roles</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">user_id</span> <span class="badge badge-fk">role_id</span> <span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">assigned_by→users</span></td><td></td></tr>
+      <tr><td class="tname">audit_logs</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">user_id(nullable)</span></td><td>Logs all resource changes</td></tr>
+      <tr><td class="tname">consent_records</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">user_id</span></td><td>GDPR compliance</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 3 — CORE HR
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-corehr">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-hr)"></div>
+    <span class="mod-title">Core HR — Module 4</span>
+  </div>
+  <p class="mod-desc">The <code>employees</code> table is the central anchor for the entire platform. This module covers compensation history, emergency contacts, banking, onboarding/offboarding workflows (with case management and penalties), and employee lifecycle event tracking. <strong>9 tables.</strong></p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Core HR (9 tables, with stub references to Foundation)</h3>
+    <div class="mermaid" id="erd-corehr">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Department {
+        uuid id PK
+    }
+    OfficeLocation {
+        uuid id PK
+    }
+    JobFamily {
+        uuid id PK
+    }
+    JobFamilyLevel {
+        uuid id PK
+    }
+    JobTitle {
+        uuid id PK
+    }
+    Country {
+        uuid id PK
+    }
+    FileRecord {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+        uuid tenant_id FK
+        uuid user_id FK
+        uuid department_id FK
+        uuid office_location_id FK
+        uuid job_family_id FK
+        uuid job_family_level_id FK
+        uuid job_title_id FK
+        uuid country_id FK
+        uuid manager_id FK
+        uuid avatar_file_record_id FK
+        string employee_no
+        string first_name
+        string last_name
+        string employment_type
+        string employment_status
+        date hire_date
+    }
+    SalaryHistory {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        decimal gross_salary
+        string currency
+        date effective_date
+        uuid approved_by FK
+    }
+    EmployeeEmergencyContact {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        string name
+        string relationship
+        string phone
+        boolean is_primary
+    }
+    EmployeeBankDetail {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        string bank_name
+        string account_holder_name
+        string currency
+        boolean is_primary
+    }
+    OnboardingStep {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        string step_name
+        string status
+        date due_date
+        uuid completed_by FK
+    }
+    OffboardingCase {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        string separation_reason
+        date last_working_day
+        string status
+        string knowledge_risk_level
+        uuid initiated_by_id FK
+        timestamp completed_at
+    }
+    OffboardingTask {
+        uuid id PK
+        uuid tenant_id FK
+        uuid offboarding_case_id FK
+        uuid employee_id FK
+        string task_name
+        string status
+        date due_date
+        uuid assigned_to FK
+    }
+    OffboardingPenalty {
+        uuid id PK
+        uuid tenant_id FK
+        uuid offboarding_case_id FK
+        decimal amount
+        string currency
+        string deduct_from
+        string justification_note
+        uuid approved_by_id FK
+    }
+    EmployeeLifecycleEvent {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        string event_type
+        string from_value
+        string to_value
+        uuid from_department_id FK
+        uuid to_department_id FK
+        decimal from_salary
+        decimal to_salary
+        date effective_date
+        string notes
+        uuid created_by_id FK
+    }
+
+    Tenant ||--o{ Employee : "employs"
+    Tenant ||--o{ OffboardingCase : "has"
+    Tenant ||--o{ EmployeeLifecycleEvent : "logs"
+    Department |o--o{ Employee : "placed_in"
+    Department |o--o{ EmployeeLifecycleEvent : "from_dept"
+    Department |o--o{ EmployeeLifecycleEvent : "to_dept"
+    OfficeLocation |o--o{ Employee : "located_at"
+    JobFamily |o--o{ Employee : "career_family"
+    JobFamilyLevel |o--o{ Employee : "career_level"
+    JobTitle |o--o{ Employee : "titled"
+    Country |o--o{ Employee : "nationality"
+    FileRecord |o--o| Employee : "avatar"
+    Employee |o--o{ Employee : "manager"
+    Employee ||--o{ SalaryHistory : "has"
+    Employee ||--o{ EmployeeEmergencyContact : "has"
+    Employee ||--o{ EmployeeBankDetail : "has"
+    Employee ||--o{ OnboardingStep : "goes_through"
+    Employee ||--o{ OffboardingCase : "goes_through"
+    Employee ||--o{ EmployeeLifecycleEvent : "has"
+    Employee |o--o{ SalaryHistory : "approves"
+    Employee |o--o{ OnboardingStep : "completes"
+    Employee |o--o{ OffboardingCase : "initiates"
+    Employee |o--o{ OffboardingPenalty : "approves"
+    OffboardingCase ||--o{ OffboardingTask : "contains"
+    OffboardingCase ||--o{ OffboardingPenalty : "may_have"
+    Employee |o--o{ OffboardingTask : "assigned_to"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">employees</td><td>19</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">user_id→users</span> <span class="badge badge-fk">department_id</span> <span class="badge badge-fk">office_location_id</span> <span class="badge badge-fk">job_family_id→job_families</span> <span class="badge badge-fk">job_family_level_id→job_family_levels</span> <span class="badge badge-fk">job_title_id</span> <span class="badge badge-fk">country_id→countries</span> <span class="badge badge-fk">manager_id(self)</span> <span class="badge badge-fk">avatar_file_record_id</span></td><td><span class="badge badge-xm">Referenced by ALL modules</span> — job_family_id + job_family_level_id link employee to career ladder; country_id links to country reference table</td></tr>
+      <tr><td class="tname">salary_history</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">approved_by→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">employee_emergency_contacts</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span></td><td>None</td></tr>
+      <tr><td class="tname">employee_bank_details</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span></td><td>None (account_number_encrypted)</td></tr>
+      <tr><td class="tname">onboarding_steps</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">completed_by→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">offboarding_cases</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">initiated_by_id→employees</span></td><td>Parent case for offboarding workflow — tasks and penalties are children</td></tr>
+      <tr><td class="tname">offboarding_tasks</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">offboarding_case_id→offboarding_cases</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">assigned_to→employees</span></td><td>offboarding_case_id links task to its parent case</td></tr>
+      <tr><td class="tname">offboarding_penalties</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">offboarding_case_id→offboarding_cases</span> <span class="badge badge-fk">approved_by_id→employees</span></td><td>Knowledge transfer bypass penalties</td></tr>
+      <tr><td class="tname">employee_lifecycle_events</td><td>14</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">from_department_id→departments</span> <span class="badge badge-fk">to_department_id→departments</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">from/to_department_id → Org Structure</span> — Promotion, Transfer, Role Change, Demotion tracking</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 4 — ATTENDANCE
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-attendance">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-att)"></div>
+    <span class="mod-title">Attendance — Module 5</span>
+  </div>
+  <p class="mod-desc">Full attendance lifecycle: shift definitions, work schedules (with reusable templates), biometric device management, enrollment, event capture, attendance record creation, corrections workflow, and overtime requests. Note the circular reference between <code>biometric_events</code> and <code>attendance_records</code>. <strong>13 tables.</strong></p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Attendance</h3>
+    <div class="mermaid" id="erd-attendance">
+erDiagram
+    Employee {
+        uuid id PK
+    }
+    OfficeLocation {
+        uuid id PK
+    }
+    User {
+        uuid id PK
+    }
+    Shift {
+        uuid id PK
+        uuid tenant_id FK
+        string name
+        string code
+        time start_time
+        time end_time
+        int break_minutes
+        boolean is_overnight
+    }
+    WorkSchedule {
+        uuid id PK
+        uuid tenant_id FK
+        string name
+        jsonb shift_pattern
+        boolean is_active
+    }
+    EmployeeShiftAssignment {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid shift_id FK
+        uuid work_schedule_id FK
+        date effective_from
+        uuid assigned_by FK
+    }
+    Country {
+        uuid id PK
+    }
+    Holiday {
+        uuid id PK
+        uuid tenant_id FK
+        uuid office_location_id FK
+        uuid country_id FK
+        string name
+        date date
+    }
+    BiometricDevice {
+        uuid id PK
+        uuid tenant_id FK
+        uuid office_location_id FK
+        string serial_no
+        string model
+        string device_type
+        string mac_address
+    }
+    BiometricEnrollment {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid device_id FK
+        uuid enrolled_by FK
+        boolean consent_given
+    }
+    BiometricEvent {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid device_id FK
+        string event_type
+        timestamp event_time
+        string capture_method
+        uuid attendance_record_id FK
+    }
+    AttendanceRecord {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid biometric_event_id FK
+        uuid work_schedule_id FK
+        uuid shift_id FK
+        date date
+        timestamp clock_in
+        timestamp clock_out
+        string status
+        decimal total_hours
+        uuid approved_by FK
+    }
+    OvertimeRequest {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid attendance_record_id FK
+        decimal hours_requested
+        string status
+        uuid approved_by FK
+    }
+    BiometricAuditLog {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid device_id FK
+        uuid performed_by FK
+        string action
+    }
+    AttendanceCorrection {
+        uuid id PK
+        uuid tenant_id FK
+        uuid attendance_record_id FK
+        uuid employee_id FK
+        timestamp original_clock_in
+        timestamp original_clock_out
+        timestamp corrected_clock_in
+        timestamp corrected_clock_out
+        string reason
+        string status
+        uuid reviewed_by_id FK
+    }
+    ScheduleTemplate {
+        uuid id PK
+        uuid tenant_id FK
+        string name
+        string description
+        string color
+        jsonb pattern
+        boolean is_system
+        uuid created_by_id FK
+    }
+    EmployeeWorkSchedule {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid template_id FK
+        string day_of_week
+        string work_mode
+        date effective_from
+        date effective_to
+        uuid assigned_by_id FK
+    }
+
+    Employee ||--o{ EmployeeShiftAssignment : "assigned"
+    Employee ||--o{ BiometricEnrollment : "enrolled"
+    Employee ||--o{ BiometricEvent : "generates"
+    Employee ||--o{ AttendanceRecord : "has"
+    Employee ||--o{ OvertimeRequest : "requests"
+    Employee |o--o{ BiometricAuditLog : "subject_of"
+    Employee |o--o{ EmployeeShiftAssignment : "assigns"
+    Employee |o--o{ AttendanceRecord : "approves"
+    Employee |o--o{ OvertimeRequest : "approves"
+    Country |o--o{ Holiday : "country_ref"
+    OfficeLocation |o--o{ Holiday : "applies_to"
+    OfficeLocation ||--o{ BiometricDevice : "has"
+    User ||--o{ BiometricEnrollment : "enrolls"
+    User ||--o{ BiometricAuditLog : "performs"
+    Shift ||--o{ EmployeeShiftAssignment : "used_in"
+    Shift |o--o{ AttendanceRecord : "ref"
+    WorkSchedule |o--o{ EmployeeShiftAssignment : "ref"
+    WorkSchedule |o--o{ AttendanceRecord : "ref"
+    BiometricDevice ||--o{ BiometricEnrollment : "enrolls_on"
+    BiometricDevice |o--o{ BiometricEvent : "captures"
+    BiometricDevice |o--o{ BiometricAuditLog : "logged_for"
+    BiometricEvent |o--o| AttendanceRecord : "triggers"
+    AttendanceRecord |o--o{ BiometricEvent : "back_ref"
+    AttendanceRecord ||--o{ OvertimeRequest : "linked_to"
+    AttendanceRecord ||--o{ AttendanceCorrection : "corrected_by"
+    Employee ||--o{ AttendanceCorrection : "requests"
+    Employee |o--o{ AttendanceCorrection : "reviews"
+    Employee ||--o{ EmployeeWorkSchedule : "assigned"
+    Employee |o--o{ EmployeeWorkSchedule : "assigns"
+    Employee |o--o{ ScheduleTemplate : "creates"
+    ScheduleTemplate ||--o{ EmployeeWorkSchedule : "applied_via"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">shifts</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span></td><td>None</td></tr>
+      <tr><td class="tname">work_schedules</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span></td><td>None</td></tr>
+      <tr><td class="tname">employee_shift_assignments</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">shift_id</span> <span class="badge badge-fk">work_schedule_id</span> <span class="badge badge-fk">assigned_by→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">holidays</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">office_location_id</span> <span class="badge badge-fk">country_id→countries</span></td><td><span class="badge badge-xm">office_location_id → Org · country_id → Infrastructure</span></td></tr>
+      <tr><td class="tname">biometric_devices</td><td>13</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">office_location_id</span></td><td><span class="badge badge-xm">office_location_id → Org</span></td></tr>
+      <tr><td class="tname">biometric_enrollments</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">device_id</span> <span class="badge badge-fk">enrolled_by→users</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">biometric_events</td><td>15</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">device_id</span> <span class="badge badge-fk">attendance_record_id(back-ref)</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">attendance_records</td><td>15</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">biometric_event_id</span> <span class="badge badge-fk">work_schedule_id</span> <span class="badge badge-fk">shift_id</span> <span class="badge badge-fk">approved_by→employees</span></td><td><span class="badge badge-xm">Referenced by Payroll (app-layer)</span></td></tr>
+      <tr><td class="tname">overtime_requests</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">attendance_record_id</span> <span class="badge badge-fk">approved_by→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">biometric_audit_logs</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">device_id</span> <span class="badge badge-fk">performed_by→users</span></td><td>None</td></tr>
+      <tr><td class="tname">attendance_corrections</td><td>12</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">attendance_record_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">reviewed_by_id→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR</span> — Stores original vs corrected clock times with approval workflow</td></tr>
+      <tr><td class="tname">schedule_templates</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>Reusable work-mode patterns (Full Onsite, Full Remote, Hybrid 3-2, etc.)</td></tr>
+      <tr><td class="tname">employee_work_schedules</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">template_id→schedule_templates</span> <span class="badge badge-fk">assigned_by_id→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR</span> — Per-employee daily work mode (Onsite/Remote/Hybrid/Day Off)</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 5 — LEAVE
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-leave">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-leave)"></div>
+    <span class="mod-title">Leave Management — Module 6</span>
+  </div>
+  <p class="mod-desc">Covers leave type configuration, employment-type eligibility (junction table), policy versioning, employee entitlement balances, and individual leave requests. <code>leave_requests</code> is a key cross-module table referenced by both Payroll and Attendance. 5 tables.</p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Leave Management</h3>
+    <div class="mermaid" id="erd-leave">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+    }
+    Country {
+        uuid id PK
+    }
+    JobFamilyLevel {
+        uuid id PK
+    }
+    LeaveType {
+        uuid id PK
+        uuid organisation_id FK
+        string name
+        string code
+        boolean is_paid
+        boolean requires_approval
+        int max_days_per_year
+        string applicable_gender
+        uuid created_by_id FK
+    }
+    LeaveTypeEmploymentType {
+        uuid id PK
+        uuid leave_type_id FK
+        string employment_type
+    }
+    LeavePolicy {
+        uuid id PK
+        uuid leave_type_id FK
+        uuid country_id FK
+        uuid job_family_level_id FK
+        int version
+        string accrual_method
+        decimal accrual_amount
+        boolean carry_over_allowed
+        int max_carry_over_days
+        uuid superseded_by_id FK
+    }
+    LeaveEntitlement {
+        uuid id PK
+        uuid employee_id FK
+        uuid leave_type_id FK
+        int year
+        decimal total_entitled
+        decimal used
+        decimal balance
+        uuid adjusted_by_id FK
+    }
+    LeaveRequest {
+        uuid id PK
+        uuid employee_id FK
+        uuid leave_type_id FK
+        date start_date
+        date end_date
+        decimal total_days
+        string status
+        uuid reviewed_by_id FK
+    }
+
+    Tenant ||--o{ LeaveType : "defines"
+    Employee ||--o{ LeaveType : "creates"
+    LeaveType ||--o{ LeaveTypeEmploymentType : "applicable_to"
+    LeaveType ||--o{ LeavePolicy : "governed_by"
+    LeaveType ||--o{ LeaveEntitlement : "tracks"
+    LeaveType ||--o{ LeaveRequest : "used_for"
+    LeavePolicy |o--o| LeavePolicy : "superseded_by"
+    Country |o--o{ LeavePolicy : "applies_to"
+    JobFamilyLevel |o--o{ LeavePolicy : "scoped_to"
+    Employee ||--o{ LeaveEntitlement : "holds"
+    Employee ||--o{ LeaveRequest : "submits"
+    Employee |o--o{ LeaveEntitlement : "adjusts"
+    Employee |o--o{ LeaveRequest : "reviews"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">leave_types</td><td>14</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">organisation_id → tenants</span></td></tr>
+      <tr><td class="tname">leave_type_employment_types</td><td>4</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">leave_type_id</span></td><td>None (junction table)</td></tr>
+      <tr><td class="tname">leave_policies</td><td>16</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">leave_type_id</span> <span class="badge badge-fk">country_id→countries</span> <span class="badge badge-fk">job_family_level_id→job_family_levels</span> <span class="badge badge-fk">superseded_by_id(self)</span></td><td><span class="badge badge-xm">country_id → Infrastructure · job_family_level_id → Org Structure</span> — Policies scoped by country and career level</td></tr>
+      <tr><td class="tname">leave_entitlements</td><td>12</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">leave_type_id</span> <span class="badge badge-fk">adjusted_by_id→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">leave_requests</td><td>14</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">leave_type_id</span> <span class="badge badge-fk">reviewed_by_id→employees</span></td><td><span class="badge badge-xm">Referenced by Payroll module</span></td></tr>
+    </tbody>
+  </table>
+  <p class="note">UNIQUE constraints: leave_entitlements (employee_id + leave_type_id + year)</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 6 — PAYROLL
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-payroll">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-pay)"></div>
+    <span class="mod-title">Payroll &amp; Compensation — Module 7</span>
+  </div>
+  <p class="mod-desc">Multi-provider payroll integration with tax calculation, allowances, pension management, and payroll run execution. <code>payroll_leave_adjustments</code> is the explicit cross-module bridge to Leave. <code>payroll_line_items.attendance_record_ref_id</code> is app-layer only (no DB FK). 11 tables.</p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Payroll &amp; Compensation</h3>
+    <div class="mermaid" id="erd-payroll">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+    }
+    LeaveRequest {
+        uuid id PK
+    }
+    LeaveType {
+        uuid id PK
+    }
+    PayrollProvider {
+        uuid id PK
+        string name
+        string code
+        jsonb supported_countries
+        string auth_method
+        boolean is_active
+    }
+    PayrollConnection {
+        uuid id PK
+        uuid organisation_id FK
+        uuid provider_id FK
+        uuid country_id FK
+        string auth_type
+        string status
+        timestamp last_sync_at
+        uuid created_by_id FK
+    }
+    TaxEngine {
+        uuid id PK
+        uuid country_id FK
+        string tax_type
+        string name
+        decimal employee_rate
+        decimal employer_rate
+        date effective_from
+    }
+    AllowanceType {
+        uuid id PK
+        uuid organisation_id FK
+        string name
+        string code
+        string calc_type
+        string scope
+        uuid created_by_id FK
+    }
+    JobFamily {
+        uuid id PK
+    }
+    AllowanceTypeJobFamily {
+        uuid id PK
+        uuid allowance_type_id FK
+        uuid job_family_id FK
+    }
+    EmployeeAllowance {
+        uuid id PK
+        uuid employee_id FK
+        uuid allowance_type_id FK
+        decimal override_amount
+        date effective_from
+        uuid created_by_id FK
+    }
+    PensionPlan {
+        uuid id PK
+        uuid organisation_id FK
+        string name
+        string plan_type
+        uuid country_id FK
+        decimal employer_rate
+        decimal employee_rate
+        uuid created_by_id FK
+    }
+    EmployeePensionEnrollment {
+        uuid id PK
+        uuid employee_id FK
+        uuid pension_plan_id FK
+        date enrolled_date
+        boolean is_active
+        uuid created_by_id FK
+    }
+    PayrollRun {
+        uuid id PK
+        uuid connection_id FK
+        date pay_period_start
+        date pay_period_end
+        string status
+        decimal total_gross
+        decimal total_net
+        uuid created_by_id FK
+    }
+    PayrollLineItem {
+        uuid id PK
+        uuid payroll_run_id FK
+        uuid employee_id FK
+        string line_type
+        decimal amount
+        uuid allowance_type_id FK
+        uuid leave_request_id FK
+        uuid tax_engine_id FK
+        uuid pension_plan_id FK
+    }
+    PayrollLeaveAdjustment {
+        uuid id PK
+        uuid payroll_run_id FK
+        uuid employee_id FK
+        uuid leave_request_id FK
+        uuid leave_type_id FK
+        decimal days
+        boolean is_paid
+        decimal deduction_amount
+    }
+
+    Tenant ||--o{ PayrollConnection : "has"
+    Tenant ||--o{ AllowanceType : "defines"
+    Tenant ||--o{ PensionPlan : "offers"
+    PayrollProvider ||--o{ PayrollConnection : "used_by"
+    PayrollConnection ||--o{ PayrollRun : "generates"
+    Employee ||--o{ EmployeeAllowance : "receives"
+    Employee ||--o{ EmployeePensionEnrollment : "enrolled_in"
+    Employee ||--o{ PayrollLineItem : "has"
+    Employee ||--o{ PayrollLeaveAdjustment : "affected_by"
+    JobFamily ||--o{ AllowanceTypeJobFamily : "scoped_to"
+    AllowanceType ||--o{ AllowanceTypeJobFamily : "has"
+    AllowanceType ||--o{ EmployeeAllowance : "used_in"
+    AllowanceType |o--o{ PayrollLineItem : "ref"
+    PensionPlan ||--o{ EmployeePensionEnrollment : "enrolls"
+    PensionPlan |o--o{ PayrollLineItem : "deducted_via"
+    TaxEngine |o--o{ PayrollLineItem : "applied_in"
+    PayrollRun ||--o{ PayrollLineItem : "contains"
+    PayrollRun ||--o{ PayrollLeaveAdjustment : "includes"
+    LeaveRequest |o--o{ PayrollLineItem : "ref"
+    LeaveRequest ||--o{ PayrollLeaveAdjustment : "bridged_by"
+    LeaveType ||--o{ PayrollLeaveAdjustment : "ref"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">payroll_providers</td><td>9</td><td><span class="badge badge-pk">id</span></td><td>0</td><td>None (seed/reference)</td></tr>
+      <tr><td class="tname">payroll_connections</td><td>13</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">provider_id</span> <span class="badge badge-fk">country_id→countries</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">organisation_id → tenants · country_id → Infrastructure</span></td></tr>
+      <tr><td class="tname">tax_engines</td><td>12</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">country_id→countries</span></td><td><span class="badge badge-xm">country_id → Infrastructure</span></td></tr>
+      <tr><td class="tname">allowance_types</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">allowance_type_job_families</td><td>4</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">allowance_type_id</span> <span class="badge badge-fk">job_family_id→job_families</span></td><td><span class="badge badge-xm">job_family_id → Org Structure</span> (junction table)</td></tr>
+      <tr><td class="tname">employee_allowances</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">allowance_type_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">pension_plans</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">country_id→countries</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">country_id → Infrastructure</span></td></tr>
+      <tr><td class="tname">employee_pension_enrollments</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">pension_plan_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">payroll_runs</td><td>13</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">connection_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">payroll_line_items</td><td>13</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">payroll_run_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">allowance_type_id</span> <span class="badge badge-fk">leave_request_id</span> <span class="badge badge-fk">tax_engine_id</span> <span class="badge badge-fk">pension_plan_id</span></td><td><span class="badge badge-xm">leave_request_id → Leave · attendance_record_ref_id (app-layer only)</span></td></tr>
+      <tr><td class="tname">payroll_leave_adjustments</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">payroll_run_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">leave_request_id</span> <span class="badge badge-fk">leave_type_id</span></td><td><span class="badge badge-xm">leave_request_id → Leave · leave_type_id → Leave (BRIDGE TABLE)</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 7 — PERFORMANCE
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-performance">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-perf)"></div>
+    <span class="mod-title">Performance Management — Module 8</span>
+  </div>
+  <p class="mod-desc">Review cycles drive the performance lifecycle: participants are assigned, self-assessments and manager reviews are collected, peers give feedback, goals are tracked, recognitions are awarded, and succession plans identify future leaders. Skills cross-linking enables competency-based performance. <strong>7 tables.</strong></p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Performance Management</h3>
+    <div class="mermaid" id="erd-performance">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+    }
+    Skill {
+        uuid id PK
+    }
+    Department {
+        uuid id PK
+    }
+    JobFamily {
+        uuid id PK
+    }
+    ReviewCycle {
+        uuid id PK
+        uuid organisation_id FK
+        string name
+        string type
+        string status
+        date period_start
+        date period_end
+        uuid created_by_id FK
+    }
+    ReviewParticipant {
+        uuid id PK
+        uuid review_cycle_id FK
+        uuid employee_id FK
+        uuid manager_id FK
+        int self_rating
+        int manager_rating
+        jsonb skill_assessment_json
+        decimal calibrated_rating
+        string status
+        uuid hr_sign_off_by_id FK
+    }
+    PeerFeedback {
+        uuid id PK
+        uuid review_cycle_id FK
+        uuid target_employee_id FK
+        uuid reviewer_employee_id FK
+        int rating
+        boolean is_anonymous
+        string status
+    }
+    Goal {
+        uuid id PK
+        uuid organisation_id FK
+        uuid employee_id FK
+        string title
+        string type
+        uuid parent_goal_id FK
+        uuid review_cycle_id FK
+        uuid linked_skill_id FK
+        string status
+        int progress_percent
+        uuid created_by_id FK
+    }
+    Recognition {
+        uuid id PK
+        uuid organisation_id FK
+        uuid giver_id FK
+        uuid receiver_id FK
+        string badge_type
+        string title
+        int points
+        boolean is_public
+        uuid linked_skill_id FK
+    }
+
+    SuccessionPlan {
+        uuid id PK
+        uuid tenant_id FK
+        string role_title
+        uuid department_id FK
+        uuid incumbent_employee_id FK
+        uuid job_family_id FK
+        string risk_level
+        string status
+        uuid created_by_id FK
+    }
+    SuccessionCandidate {
+        uuid id PK
+        uuid tenant_id FK
+        uuid succession_plan_id FK
+        uuid employee_id FK
+        string readiness
+        decimal readiness_score
+        decimal rating
+        decimal skills_match_percent
+    }
+
+    Tenant ||--o{ ReviewCycle : "runs"
+    Tenant ||--o{ Goal : "owns"
+    Tenant ||--o{ Recognition : "records"
+    Tenant ||--o{ SuccessionPlan : "has"
+    Employee ||--o{ ReviewCycle : "creates"
+    Employee ||--o{ ReviewParticipant : "participates"
+    Employee ||--o{ ReviewParticipant : "manages"
+    Employee ||--o{ ReviewParticipant : "hr_signs_off"
+    Employee ||--o{ PeerFeedback : "receives"
+    Employee ||--o{ PeerFeedback : "reviews"
+    Employee ||--o{ Goal : "owns"
+    Employee ||--o{ Goal : "creates"
+    Employee ||--o{ Recognition : "gives"
+    Employee ||--o{ Recognition : "receives"
+    ReviewCycle ||--o{ ReviewParticipant : "has"
+    ReviewCycle ||--o{ PeerFeedback : "within"
+    ReviewCycle |o--o{ Goal : "linked_to"
+    Goal |o--o| Goal : "parent"
+    Skill |o--o{ Goal : "linked_skill"
+    Skill |o--o{ Recognition : "linked_skill"
+    Department |o--o{ SuccessionPlan : "for"
+    JobFamily |o--o{ SuccessionPlan : "scoped_to"
+    Employee ||--o{ SuccessionPlan : "incumbent"
+    Employee ||--o{ SuccessionPlan : "creates"
+    Employee ||--o{ SuccessionCandidate : "candidate"
+    SuccessionPlan ||--o{ SuccessionCandidate : "has"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">review_cycles</td><td>14</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">Referenced by Skills module</span></td></tr>
+      <tr><td class="tname">review_participants</td><td>17</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">review_cycle_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">manager_id→employees</span> <span class="badge badge-fk">hr_sign_off_by_id→employees</span></td><td><span class="badge badge-xm">Computed fields from Leave &amp; Attendance</span></td></tr>
+      <tr><td class="tname">peer_feedbacks</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">review_cycle_id</span> <span class="badge badge-fk">target_employee_id</span> <span class="badge badge-fk">reviewer_employee_id</span></td><td>None</td></tr>
+      <tr><td class="tname">goals</td><td>16</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">parent_goal_id(self)</span> <span class="badge badge-fk">review_cycle_id</span> <span class="badge badge-fk">linked_skill_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">linked_skill_id → Skills module</span></td></tr>
+      <tr><td class="tname">recognitions</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">giver_id→employees</span> <span class="badge badge-fk">receiver_id→employees</span> <span class="badge badge-fk">linked_skill_id</span></td><td><span class="badge badge-xm">linked_skill_id → Skills module</span></td></tr>
+      <tr><td class="tname">succession_plans</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">department_id→departments</span> <span class="badge badge-fk">incumbent_employee_id→employees</span> <span class="badge badge-fk">job_family_id→job_families</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">department_id → Org · job_family_id → Org · incumbent_employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">succession_candidates</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">succession_plan_id</span> <span class="badge badge-fk">employee_id</span></td><td><span class="badge badge-xm">employee_id → Core HR</span> — readiness, rating, skills_match_percent</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 8 — SKILLS
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-skills">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-skills)"></div>
+    <span class="mod-title">Skills &amp; Learning — Module 9</span>
+  </div>
+  <p class="mod-desc">Competency framework (categories → skills → employee proficiency), LMS integration, course catalog, skill tagging, course assignments, individual development plans with milestones, and skill validation workflow. Bidirectional links with Performance module. <strong>11 tables.</strong></p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Skills &amp; Learning</h3>
+    <div class="mermaid" id="erd-skills">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+    }
+    ReviewCycle {
+        uuid id PK
+    }
+    JobFamily {
+        uuid id PK
+    }
+    SkillCategory {
+        uuid id PK
+        uuid organisation_id FK
+        string name
+        boolean is_active
+        uuid created_by_id FK
+    }
+    Skill {
+        uuid id PK
+        uuid category_id FK
+        string name
+        jsonb proficiency_levels
+        boolean evidence_required
+        uuid created_by_id FK
+    }
+    EmployeeSkill {
+        uuid id PK
+        uuid employee_id FK
+        uuid skill_id FK
+        int proficiency_level
+        string status
+        uuid validated_by_id FK
+        uuid last_assessed_in_review_id FK
+    }
+    JobFamilyRequiredSkill {
+        uuid id PK
+        uuid job_family_id FK
+        uuid skill_id FK
+        int min_proficiency
+        boolean is_mandatory
+    }
+    LmsProvider {
+        uuid id PK
+        uuid organisation_id FK
+        string name
+        string provider_type
+        boolean sso_enabled
+        string status
+        uuid created_by_id FK
+    }
+    Course {
+        uuid id PK
+        uuid organisation_id FK
+        string title
+        string source
+        uuid lms_provider_id FK
+        string content_type
+        int duration_minutes
+        boolean is_mandatory
+        uuid created_by_id FK
+    }
+    CourseSkillTag {
+        uuid id PK
+        uuid course_id FK
+        uuid skill_id FK
+    }
+    CourseAssignment {
+        uuid id PK
+        uuid course_id FK
+        uuid employee_id FK
+        uuid assigned_by_id FK
+        string status
+        int completion_percent
+        uuid linked_milestone_id FK
+    }
+    DevelopmentPlan {
+        uuid id PK
+        uuid employee_id FK
+        uuid created_by_id FK
+        string title
+        string status
+        uuid linked_review_cycle_id FK
+    }
+    DevelopmentMilestone {
+        uuid id PK
+        uuid plan_id FK
+        string title
+        uuid skill_id FK
+        uuid linked_course_id FK
+        string status
+    }
+
+    SkillValidationRequest {
+        uuid id PK
+        uuid tenant_id FK
+        uuid employee_id FK
+        uuid skill_id FK
+        int from_level
+        int to_level
+        string evidence_url
+        uuid validator_id FK
+        string status
+        string review_note
+        timestamp submitted_at
+        timestamp reviewed_at
+    }
+
+    Tenant ||--o{ SkillCategory : "owns"
+    Tenant ||--o{ SkillValidationRequest : "has"
+    Tenant ||--o{ LmsProvider : "connects"
+    Tenant ||--o{ Course : "owns"
+    SkillCategory ||--o{ Skill : "contains"
+    Skill ||--o{ EmployeeSkill : "assessed_for"
+    Skill ||--o{ JobFamilyRequiredSkill : "required_by"
+    Skill ||--o{ SkillValidationRequest : "for"
+    JobFamily ||--o{ JobFamilyRequiredSkill : "requires"
+    Skill ||--o{ CourseSkillTag : "tagged_in"
+    Skill |o--o{ DevelopmentMilestone : "targets"
+    Employee ||--o{ EmployeeSkill : "has"
+    Employee ||--o{ CourseAssignment : "assigned"
+    Employee ||--o{ DevelopmentPlan : "owns"
+    Employee ||--o{ CourseAssignment : "assigns"
+    Employee ||--o{ DevelopmentPlan : "created_by"
+    Employee ||--o{ EmployeeSkill : "validates"
+    Employee ||--o{ SkillValidationRequest : "submits"
+    Employee |o--o{ SkillValidationRequest : "validates"
+    ReviewCycle |o--o{ EmployeeSkill : "last_assessed"
+    ReviewCycle |o--o{ DevelopmentPlan : "linked_to"
+    LmsProvider ||--o{ Course : "provides"
+    Course ||--o{ CourseSkillTag : "has"
+    Course ||--o{ CourseAssignment : "assigned_via"
+    Course |o--o{ DevelopmentMilestone : "linked_course"
+    DevelopmentPlan ||--o{ DevelopmentMilestone : "has"
+    DevelopmentMilestone |o--o{ CourseAssignment : "linked_milestone"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">skill_categories</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">skills</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">category_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td><span class="badge badge-xm">Referenced by Performance: goals, recognitions</span></td></tr>
+      <tr><td class="tname">employee_skills</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">skill_id</span> <span class="badge badge-fk">validated_by_id→employees</span> <span class="badge badge-fk">last_assessed_in_review_id→review_cycles</span></td><td><span class="badge badge-xm">last_assessed_in_review_id → Performance</span></td></tr>
+      <tr><td class="tname">job_family_required_skills</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">job_family_id→job_families</span> <span class="badge badge-fk">skill_id</span></td><td><span class="badge badge-xm">job_family_id → Org Structure</span> (junction table — links required skills to career families)</td></tr>
+      <tr><td class="tname">lms_providers</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">courses</td><td>15</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">organisation_id→tenants</span> <span class="badge badge-fk">lms_provider_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>None</td></tr>
+      <tr><td class="tname">course_skill_tags</td><td>3</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">course_id</span> <span class="badge badge-fk">skill_id</span></td><td>None (junction)</td></tr>
+      <tr><td class="tname">course_assignments</td><td>12</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">course_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">assigned_by_id→employees</span> <span class="badge badge-fk">linked_milestone_id</span></td><td>None</td></tr>
+      <tr><td class="tname">development_plans</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">created_by_id→employees</span> <span class="badge badge-fk">linked_review_cycle_id→review_cycles</span></td><td><span class="badge badge-xm">linked_review_cycle_id → Performance</span></td></tr>
+      <tr><td class="tname">development_milestones</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">plan_id</span> <span class="badge badge-fk">skill_id</span> <span class="badge badge-fk">linked_course_id</span></td><td>None</td></tr>
+      <tr><td class="tname">skill_validation_requests</td><td>13</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">skill_id</span> <span class="badge badge-fk">validator_id→employees</span></td><td><span class="badge badge-xm">employee_id → Core HR · validator_id → Core HR</span> — Approval workflow: pending → approved/rejected with review_note</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 9 — AI / NEXIS
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-ai">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-ai)"></div>
+    <span class="mod-title">AI / Nexis — Module 10</span>
+  </div>
+  <p class="mod-desc">Nexis is Selfvora's AI layer. Features are tenant-scoped, permissions are granted per role or per employee, prompt templates are versioned, all interactions are logged with full token/cost tracking, and AI suggestions track application state. 5 tables.</p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — AI / Nexis</h3>
+    <div class="mermaid" id="erd-ai">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+    }
+    User {
+        uuid id PK
+    }
+    Role {
+        uuid id PK
+    }
+    AiFeature {
+        uuid id PK
+        uuid tenant_id FK
+        string feature_code
+        string name
+        string scope
+        boolean is_active
+    }
+    AiFeaturePermission {
+        uuid id PK
+        uuid tenant_id FK
+        string feature_code FK
+        uuid role_id FK
+        uuid employee_id FK
+        boolean is_allowed
+        uuid granted_by FK
+    }
+    AiPromptTemplate {
+        uuid id PK
+        string feature_code FK
+        string template_name
+        string system_prompt
+        int version
+        boolean is_active
+        string model
+        uuid created_by FK
+    }
+    AiInteraction {
+        uuid id PK
+        uuid tenant_id FK
+        uuid initiated_by FK
+        uuid context_employee_id FK
+        string feature_code FK
+        uuid template_id FK
+        string query_text
+        int tokens_input
+        int tokens_output
+        decimal cost_usd
+        string status
+        uuid reviewed_by FK
+    }
+    AiSuggestion {
+        uuid id PK
+        uuid tenant_id FK
+        uuid interaction_id FK
+        string suggestion_type
+        jsonb content
+        decimal confidence_score
+        boolean is_applied
+        uuid applied_by FK
+    }
+
+    Tenant ||--o{ AiFeature : "enables"
+    Tenant ||--o{ AiFeaturePermission : "scopes"
+    Tenant ||--o{ AiInteraction : "logs"
+    Tenant ||--o{ AiSuggestion : "has"
+    AiFeature ||--o{ AiFeaturePermission : "grants_via"
+    AiFeature ||--o{ AiPromptTemplate : "has_templates"
+    AiFeature ||--o{ AiInteraction : "drives"
+    AiPromptTemplate ||--o{ AiInteraction : "used_in"
+    AiInteraction ||--o{ AiSuggestion : "produces"
+    Role |o--o{ AiFeaturePermission : "role_perm"
+    Employee ||--o{ AiFeaturePermission : "employee_perm"
+    Employee ||--o{ AiInteraction : "initiates"
+    Employee |o--o{ AiInteraction : "context_subject"
+    User ||--o{ AiFeaturePermission : "grants"
+    User ||--o{ AiPromptTemplate : "creates"
+    User |o--o{ AiInteraction : "reviews"
+    User |o--o{ AiSuggestion : "applies"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs / Notes</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">ai_features</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> · UNIQUE: feature_code per tenant</td><td>None</td></tr>
+      <tr><td class="tname">ai_feature_permissions</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">feature_code→ai_features</span> <span class="badge badge-fk">role_id→roles(nullable)</span> <span class="badge badge-fk">employee_id(nullable)</span> <span class="badge badge-fk">granted_by→users</span></td><td><span class="badge badge-xm">role_id → Auth · employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">ai_prompt_templates</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">feature_code→ai_features</span> <span class="badge badge-fk">created_by→users</span></td><td>None</td></tr>
+      <tr><td class="tname">ai_interactions</td><td>16</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">initiated_by→employees</span> <span class="badge badge-fk">context_employee_id→employees</span> <span class="badge badge-fk">feature_code→ai_features</span> <span class="badge badge-fk">template_id</span> <span class="badge badge-fk">reviewed_by→users</span></td><td><span class="badge badge-xm">initiated_by / context_employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">ai_suggestions</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">interaction_id</span> <span class="badge badge-fk">applied_by→users</span></td><td>None</td></tr>
+    </tbody>
+  </table>
+  <p class="note">Constraint: In ai_feature_permissions, either role_id OR employee_id must be set — not both.</p>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 10 — DOCUMENTS
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-docs">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-docs)"></div>
+    <span class="mod-title">Documents — Module 11</span>
+  </div>
+  <p class="mod-desc">Hierarchical document category management, blob-versioned document storage, employee acknowledgement tracking, and access logging. Supports both company-wide documents (employee_id = null) and personal employee documents. 5 tables.</p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Documents</h3>
+    <div class="mermaid" id="erd-docs">
+erDiagram
+    Tenant {
+        uuid id PK
+    }
+    Employee {
+        uuid id PK
+    }
+    User {
+        uuid id PK
+    }
+    LegalEntity {
+        uuid id PK
+    }
+    DocumentCategory {
+        uuid id PK
+        uuid tenant_id FK
+        uuid parent_category_id FK
+        string name
+        string applies_to
+        boolean is_active
+    }
+    Document {
+        uuid id PK
+        uuid tenant_id FK
+        uuid legal_entity_id FK
+        uuid category_id FK
+        uuid employee_id FK
+        string title
+        boolean requires_acknowledgement
+        boolean is_active
+        uuid created_by FK
+    }
+    DocumentVersion {
+        uuid id PK
+        uuid document_id FK
+        int version_number
+        string blob_storage_url
+        string file_name
+        date effective_date
+        date expiry_date
+        boolean is_current
+        uuid uploaded_by FK
+    }
+    DocumentAcknowledgement {
+        uuid id PK
+        uuid document_version_id FK
+        uuid employee_id FK
+        uuid acknowledged_by FK
+        string method
+        timestamp acknowledged_at
+        string ip_address
+    }
+    DocumentAccessLog {
+        uuid id PK
+        uuid tenant_id FK
+        uuid document_version_id FK
+        uuid employee_id FK
+        string action
+        timestamp accessed_at
+        string ip_address
+    }
+
+    Tenant ||--o{ DocumentCategory : "owns"
+    Tenant ||--o{ Document : "owns"
+    Tenant ||--o{ DocumentAccessLog : "logs"
+    LegalEntity |o--o{ Document : "scoped_to"
+    DocumentCategory |o--o| DocumentCategory : "parent"
+    DocumentCategory ||--o{ Document : "classifies"
+    Employee |o--o{ Document : "personal_doc"
+    Employee ||--o{ DocumentAcknowledgement : "acknowledges"
+    Employee ||--o{ DocumentAccessLog : "accessed_by"
+    User ||--o{ Document : "created_by"
+    User ||--o{ DocumentVersion : "uploaded_by"
+    User ||--o{ DocumentAcknowledgement : "on_behalf_of"
+    Document ||--o{ DocumentVersion : "versioned_as"
+    DocumentVersion ||--o{ DocumentAcknowledgement : "acknowledged_via"
+    DocumentVersion ||--o{ DocumentAccessLog : "accessed_via"
+    </div>
+  </div>
+
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Cross-Module FKs</th></tr></thead>
+    <tbody>
+      <tr><td class="tname">document_categories</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">parent_category_id(self)</span></td><td>None</td></tr>
+      <tr><td class="tname">documents</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">legal_entity_id</span> <span class="badge badge-fk">category_id</span> <span class="badge badge-fk">employee_id(nullable)</span> <span class="badge badge-fk">created_by→users</span></td><td><span class="badge badge-xm">employee_id → Core HR · legal_entity_id → Org</span></td></tr>
+      <tr><td class="tname">document_versions</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">document_id</span> <span class="badge badge-fk">uploaded_by→users</span></td><td>None</td></tr>
+      <tr><td class="tname">document_acknowledgements</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">document_version_id</span> <span class="badge badge-fk">employee_id</span> <span class="badge badge-fk">acknowledged_by→users</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+      <tr><td class="tname">document_access_logs</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">document_version_id</span> <span class="badge badge-fk">employee_id</span></td><td><span class="badge badge-xm">employee_id → Core HR</span></td></tr>
+    </tbody>
+  </table>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB — MISSING HR TABLES (20 tables)
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-missing">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-miss)"></div>
+    <span class="mod-title">New Module Tables — 4 New Modules (8 tables)</span>
+  </div>
+  <p class="mod-desc">Originally 20 tables were identified from UI analysis. <strong>12 have now been integrated into their respective module tabs</strong> (countries → Infrastructure; job_families, job_family_levels → Org Structure; offboarding_cases, offboarding_penalties, employee_lifecycle_events → Core HR; attendance_corrections, schedule_templates, employee_work_schedules → Attendance; succession_plans, succession_candidates → Performance; skill_validation_requests → Skills). The remaining <strong>8 tables below</strong> represent 4 new modules not yet in any existing tab. <span style="color:var(--c-miss);font-weight:700;">Red table names</span> = new module tables.</p>
+
+  <!-- ── ERD Diagram ── -->
+  <div class="erd-wrap">
+    <h3>ER Diagram — 8 New Module Tables (Notifications, Configuration, Calendar, Reports)</h3>
+    <div class="mermaid" id="erd-missing">
+erDiagram
+    Tenant { uuid id PK }
+    Employee { uuid id PK }
+    User { uuid id PK }
+
+    Notification {
+        uuid id PK
+        uuid tenant_id FK
+        uuid user_id FK
+        string type
+        string title
+        string message
+        string resource_type
+        uuid resource_id
+        boolean is_read
+        string severity
+    }
+    NotificationPreference {
+        uuid id PK
+        uuid tenant_id FK
+        uuid user_id FK
+        string category
+        boolean push_enabled
+        boolean email_enabled
+    }
+
+    TenantSetting {
+        uuid id PK
+        uuid tenant_id FK
+        string setting_group
+        string setting_key
+        jsonb setting_value
+        uuid updated_by_id FK
+    }
+    IntegrationConnection {
+        uuid id PK
+        uuid tenant_id FK
+        string provider_name
+        string provider_type
+        string auth_type
+        string credentials_encrypted
+        string status
+        timestamp last_sync_at
+        uuid created_by_id FK
+    }
+    DigitalSignatureConfig {
+        uuid id PK
+        uuid tenant_id FK
+        string document_type
+        boolean is_required
+        uuid created_by_id FK
+    }
+
+    CalendarEvent {
+        uuid id PK
+        uuid tenant_id FK
+        string title
+        string event_type
+        timestamp start_datetime
+        timestamp end_datetime
+        string scope
+        uuid scope_target_id
+        string description
+        string color
+        uuid created_by_id FK
+    }
+
+    ScheduledReport {
+        uuid id PK
+        uuid tenant_id FK
+        string report_type
+        jsonb filters
+        jsonb columns
+        string recipient_email
+        string frequency
+        string format
+        boolean is_active
+        uuid created_by_id FK
+    }
+    ReportExecution {
+        uuid id PK
+        uuid tenant_id FK
+        uuid scheduled_report_id FK
+        string report_type
+        string status
+        int row_count
+        string file_url
+        timestamp executed_at
+    }
+
+    Tenant ||--o{ Notification : "sends"
+    Tenant ||--o{ NotificationPreference : "stores"
+    Tenant ||--o{ TenantSetting : "configures"
+    Tenant ||--o{ IntegrationConnection : "connects"
+    Tenant ||--o{ DigitalSignatureConfig : "defines"
+    Tenant ||--o{ CalendarEvent : "schedules"
+    Tenant ||--o{ ScheduledReport : "owns"
+    Tenant ||--o{ ReportExecution : "logs"
+
+    User ||--o{ Notification : "receives"
+    User ||--o{ NotificationPreference : "sets"
+
+    Employee ||--o{ CalendarEvent : "creates"
+    Employee ||--o{ ScheduledReport : "creates"
+    Employee ||--o{ IntegrationConnection : "creates"
+    Employee ||--o{ DigitalSignatureConfig : "creates"
+
+    ScheduledReport ||--o{ ReportExecution : "generates"
+    </div>
+  </div>
+
+  <!-- ── Integrated Tables Note ── -->
+  <div style="margin-top:4px;margin-bottom:24px;padding:16px;background:var(--card);border:1px solid var(--c-common);border-radius:10px;">
+    <h3 style="font-size:13px;font-weight:700;margin-bottom:8px;color:var(--c-common);">12 Tables Now Integrated Into Module Tabs</h3>
+    <p style="font-size:12px;color:var(--muted);line-height:1.8;">
+      <strong>Infrastructure:</strong> <code>countries</code> &nbsp;·&nbsp;
+      <strong>Org Structure:</strong> <code>job_families</code>, <code>job_family_levels</code> &nbsp;·&nbsp;
+      <strong>Core HR:</strong> <code>offboarding_cases</code>, <code>offboarding_penalties</code>, <code>employee_lifecycle_events</code> &nbsp;·&nbsp;
+      <strong>Attendance:</strong> <code>attendance_corrections</code>, <code>schedule_templates</code>, <code>employee_work_schedules</code> &nbsp;·&nbsp;
+      <strong>Performance:</strong> <code>succession_plans</code>, <code>succession_candidates</code> &nbsp;·&nbsp;
+      <strong>Skills:</strong> <code>skill_validation_requests</code>
+    </p>
+  </div>
+
+  <!-- ── Section 1: Notifications (NEW MODULE) ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:var(--c-notif);">Notifications — NEW MODULE (2 tables)</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Why Missing — UI Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-miss)">notifications</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">user_id</span></td><td>Bell icon in topbar with unread badge count. Notification dropdown shows 8+ items. Mark individual as read, mark all as read. Types: employee_added, leave_request, attendance_alert (late &gt;30min, absent without leave), system. Severity levels. Dashboard "Recent Activity" stream. Auto-generated on: leave submit, employee add, attendance anomaly, offboarding, etc.</td></tr>
+      <tr><td class="tname" style="color:var(--c-miss)">notification_preferences</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">user_id</span></td><td>Onboarding wizard Step 5: 3 categories (Leave &amp; Attendance, Payroll &amp; Documents, Talent &amp; Growth) × 2 channels (Push, Email) = 6 toggle checkboxes. Settings page Notification Preferences tab: per-type toggles. ConfigPage also has <code>notifyAdmin</code> toggle for attendance overrides.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Section 8: Configuration (NEW MODULE) ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:var(--c-config);">Configuration &amp; Settings — NEW MODULE (3 tables)</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Why Missing — UI Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-miss)">tenant_settings</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">updated_by_id→users</span></td><td>ConfigPage 6 tabs: Time (work days, start/end time, grace period, tracking mode, timezone), Attendance (capture methods, geo-fence, manual override), Security (MFA toggles, session timeout, lockout). Settings page: org profile, regional (currency, date format, language), security (2FA, SSO, password policy). All persisted to localStorage — needs DB table.</td></tr>
+      <tr><td class="tname" style="color:var(--c-miss)">integration_connections</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>ConfigPage → Integrations tab: 8 integration cards (ADP, Oracle HCM, Google Calendar, Outlook, Google Workspace SSO, Azure AD/Okta, LMS, Stripe). Each has status (Connected/Not Connected), Configure/Connect button. Separate from payroll_connections — covers calendar sync, SSO, LMS, payment.</td></tr>
+      <tr><td class="tname" style="color:var(--c-miss)">digital_signature_configs</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>ConfigPage → Sign tab: 4 document-type toggles (Employment Contracts, Leave Policy Acknowledgement, Data Processing Consent, NDA/Confidentiality). Each independently enabled/disabled. Controls which documents require e-signature during onboarding/acknowledgement flows.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Section 9: Calendar (NEW MODULE) ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:var(--c-cal);">Calendar &amp; Events — NEW MODULE (1 table)</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Why Missing — UI Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-miss)">calendar_events</td><td>12</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>Employee Calendar page: events displayed as pills on month calendar. "Add Event" modal: title, date, time, type (Meeting/Holiday), scope (Org/Dept/Team/Employee), target, description, color. Leave conflict checker checks against calendar events. <code>holidays</code> table covers public holidays — but meetings, training sessions, company events need their own table.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Section 10: Reports (NEW MODULE) ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:var(--c-rpt);">Reports &amp; Analytics — NEW MODULE (2 tables)</h3>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Columns</th><th>PK</th><th>FKs</th><th>Why Missing — UI Evidence</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-miss)">scheduled_reports</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→employees</span></td><td>ReportsPage → "Schedule" button: email recipient, frequency (Daily/Weekly/Monthly/Quarterly), format (CSV/PDF). 6 report types (Headcount, Turnover, Attendance, Leave, Payroll, Skills) each with configurable filters (date range, department, status) and column selection. Saves recurring schedule.</td></tr>
+      <tr><td class="tname" style="color:var(--c-miss)">report_executions</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">scheduled_report_id</span></td><td>Tracks each report run: report type, status (success/failed), row count, file URL, execution timestamp. Needed for audit trail of generated reports and to serve download links. "Export CSV" button generates execution record.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Summary ── -->
+  <div style="margin-top:28px;padding:20px;background:var(--card);border:2px solid var(--c-miss);border-radius:10px;">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--c-miss);">Summary — 8 New Module Tables (remaining from original 20)</h3>
+    <table class="xm-table">
+      <thead><tr><th>Module</th><th>New Tables</th><th>Count</th><th>Status</th></tr></thead>
+      <tbody>
+        <tr><td class="label" style="color:var(--c-notif)"><strong>Notifications (NEW)</strong></td><td><code>notifications</code>, <code>notification_preferences</code></td><td>2</td><td style="color:var(--c-miss)">New module — needs tab</td></tr>
+        <tr><td class="label" style="color:var(--c-config)"><strong>Configuration (NEW)</strong></td><td><code>tenant_settings</code>, <code>integration_connections</code>, <code>digital_signature_configs</code></td><td>3</td><td style="color:var(--c-miss)">New module — needs tab</td></tr>
+        <tr><td class="label" style="color:var(--c-cal)"><strong>Calendar (NEW)</strong></td><td><code>calendar_events</code></td><td>1</td><td style="color:var(--c-miss)">New module — needs tab</td></tr>
+        <tr><td class="label" style="color:var(--c-rpt)"><strong>Reports (NEW)</strong></td><td><code>scheduled_reports</code>, <code>report_executions</code></td><td>2</td><td style="color:var(--c-miss)">New module — needs tab</td></tr>
+      </tbody>
+    </table>
+    <p class="note" style="margin-top:12px;">The other 12 tables (countries, job_families, job_family_levels, offboarding_cases, offboarding_penalties, employee_lifecycle_events, attendance_corrections, schedule_templates, employee_work_schedules, succession_plans, succession_candidates, skill_validation_requests) have been integrated into their respective module tabs above with full ER diagrams, FK listings, and cross-module references.</p>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB — SHARED PLATFORM (S1–S8) — 19 tables
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-common">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:var(--c-common)"></div>
+    <span class="mod-title">Shared Platform — ASP.NET Core Modular Monolith (S1–S8)</span>
+  </div>
+  <p class="mod-desc">These 19 tables extend the shared platform that powers <strong>both</strong> Selfvora HR and Selfvora Work Management in a Service-Oriented Monolithic Architecture. Existing foundation tables (<code>tenants</code>, <code>users</code>, <code>user_sessions</code>, <code>user_mfa</code>, <code>roles</code>, <code>permissions</code>, <code>role_permissions</code>, <code>user_roles</code>, <code>audit_logs</code>, <code>consent_records</code>, <code>file_records</code>, org structure) are already defined in the Foundation tab — these tables <em>extend</em> those services for cross-app operation. <strong>S5 (File Storage)</strong> needs no new tables — <code>file_records</code> already covers it with <code>scan_status</code> and namespace-capable <code>file_path</code>.</p>
+
+  <!-- ── ERD Diagram ── -->
+  <div class="erd-wrap">
+    <h3>ER Diagram — Shared Platform (19 new tables across S1–S8)</h3>
+    <div class="mermaid" id="erd-common">
+erDiagram
+    Tenant { uuid id PK }
+    User { uuid id PK }
+    Employee { uuid id PK }
+    Role { uuid id PK }
+    AuditLog { uuid id PK }
+
+    SsoProvider {
+        uuid id PK
+        uuid tenant_id FK
+        string provider_type
+        string name
+        string client_id_encrypted
+        string client_secret_encrypted
+        string metadata_url
+        string domain_hint
+        boolean auto_provision_users
+        boolean is_active
+    }
+    RefreshToken {
+        uuid id PK
+        uuid user_id FK
+        uuid tenant_id FK
+        string token_hash
+        string device_fingerprint
+        timestamp issued_at
+        timestamp expires_at
+        boolean is_revoked
+        uuid replaced_by_id FK
+    }
+    HardwareTerminal {
+        uuid id PK
+        uuid tenant_id FK
+        uuid office_location_id FK
+        string terminal_code
+        string terminal_type
+        string webhook_url
+        string api_key_encrypted
+        string status
+        timestamp last_heartbeat_at
+    }
+
+    SubscriptionPlan {
+        uuid id PK
+        string name
+        string code
+        string tier
+        jsonb feature_limits
+        decimal monthly_price
+        decimal annual_price
+        string currency
+        boolean is_active
+    }
+    TenantSubscription {
+        uuid id PK
+        uuid tenant_id FK
+        uuid plan_id FK
+        string billing_cycle
+        string status
+        date current_period_start
+        date current_period_end
+        string payment_provider_ref
+        uuid created_by_id FK
+    }
+    FeatureFlag {
+        uuid id PK
+        uuid tenant_id FK
+        string flag_key
+        boolean is_enabled
+        jsonb conditions
+        uuid toggled_by_id FK
+        timestamp toggled_at
+    }
+    TenantBranding {
+        uuid id PK
+        uuid tenant_id FK
+        string custom_domain
+        uuid logo_file_id FK
+        string primary_color
+        string accent_color
+        jsonb metadata
+        uuid updated_by_id FK
+    }
+
+    NotificationTemplate {
+        uuid id PK
+        uuid tenant_id FK
+        string template_code
+        string channel
+        string subject_template
+        string body_template
+        string locale
+        int version
+        boolean is_active
+        uuid created_by_id FK
+    }
+    NotificationChannel {
+        uuid id PK
+        uuid tenant_id FK
+        string channel_type
+        string provider
+        jsonb credentials_encrypted
+        boolean is_active
+        uuid configured_by_id FK
+    }
+    EscalationRule {
+        uuid id PK
+        uuid tenant_id FK
+        string resource_type
+        string trigger_condition
+        int sla_hours
+        string action_type
+        uuid escalate_to_role_id FK
+        uuid notification_template_id FK
+        boolean is_active
+        uuid created_by_id FK
+    }
+
+    LegalHold {
+        uuid id PK
+        uuid tenant_id FK
+        string resource_type
+        uuid resource_id
+        string reason
+        uuid placed_by_id FK
+        timestamp placed_at
+        uuid released_by_id FK
+        timestamp released_at
+    }
+    RetentionPolicy {
+        uuid id PK
+        uuid tenant_id FK
+        string resource_type
+        int retention_days
+        string action_on_expiry
+        string compliance_framework
+        boolean is_active
+        uuid created_by_id FK
+    }
+    ComplianceExport {
+        uuid id PK
+        uuid tenant_id FK
+        uuid requested_by_id FK
+        string export_type
+        string scope
+        uuid target_user_id FK
+        string status
+        string file_url
+        timestamp requested_at
+        timestamp completed_at
+    }
+
+    UserPreference {
+        uuid id PK
+        uuid user_id FK
+        uuid tenant_id FK
+        string preference_key
+        jsonb preference_value
+        timestamp updated_at
+    }
+
+    WorkflowDefinition {
+        uuid id PK
+        uuid tenant_id FK
+        string name
+        string code
+        string resource_type
+        string description
+        boolean is_active
+        int version
+        uuid created_by_id FK
+    }
+    WorkflowStep {
+        uuid id PK
+        uuid workflow_definition_id FK
+        int step_order
+        string step_type
+        string approver_type
+        uuid approver_role_id FK
+        jsonb conditions
+        int sla_hours
+        string on_timeout_action
+    }
+    WorkflowInstance {
+        uuid id PK
+        uuid tenant_id FK
+        uuid workflow_definition_id FK
+        string resource_type
+        uuid resource_id
+        uuid initiated_by_id FK
+        int current_step_order
+        string status
+        timestamp started_at
+        timestamp completed_at
+    }
+    ApprovalAction {
+        uuid id PK
+        uuid workflow_instance_id FK
+        uuid workflow_step_id FK
+        uuid actor_id FK
+        string action
+        string comment
+        timestamp acted_at
+        uuid delegated_to_id FK
+    }
+
+    PresenceSession {
+        uuid id PK
+        uuid user_id FK
+        uuid tenant_id FK
+        string connection_id
+        string channel
+        string device_type
+        timestamp connected_at
+        timestamp last_ping_at
+        boolean is_active
+    }
+
+    Tenant ||--o{ SsoProvider : "configures"
+    Tenant ||--o{ RefreshToken : "scopes"
+    Tenant ||--o{ HardwareTerminal : "registers"
+    Tenant |o--o| TenantSubscription : "subscribes"
+    Tenant ||--o{ FeatureFlag : "toggles"
+    Tenant |o--o| TenantBranding : "brands"
+    Tenant ||--o{ NotificationTemplate : "defines"
+    Tenant ||--o{ NotificationChannel : "connects"
+    Tenant ||--o{ EscalationRule : "configures"
+    Tenant ||--o{ LegalHold : "places"
+    Tenant ||--o{ RetentionPolicy : "sets"
+    Tenant ||--o{ ComplianceExport : "exports"
+    Tenant ||--o{ WorkflowDefinition : "defines"
+    Tenant ||--o{ WorkflowInstance : "runs"
+    Tenant ||--o{ UserPreference : "stores"
+    Tenant ||--o{ PresenceSession : "tracks"
+
+    User ||--o{ RefreshToken : "holds"
+    User ||--o{ UserPreference : "sets"
+    User ||--o{ PresenceSession : "connects"
+    User ||--o{ ComplianceExport : "requests"
+
+    SsoProvider ||--o{ RefreshToken : "issues_via"
+    SubscriptionPlan ||--o{ TenantSubscription : "purchased_as"
+    Role |o--o{ EscalationRule : "escalates_to"
+    NotificationTemplate |o--o{ EscalationRule : "sends_via"
+    WorkflowDefinition ||--o{ WorkflowStep : "has"
+    WorkflowDefinition ||--o{ WorkflowInstance : "instantiated_as"
+    WorkflowInstance ||--o{ ApprovalAction : "has"
+    WorkflowStep ||--o{ ApprovalAction : "resolved_at"
+    Employee ||--o{ WorkflowInstance : "initiates"
+    Employee ||--o{ ApprovalAction : "acts_on"
+    </div>
+  </div>
+
+  <!-- ── S1 — Identity & Auth ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#3b82f6;">S1 — Identity &amp; Auth (+3 tables extending existing auth stack)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">Extends existing <code>users</code>, <code>user_sessions</code>, <code>user_mfa</code> with Keycloak OIDC / SSO support, JWT refresh token rotation, and hardware terminal webhooks. Existing auth tables handle core RBAC — these add cross-app SSO, FIDO2/biometric auth terminal registration, and token lifecycle management.</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">sso_providers</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span></td><td>SSO identity provider configs (Keycloak, Google Workspace, Azure AD, Okta). Stores OAuth <code>client_id</code>/<code>client_secret</code> (encrypted), SAML <code>metadata_url</code>, <code>domain_hint</code>. <code>auto_provision_users</code> flag auto-creates <code>users</code> row on first SSO login. Shared across HR + Work Management — one provider config serves both apps.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">refresh_tokens</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">user_id→users</span> <span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">replaced_by_id(self)</span></td><td>JWT refresh token store for token rotation. Each token is hashed, bound to a device fingerprint, and chained via <code>replaced_by_id</code> for rotation detection. 8hr session expiry per your S1 spec. If a revoked token is replayed, the entire chain is invalidated (replay attack protection).</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">hardware_terminals</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">office_location_id</span></td><td>Hardware terminal webhook endpoints — kiosks, biometric terminals, card readers at office locations. Stores <code>webhook_url</code>, <code>api_key_encrypted</code>, heartbeat tracking. Distinct from <code>biometric_devices</code> (which are Attendance-module specific) — these serve as the S1 auth gateway for any physical terminal across both HR (clock-in) and Work Management (project check-in).</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── S2 — Tenant & Org ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#8b5cf6;">S2 — Tenant &amp; Org (+4 tables extending existing tenants/org)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">Extends existing <code>tenants</code>, <code>legal_entities</code>, <code>office_locations</code>. Adds multi-tenancy billing, feature flag system, and white-label branding. Market configs (UK/Sri Lanka), GDPR vs PDPA rules are stored in <code>feature_flags</code> and <code>retention_policies</code> (S4).</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">subscription_plans</td><td>9</td><td><span class="badge badge-pk">id</span></td><td>None (seed table)</td><td>Plan tier definitions — Free, Starter, Business, Enterprise. Each has <code>feature_limits</code> (jsonb: max_employees, max_projects, modules_enabled), pricing in configurable currency. Both HR and Work Management check this to enforce limits.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">tenant_subscriptions</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">plan_id</span> <span class="badge badge-fk">created_by_id→users</span></td><td>Active subscription per tenant. Tracks billing cycle (monthly/annual), <code>current_period_start/end</code>, payment provider reference (Stripe). Status: active, trial, past_due, cancelled. Governs feature access across both applications.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">feature_flags</td><td>7</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">toggled_by_id→users</span></td><td>Per-org feature toggles. <code>flag_key</code> examples: <code>biometric_enabled</code>, <code>nexis_ai_enabled</code>, <code>gdpr_mode</code>, <code>pdpa_mode</code>, <code>payroll_multi_country</code>. <code>conditions</code> (jsonb) supports % rollout, user-role targeting, date-based activation. Both HR and Work Management read this at startup.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">tenant_branding</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">logo_file_id→file_records</span> <span class="badge badge-fk">updated_by_id→users</span></td><td>White-label customisation per tenant. Custom domain mapping, logo (→ <code>file_records</code>), primary/accent colors, additional metadata (favicon, email header). Applied to both HR and Work Management UI for seamless branding.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── S3 — Notifications ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#e11d48;">S3 — Notifications (+3 tables — engine infrastructure)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">The notification delivery engine. HR-specific <code>notifications</code> and <code>notification_preferences</code> tables are in the Missing HR Tables tab — they store actual notification records. These 3 tables are the <strong>shared infrastructure</strong>: message templates, channel configuration (FCM/APNs/Resend API), and SLA-driven escalation chains. Both apps push into this engine; Hangfire cron scheduler consumes from it.</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">notification_templates</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→users</span></td><td>Message templates per org, per channel, per locale. <code>template_code</code> examples: <code>leave_approved</code>, <code>task_assigned</code>, <code>escalation_48h</code>. Supports Mustache-style interpolation in <code>subject_template</code>/<code>body_template</code>. Versioned for rollback. Both HR and Work Management reference these when sending notifications.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">notification_channels</td><td>8</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">configured_by_id→users</span></td><td>Channel delivery configs. <code>channel_type</code>: in_app, push, email, sms. <code>provider</code>: FCM (push), APNs (iOS push), Resend (email), Twilio (SMS). Stores API keys/certs in <code>credentials_encrypted</code> (jsonb). One config per channel per tenant — shared by both apps.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">escalation_rules</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">escalate_to_role_id→roles</span> <span class="badge badge-fk">notification_template_id</span> <span class="badge badge-fk">created_by_id→users</span></td><td>SLA timer + auto-escalation chains. <code>resource_type</code>: leave_request, skill_validation, attendance_correction, project_task. <code>sla_hours</code>: 48 (reminder), 72 (auto-escalate). <code>action_type</code>: send_reminder, escalate_to_manager, auto_approve. Hangfire cron evaluates these rules every hour.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── S4 — Audit & Compliance ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#6b7280;">S4 — Audit Log &amp; Compliance (+3 tables extending existing audit_logs/consent_records)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">Extends existing <code>audit_logs</code> (immutable append-only, old+new values) and <code>consent_records</code>. Adds GDPR/PDPA compliance tooling: legal holds to prevent deletion during litigation, configurable retention policies with automatic expiry, and one-click compliance export (GDPR Article 15 / PDPA right of access).</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">legal_holds</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">placed_by_id→users</span> <span class="badge badge-fk">released_by_id→users</span></td><td>Legal hold flags on any resource. Prevents deletion/modification of held records during litigation or regulatory investigation. <code>resource_type</code> + <code>resource_id</code> polymorphic reference. Retention policy engine skips resources with active holds. Both apps check this before any destructive operation.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">retention_policies</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→users</span></td><td>Data retention rules per resource type. <code>retention_days</code>: how long to keep (e.g., 2555 for 7 years for payroll records). <code>action_on_expiry</code>: archive, anonymize, delete. <code>compliance_framework</code>: GDPR, PDPA, SOX. Hangfire job evaluates nightly — respects legal holds. Market Config (UK vs Sri Lanka) uses different policies.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">compliance_exports</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">requested_by_id→users</span> <span class="badge badge-fk">target_user_id→users</span></td><td>GDPR one-click export / PDPA compliance reports. <code>export_type</code>: gdpr_sar (Subject Access Request), pdpa_access, data_portability. Generates a complete data package for <code>target_user_id</code> across all modules. Status: queued → processing → completed → downloaded. <code>file_url</code> points to encrypted ZIP in S5 File Storage.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── S5 — File Storage (no new tables) ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#64748b;">S5 — File Storage (0 new tables — covered by existing <code>file_records</code>)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">Cloudflare R2 upload, secure pre-signed URLs, virus scan (ClamAV), namespace isolation, PDF generation, image thumbnails — all served by the existing <code>file_records</code> table. The <code>file_path</code> column provides namespace isolation (<code>hr/documents/...</code>, <code>work/attachments/...</code>, <code>shared/logos/...</code>). The <code>scan_status</code> column tracks ClamAV results. No additional tables required.</p>
+
+  <!-- ── S6 — People Directory ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#0891b2;">S6 — People Directory (+1 table extending existing users/roles/permissions)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">Master user record (<code>users</code>), RBAC (<code>roles</code> + <code>permissions</code> + 12 permission scopes), cross-product profile (<code>employees</code>), and org-scoped queries (<code>departments</code>/<code>teams</code>) are all existing tables. This adds per-user cross-app preferences.</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">user_preferences</td><td>6</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">user_id→users</span> <span class="badge badge-fk">tenant_id</span></td><td>Cross-product user preferences. Key-value store: <code>theme</code> (dark/light), <code>locale</code> (en-GB, si-LK), <code>timezone</code>, <code>dashboard_layout</code>, <code>sidebar_collapsed</code>, <code>notification_sound</code>. Currently stored in localStorage — this table persists them server-side so preferences sync across devices and both apps.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── S7 — Workflow Engine ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#7c3aed;">S7 — Workflow Engine (+4 tables — completely new service)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">The platform's generic multi-step approval engine. Every approval flow in HR (leave requests, skill validations, attendance corrections, offboarding sign-offs, payroll runs) and Work Management (task approvals, timesheet sign-offs, expense claims) is powered by this engine. Supports IF/THEN automation, auto-approval rules, SLA reminders (48h) with escalation (72h), delegation, and full approval history.</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">workflow_definitions</td><td>10</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">created_by_id→users</span></td><td>Workflow templates. <code>code</code> examples: <code>leave_approval</code>, <code>skill_validation</code>, <code>offboarding_signoff</code>, <code>payroll_run_approval</code>, <code>project_task_approval</code>. <code>resource_type</code> binds to the entity (leave_requests, skill_validation_requests, etc.). Versioned — active version used for new instances. Admins can customise per tenant via ConfigPage.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">workflow_steps</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">workflow_definition_id</span> <span class="badge badge-fk">approver_role_id→roles</span></td><td>Ordered steps within a workflow. <code>step_type</code>: approval, notification, condition_check, auto_action. <code>approver_type</code>: direct_manager, department_head, role-based, specific_user. <code>conditions</code> (jsonb): IF/THEN rules (e.g., "if amount &gt; 50000, require CFO approval"). <code>sla_hours</code> + <code>on_timeout_action</code>: remind, escalate, auto_approve.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">workflow_instances</td><td>11</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">tenant_id</span> <span class="badge badge-fk">workflow_definition_id</span> <span class="badge badge-fk">initiated_by_id→employees</span></td><td>Running workflow instances. <code>resource_type</code> + <code>resource_id</code> links to the actual entity (e.g., leave_request #uuid). <code>current_step_order</code> tracks progress. Status: pending → in_progress → approved / rejected / cancelled. Timestamps for audit trail. HR dashboard "Pending Approvals" widget queries this table.</td></tr>
+      <tr><td class="tname" style="color:var(--c-common)">approval_actions</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">workflow_instance_id</span> <span class="badge badge-fk">workflow_step_id</span> <span class="badge badge-fk">actor_id→employees</span> <span class="badge badge-fk">delegated_to_id→employees</span></td><td>Individual approval/rejection actions. <code>action</code>: approve, reject, delegate, request_info, auto_approve. <code>comment</code> for reviewer notes. <code>delegated_to_id</code> for delegation chains. Full history preserved for audit. The "Approve/Reject" buttons on leave requests, skill validations, overtime requests, attendance corrections all create rows here.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── S8 — Real-time ── -->
+  <h3 style="font-size:14px;font-weight:700;margin:24px 0 10px;color:#0ea5e9;">S8 — Real-time (+1 table)</h3>
+  <p class="mod-desc" style="margin-bottom:12px">SignalR WebSocket hub for live updates. Per-user channel (notifications, approval alerts), per-org broadcast (announcements), per-project channel (Work Management). Live dashboard refresh, Kanban card updates, and presence indicators are all powered by this. The DB table tracks active connections for presence.</p>
+  <table class="mod-table">
+    <thead><tr><th>Table</th><th>Cols</th><th>PK</th><th>FKs</th><th>Purpose</th></tr></thead>
+    <tbody>
+      <tr><td class="tname" style="color:var(--c-common)">presence_sessions</td><td>9</td><td><span class="badge badge-pk">id</span></td><td><span class="badge badge-fk">user_id→users</span> <span class="badge badge-fk">tenant_id</span></td><td>Active WebSocket connections. <code>connection_id</code>: SignalR connection identifier. <code>channel</code>: user/{id}, org/{id}, project/{id}. <code>last_ping_at</code>: heartbeat for stale connection cleanup. Powers "X users online" indicators, live dashboard refresh triggers, and "typing..." indicators in NexisAI chat. Both apps write to this table.</td></tr>
+    </tbody>
+  </table>
+
+  <!-- ── Summary ── -->
+  <div style="margin-top:28px;padding:20px;background:var(--card);border:2px solid var(--c-common);border-radius:10px;">
+    <h3 style="font-size:15px;font-weight:700;margin-bottom:12px;color:var(--c-common);">Summary — 19 Shared Platform Tables by Service</h3>
+    <table class="xm-table">
+      <thead><tr><th>Service</th><th>New Tables</th><th>Count</th><th>Extends Existing</th></tr></thead>
+      <tbody>
+        <tr><td class="label" style="color:#3b82f6"><strong>S1 — Identity &amp; Auth</strong></td><td><code>sso_providers</code>, <code>refresh_tokens</code>, <code>hardware_terminals</code></td><td>3</td><td>users, user_sessions, user_mfa</td></tr>
+        <tr><td class="label" style="color:#8b5cf6"><strong>S2 — Tenant &amp; Org</strong></td><td><code>subscription_plans</code>, <code>tenant_subscriptions</code>, <code>feature_flags</code>, <code>tenant_branding</code></td><td>4</td><td>tenants, legal_entities, office_locations</td></tr>
+        <tr><td class="label" style="color:#e11d48"><strong>S3 — Notifications</strong></td><td><code>notification_templates</code>, <code>notification_channels</code>, <code>escalation_rules</code></td><td>3</td><td>notifications, notification_preferences (HR)</td></tr>
+        <tr><td class="label" style="color:#6b7280"><strong>S4 — Audit Log</strong></td><td><code>legal_holds</code>, <code>retention_policies</code>, <code>compliance_exports</code></td><td>3</td><td>audit_logs, consent_records</td></tr>
+        <tr><td class="label" style="color:#64748b"><strong>S5 — File Storage</strong></td><td>—</td><td>0</td><td>file_records (namespace via file_path)</td></tr>
+        <tr><td class="label" style="color:#0891b2"><strong>S6 — People Directory</strong></td><td><code>user_preferences</code></td><td>1</td><td>users, roles, permissions, employees</td></tr>
+        <tr><td class="label" style="color:#7c3aed"><strong>S7 — Workflow Engine</strong></td><td><code>workflow_definitions</code>, <code>workflow_steps</code>, <code>workflow_instances</code>, <code>approval_actions</code></td><td>4</td><td>New service (powers all approval flows)</td></tr>
+        <tr><td class="label" style="color:#0ea5e9"><strong>S8 — Real-time</strong></td><td><code>presence_sessions</code></td><td>1</td><td>New service (SignalR WebSocket hub)</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <!-- ── Cross-App Architecture Note ── -->
+  <div style="margin-top:20px;">
+    <h3 style="font-size:14px;font-weight:700;margin-bottom:10px;">How the Shared Platform Connects HR &amp; Work Management</h3>
+    <ul style="color:var(--muted);font-size:13px;line-height:2;padding-left:20px;">
+      <li><strong style="color:var(--text)">SSO login (S1):</strong> User hits either app → Keycloak OIDC redirect → <code>sso_providers</code> config used → JWT issued → <code>refresh_tokens</code> stored → <code>user_sessions</code> created. Cross-app navigation validates existing JWT — no re-login.</li>
+      <li><strong style="color:var(--text)">Feature gating (S2):</strong> Both apps read <code>feature_flags</code> at startup + on change via S8 real-time push. <code>subscription_plans</code> enforce tier limits (max employees, modules enabled). <code>tenant_branding</code> applies custom domain + colors to both UIs.</li>
+      <li><strong style="color:var(--text)">Notification delivery (S3):</strong> HR creates <code>notifications</code> row → S3 engine reads <code>notification_templates</code> → renders message → delivers via configured <code>notification_channels</code> (FCM push, Resend email, in-app via S8). <code>escalation_rules</code> trigger on SLA breach.</li>
+      <li><strong style="color:var(--text)">Compliance (S4):</strong> <code>retention_policies</code> auto-expire records per GDPR/PDPA rules (market-specific via S2 config). <code>legal_holds</code> override retention for active litigation. <code>compliance_exports</code> generate full data packages on demand.</li>
+      <li><strong style="color:var(--text)">Approval workflows (S7):</strong> Leave approval, skill validation, attendance correction, offboarding sign-off (HR) and task approval, timesheet sign-off (Work Management) all use the same engine. One <code>workflow_definitions</code> config per tenant, customisable steps, SLA enforcement, delegation support.</li>
+      <li><strong style="color:var(--text)">Live updates (S8):</strong> SignalR hub pushes to per-user channel (approval notifications), per-org broadcast (announcements), per-project channel (Work Management). <code>presence_sessions</code> tracks who's online for presence indicators in both apps.</li>
+      <li><strong style="color:var(--text)">Work Management tables NOT here:</strong> Projects, tasks, sprints, boards, time entries, Kanban columns, etc. are Work Management-specific — they'll live in their own module schema and reference <code>users</code>, <code>tenants</code>, <code>employees</code>, <code>teams</code>, <code>departments</code> via cross-module FKs, same pattern as HR modules.</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════════════════
+     TAB 11 — CROSS-MODULE
+══════════════════════════════════════════════════════ -->
+<div class="tab-panel" id="panel-crossmodule">
+  <div class="mod-header">
+    <div class="mod-dot" style="background:#444"></div>
+    <span class="mod-title">Cross-Module FK Reference</span>
+  </div>
+  <p class="mod-desc">All foreign key relationships that cross module boundaries. The <code>employees</code> table (Core HR) is the central anchor referenced by every module. <code>tenants</code> is the root tenant-isolation FK present in almost every table.</p>
+
+  <div class="erd-wrap">
+    <h3>ER Diagram — Cross-Module Connections (simplified)</h3>
+    <div class="mermaid" id="erd-crossmodule">
+erDiagram
+    Tenants {
+        uuid id PK
+        string name
+    }
+    Employees {
+        uuid id PK
+        uuid tenant_id FK
+    }
+    LeaveRequests {
+        uuid id PK
+        uuid employee_id FK
+    }
+    AttendanceRecords {
+        uuid id PK
+        uuid employee_id FK
+    }
+    ReviewCycles {
+        uuid id PK
+        uuid organisation_id FK
+    }
+    Skills {
+        uuid id PK
+        uuid category_id FK
+    }
+    PayrollLineItems {
+        uuid id PK
+        uuid leave_request_id FK
+        uuid attendance_record_ref FK
+    }
+    PayrollLeaveAdjustments {
+        uuid id PK
+        uuid leave_request_id FK
+        uuid leave_type_id FK
+    }
+    Goals {
+        uuid id PK
+        uuid linked_skill_id FK
+    }
+    Recognitions {
+        uuid id PK
+        uuid linked_skill_id FK
+    }
+    EmployeeSkills {
+        uuid id PK
+        uuid last_assessed_in_review_id FK
+    }
+    DevelopmentPlans {
+        uuid id PK
+        uuid linked_review_cycle_id FK
+    }
+    AiInteractions {
+        uuid id PK
+        uuid initiated_by FK
+    }
+
+    Tenants ||--o{ Employees : "root_anchor"
+    Employees ||--o{ LeaveRequests : "submits"
+    Employees ||--o{ AttendanceRecords : "clocks"
+    LeaveRequests ||--o{ PayrollLeaveAdjustments : "BRIDGE"
+    LeaveRequests |o--o{ PayrollLineItems : "direct_ref"
+    AttendanceRecords |o--o{ PayrollLineItems : "app_layer_only"
+    ReviewCycles ||--o{ EmployeeSkills : "assessed_in"
+    ReviewCycles ||--o{ DevelopmentPlans : "linked_to"
+    Skills ||--o{ Goals : "linked_skill"
+    Skills ||--o{ Recognitions : "linked_skill"
+    Employees ||--o{ AiInteractions : "initiates"
+    </div>
+  </div>
+
+  <div class="xm-section">
+    <h3>Module Dependency Matrix</h3>
+    <table class="xm-table">
+      <thead>
+        <tr>
+          <th>From Module</th>
+          <th>References</th>
+          <th>To Module</th>
+          <th>Via Table.Column</th>
+          <th>Type</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr><td class="label">Org Structure</td><td>→</td><td class="label">Core HR</td><td>departments.head_employee_id → employees</td><td>Optional FK</td></tr>
+        <tr><td class="label">Org Structure</td><td>→</td><td class="label">Core HR</td><td>team_members.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Org Structure</td><td>→</td><td class="label">Core HR</td><td>job_families.created_by_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Org Structure</td><td>→</td><td class="label">Infrastructure</td><td>legal_entities.country_id → countries</td><td>FK</td></tr>
+        <tr><td class="label">Org Structure</td><td>→</td><td class="label">Infrastructure</td><td>office_locations.country_id → countries</td><td>FK</td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Org Structure</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>job_families.department_id → departments</strong></td><td><strong>FK (dept ↔ family link)</strong></td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Org Structure</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>job_titles.job_family_id → job_families</strong></td><td><strong>FK (title ↔ family link)</strong></td></tr>
+        <tr><td class="label">Core HR</td><td>→</td><td class="label">Org Structure</td><td>employees.department_id → departments</td><td>Optional FK</td></tr>
+        <tr><td class="label">Core HR</td><td>→</td><td class="label">Org Structure</td><td>employees.office_location_id → office_locations</td><td>Optional FK</td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Core HR</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>employees.job_family_id → job_families</strong></td><td><strong>Optional FK</strong></td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Core HR</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>employees.job_family_level_id → job_family_levels</strong></td><td><strong>Optional FK</strong></td></tr>
+        <tr><td class="label">Core HR</td><td>→</td><td class="label">Org Structure</td><td>employees.job_title_id → job_titles</td><td>Optional FK</td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Core HR</strong></td><td>→</td><td class="label"><strong>Infrastructure</strong></td><td><strong>employees.country_id → countries</strong></td><td><strong>Optional FK</strong></td></tr>
+        <tr><td class="label">Core HR</td><td>→</td><td class="label">Infrastructure</td><td>employees.user_id → users</td><td>Optional FK</td></tr>
+        <tr><td class="label">Core HR</td><td>→</td><td class="label">Infrastructure</td><td>employees.avatar_file_record_id → file_records</td><td>Optional FK</td></tr>
+        <tr><td class="label">Core HR</td><td>→</td><td class="label">Org Structure</td><td>employee_lifecycle_events.from/to_department_id → departments</td><td>Optional FK</td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Core HR</td><td>employee_shift_assignments.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Core HR</td><td>biometric_enrollments.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Core HR</td><td>biometric_events.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Core HR</td><td>attendance_records.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Org Structure</td><td>holidays.office_location_id → office_locations</td><td>Optional FK</td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Attendance</strong></td><td>→</td><td class="label"><strong>Infrastructure</strong></td><td><strong>holidays.country_id → countries</strong></td><td><strong>FK</strong></td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Org Structure</td><td>biometric_devices.office_location_id → office_locations</td><td>FK</td></tr>
+        <tr class="xm-bridge"><td class="label"><strong>Leave</strong></td><td>→</td><td class="label"><strong>Payroll (BRIDGE)</strong></td><td><strong>payroll_leave_adjustments.leave_request_id → leave_requests</strong></td><td><strong>Bridge Table</strong></td></tr>
+        <tr class="xm-bridge"><td class="label"><strong>Leave</strong></td><td>→</td><td class="label"><strong>Payroll (BRIDGE)</strong></td><td><strong>payroll_leave_adjustments.leave_type_id → leave_types</strong></td><td><strong>Bridge Table</strong></td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Leave</strong></td><td>→</td><td class="label"><strong>Infrastructure</strong></td><td><strong>leave_policies.country_id → countries</strong></td><td><strong>Optional FK</strong></td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Leave</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>leave_policies.job_family_level_id → job_family_levels</strong></td><td><strong>Optional FK</strong></td></tr>
+        <tr><td class="label">Leave</td><td>→</td><td class="label">Payroll</td><td>payroll_line_items.leave_request_id → leave_requests</td><td>Optional FK</td></tr>
+        <tr><td class="label">Attendance</td><td>→</td><td class="label">Payroll</td><td>payroll_line_items.attendance_record_ref_id → attendance_records</td><td>App-layer (no DB FK)</td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Payroll</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>allowance_type_job_families.job_family_id → job_families</strong></td><td><strong>FK</strong></td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Payroll</strong></td><td>→</td><td class="label"><strong>Infrastructure</strong></td><td><strong>tax_engines.country_id → countries · pension_plans.country_id → countries · payroll_connections.country_id → countries</strong></td><td><strong>FK</strong></td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Performance</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>succession_plans.department_id → departments · succession_plans.job_family_id → job_families</strong></td><td><strong>FK</strong></td></tr>
+        <tr><td class="label">Performance</td><td>→</td><td class="label">Skills</td><td>goals.linked_skill_id → skills</td><td>Optional FK</td></tr>
+        <tr><td class="label">Performance</td><td>→</td><td class="label">Skills</td><td>recognitions.linked_skill_id → skills</td><td>Optional FK</td></tr>
+        <tr style="background:rgba(15,110,86,0.08)"><td class="label"><strong>Skills</strong></td><td>→</td><td class="label"><strong>Org Structure</strong></td><td><strong>job_family_required_skills.job_family_id → job_families</strong></td><td><strong>FK</strong></td></tr>
+        <tr><td class="label">Skills</td><td>→</td><td class="label">Performance</td><td>employee_skills.last_assessed_in_review_id → review_cycles</td><td>Optional FK</td></tr>
+        <tr><td class="label">Skills</td><td>→</td><td class="label">Performance</td><td>development_plans.linked_review_cycle_id → review_cycles</td><td>Optional FK</td></tr>
+        <tr><td class="label">AI / Nexis</td><td>→</td><td class="label">Core HR</td><td>ai_interactions.initiated_by → employees</td><td>FK</td></tr>
+        <tr><td class="label">AI / Nexis</td><td>→</td><td class="label">Core HR</td><td>ai_interactions.context_employee_id → employees</td><td>Optional FK</td></tr>
+        <tr><td class="label">AI / Nexis</td><td>→</td><td class="label">Core HR</td><td>ai_feature_permissions.employee_id → employees</td><td>Optional FK</td></tr>
+        <tr><td class="label">AI / Nexis</td><td>→</td><td class="label">Auth</td><td>ai_feature_permissions.role_id → roles</td><td>Optional FK</td></tr>
+        <tr><td class="label">Documents</td><td>→</td><td class="label">Core HR</td><td>documents.employee_id → employees</td><td>Optional FK (null = company doc)</td></tr>
+        <tr><td class="label">Documents</td><td>→</td><td class="label">Core HR</td><td>document_acknowledgements.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Documents</td><td>→</td><td class="label">Core HR</td><td>document_access_logs.employee_id → employees</td><td>FK</td></tr>
+        <tr><td class="label">Documents</td><td>→</td><td class="label">Org Structure</td><td>documents.legal_entity_id → legal_entities</td><td>Optional FK</td></tr>
+        <tr><td class="label">Leave</td><td>→</td><td class="label">Attendance</td><td>leave_requests (status=Approved) auto-creates attendance_records (status=OnLeave)</td><td>App-layer trigger</td></tr>
+      </tbody>
+    </table>
+    <p class="note">Highlighted rows = explicit cross-module bridge tables. App-layer = no DB-level FK constraint enforced.</p>
+  </div>
+
+  <div class="xm-section">
+    <h3>Universal FKs (present in nearly every table)</h3>
+    <table class="xm-table">
+      <thead><tr><th>Column Pattern</th><th>References</th><th>Module</th><th>Notes</th></tr></thead>
+      <tbody>
+        <tr><td>tenant_id</td><td>tenants.id</td><td>Infrastructure</td><td>Row-level tenant isolation — present in ~55 of 63 tables</td></tr>
+        <tr><td>organisation_id</td><td>tenants.id</td><td>Infrastructure</td><td>Alias used in Leave, Payroll, Performance, Skills modules — same FK target</td></tr>
+        <tr><td>employee_id</td><td>employees.id</td><td>Core HR</td><td>Primary cross-module anchor — present in 25+ tables across all domain modules</td></tr>
+        <tr><td>created_by_id / created_by</td><td>employees.id or users.id</td><td>Core HR / Infra</td><td>Audit trail — varies by module convention</td></tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<div class="footer">
+  Selfvora — Complete ER Diagram &nbsp;·&nbsp; 15 modules · 102 tables (all integrated — 83 HR + 19 shared platform) · v4.0 &nbsp;·&nbsp; <strong>CONFIDENTIAL</strong> — Internal use only &nbsp;·&nbsp; Updated 2026-04-04
+</div>
+
+<script type="module">
+import mermaid from 'https://esm.sh/mermaid@11/dist/mermaid.esm.min.mjs';
+
+const isDark = window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches;
+
+mermaid.initialize({
+  startOnLoad: false,
+  theme: isDark ? 'dark' : 'default',
+  er: { diagramPadding: 20, layoutDirection: 'TB', minEntityWidth: 100, minEntityHeight: 75, entityPadding: 15, useMaxWidth: true },
+  securityLevel: 'loose'
+});
+
+// Tab switching logic
+const tabBtns = document.querySelectorAll('.tab-btn');
+const tabPanels = document.querySelectorAll('.tab-panel');
+const rendered = new Set();
+
+async function renderDiagramsInPanel(panelId) {
+  if (rendered.has(panelId)) return;
+  rendered.add(panelId);
+  const panel = document.getElementById('panel-' + panelId);
+  if (!panel) return;
+  const diagrams = panel.querySelectorAll('.mermaid');
+  for (const el of diagrams) {
+    const id = el.id;
+    const code = el.textContent.trim();
+    try {
+      const { svg } = await mermaid.render('svg-' + id, code);
+      el.innerHTML = svg;
+    } catch(e) {
+      el.innerHTML = '<pre style="color:red;font-size:12px;padding:10px;">Diagram render error: ' + e.message + '</pre>';
+      console.error('Mermaid error for', id, e);
+    }
+  }
+}
+
+tabBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    tabBtns.forEach(b => b.classList.remove('active'));
+    tabPanels.forEach(p => p.classList.remove('active'));
+    btn.classList.add('active');
+    const tabId = btn.dataset.tab;
+    const panel = document.getElementById('panel-' + tabId);
+    if (panel) panel.classList.add('active');
+    renderDiagramsInPanel(tabId);
+  });
+});
+
+// Render the initially active tab (overview has no diagrams, render foundation on click)
+// Pre-render foundation since it's the first content tab
+renderDiagramsInPanel('foundation');
+</script>
+</body>
+</html>
