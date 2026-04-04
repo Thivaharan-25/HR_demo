@@ -86,6 +86,18 @@ const DARK_C = {
 // Global dark-mode + theme flags — mutated during App render, read by Proxy on every access
 let _darkMode = false;
 let _themeKey = "blue";
+let _isMobile = false;
+
+/* ─── Mobile detection hook ──────────────────────────────────── */
+const useIsMobile = (breakpoint = 768) => {
+    const [isMobile, setIsMobile] = useState(() => typeof window !== "undefined" && window.innerWidth <= breakpoint);
+    useEffect(() => {
+        const h = () => setIsMobile(window.innerWidth <= breakpoint);
+        window.addEventListener("resize", h);
+        return () => window.removeEventListener("resize", h);
+    }, [breakpoint]);
+    return isMobile;
+};
 
 // Per-theme primary color tokens (overlaid on top of LIGHT_C / DARK_C)
 const THEME_ACCENTS = {
@@ -1175,7 +1187,7 @@ const getModuleFromPage = (pageKey) => {
     return pageKey;
 };
 
-const TopBar = ({ onNav, onLogout, page, onAction }) => {
+const TopBar = ({ onNav, onLogout, page, onAction, onMenuToggle }) => {
     const currentUser = React.useContext(UserCtx);
     const { notifications, setNotifications, employees, attendance, leaveRequests, skillRequests } = React.useContext(DataCtx);
     const { isDark, toggleTheme } = React.useContext(ThemeCtx);
@@ -1245,20 +1257,28 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
         borderRadius: "50%", cursor: "pointer", transition: "background 0.15s", flexShrink: 0,
     };
 
-    return (
+    const mob = _isMobile;
+
+    return (<>
         <div style={{
-            height: 64, flexShrink: 0,
+            height: mob ? 56 : 64, flexShrink: 0,
             background: isDark ? "rgba(16, 20, 35, 0.75)" : "rgba(255, 255, 255, 0.75)",
             backdropFilter: "blur(12px)",
             WebkitBackdropFilter: "blur(12px)",
             borderBottom: `1px solid ${C.border}`,
             display: "flex", alignItems: "center", justifyContent: "space-between",
-            padding: "0 28px", zIndex: 200,
+            padding: mob ? "0 12px" : "0 28px", zIndex: 200,
         }}>
-            {/* Left: Greeting+Search (Dashboard) or Search+sub-nav (other pages) */}
-            <div style={{ display: "flex", alignItems: "center", height: "100%", gap: 16 }}>
+            {/* Left: Hamburger (mobile) + Greeting+Search (Dashboard) or Search+sub-nav (other pages) */}
+            <div style={{ display: "flex", alignItems: "center", height: "100%", gap: mob ? 8 : 16, overflow: "hidden", flex: 1, minWidth: 0 }}>
+                {/* Mobile hamburger */}
+                {mob && (
+                    <div onClick={onMenuToggle} style={{ ...iconBtnStyle, flexShrink: 0 }}>
+                        <Lucide.Menu size={20} color={C.text} strokeWidth={1.75} />
+                    </div>
+                )}
                 {/* Dashboard: greeting then search */}
-                {isDashboard && dashGreeting && (
+                {isDashboard && dashGreeting && !mob && (
                     <>
                         <div>
                             <div style={{ fontSize: 13.5, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>
@@ -1271,17 +1291,17 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                 )}
 
                 {/* Search bar (scoped by role) */}
-                <div ref={searchRef} style={{ position: "relative" }}>
+                <div ref={searchRef} style={{ position: "relative", flex: mob ? 1 : "none", minWidth: 0 }}>
                     <Lucide.Search size={14} color={C.textMuted} strokeWidth={2}
                         style={{ position: "absolute", left: 11, top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }} />
                     <input
-                        placeholder="Search employees…"
+                        placeholder={mob ? "Search…" : "Search employees…"}
                         value={searchQ}
                         onChange={e => setSearchQ(e.target.value)}
                         style={{
                             paddingLeft: 34, paddingRight: 14, paddingTop: 8, paddingBottom: 8,
                             background: C.bg, border: `1px solid ${searchFocused ? C.primary : C.border}`, borderRadius: 8,
-                            fontSize: 13, color: C.text, width: 230, outline: "none",
+                            fontSize: 13, color: C.text, width: mob ? "100%" : 230, outline: "none",
                             fontFamily: "inherit", boxShadow: searchFocused ? `0 0 0 2px ${C.primaryLight}` : "none",
                             transition: "border-color 0.15s, box-shadow 0.15s",
                         }}
@@ -1313,7 +1333,7 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                 </div>
 
                 {/* Contextual sub-nav tabs (non-dashboard pages) */}
-                {!isDashboard && subNav.length > 0 && (
+                {!isDashboard && subNav.length > 0 && !mob && (
                     <nav style={{ display: "flex", alignItems: "stretch", height: "100%", gap: 0 }}>
                         {subNav.map(item => {
                             const active = isSubActive(item);
@@ -1347,16 +1367,16 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
             </div>
 
             {/* Right: icon actions */}
-            <div style={{ display: "flex", alignItems: "center", gap: 2 }}>
+            <div style={{ display: "flex", alignItems: "center", gap: 2, flexShrink: 0 }}>
 
                 {/* Contextual CTA button — removed as requested */}
 
-                {/* Dark mode */}
-                <div onClick={toggleTheme} style={iconBtnStyle}
+                {/* Dark mode — hide on mobile */}
+                {!mob && <div onClick={toggleTheme} style={iconBtnStyle}
                     onMouseEnter={e => e.currentTarget.style.background = C.bg}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     {isDark ? <Lucide.Sun size={18} color={C.textMid} strokeWidth={1.75} /> : <Lucide.Moon size={18} color={C.textMid} strokeWidth={1.75} />}
-                </div>
+                </div>}
 
                 {/* Bell */}
                 <div ref={notiRef} style={{ position: "relative" }}>
@@ -1397,21 +1417,21 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                     </AnimatePresence>
                 </div>
 
-                {/* Help */}
-                <div style={iconBtnStyle}
+                {/* Help — hide on mobile */}
+                {!mob && <div style={iconBtnStyle}
                     onMouseEnter={e => e.currentTarget.style.background = C.bg}
                     onMouseLeave={e => e.currentTarget.style.background = "transparent"}>
                     <Lucide.HelpCircle size={18} color={C.textMid} strokeWidth={1.75} />
-                </div>
+                </div>}
 
                 {/* User profile avatar + dropdown */}
-                <div ref={avatarRef} style={{ position: "relative", marginLeft: 4 }}>
+                <div ref={avatarRef} style={{ position: "relative", marginLeft: mob ? 0 : 4 }}>
                     <div
                         role="button"
                         aria-label="User profile"
                         onClick={() => setAvatarOpen(o => !o)}
                         style={{
-                            display: "flex", alignItems: "center", gap: 8, padding: "4px 6px 4px 4px",
+                            display: "flex", alignItems: "center", gap: mob ? 4 : 8, padding: mob ? "4px" : "4px 6px 4px 4px",
                             borderRadius: 10, cursor: "pointer", transition: "background 0.15s",
                             background: avatarOpen ? C.bg : "transparent",
                         }}
@@ -1427,11 +1447,11 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                             {userInitials}
                             <div style={{ position: "absolute", bottom: -1, right: -1, width: 8, height: 8, borderRadius: "50%", background: "#22c55e", border: `2px solid ${isDark ? "#101423" : "#fff"}` }} />
                         </div>
-                        <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
+                        {!mob && <div style={{ display: "flex", flexDirection: "column", lineHeight: 1.2 }}>
                             <span style={{ fontSize: 12.5, fontWeight: 700, color: C.text, whiteSpace: "nowrap" }}>{firstName}</span>
                             <span style={{ fontSize: 10.5, color: C.textMuted, whiteSpace: "nowrap" }}>{userTitle}</span>
-                        </div>
-                        <Lucide.ChevronDown size={13} color={C.textMuted} strokeWidth={2} style={{ transform: avatarOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.18s" }} />
+                        </div>}
+                        {!mob && <Lucide.ChevronDown size={13} color={C.textMuted} strokeWidth={2} style={{ transform: avatarOpen ? "rotate(180deg)" : "rotate(0deg)", transition: "transform 0.18s" }} />}
                     </div>
                     <AnimatePresence>
                         {avatarOpen && (
@@ -1484,6 +1504,37 @@ const TopBar = ({ onNav, onLogout, page, onAction }) => {
                 </div>
             </div>
         </div>
+        {/* Mobile sub-nav tabs — rendered as a separate scrollable row */}
+        {mob && !isDashboard && subNav.length > 0 && (
+            <div style={{
+                display: "flex", alignItems: "stretch", height: 40, flexShrink: 0,
+                borderBottom: `1px solid ${C.border}`,
+                background: isDark ? "rgba(16, 20, 35, 0.85)" : "rgba(255,255,255,0.92)",
+                overflowX: "auto", overflowY: "hidden",
+                WebkitOverflowScrolling: "touch",
+                padding: "0 8px",
+            }}>
+                {subNav.map(item => {
+                    const active = isSubActive(item);
+                    return (
+                        <button key={item.key} onClick={() => onNav(item.key)}
+                            style={{
+                                padding: "0 12px", height: "100%", border: "none",
+                                borderBottom: active ? `2px solid ${C.primary}` : "2px solid transparent",
+                                background: "transparent", cursor: "pointer",
+                                fontSize: 12.5, fontWeight: active ? 700 : 500,
+                                color: active ? C.primary : C.textMid,
+                                fontFamily: "inherit", whiteSpace: "nowrap",
+                                transition: "color 0.15s, border-color 0.15s", flexShrink: 0,
+                            }}
+                        >
+                            {item.label}
+                        </button>
+                    );
+                })}
+            </div>
+        )}
+        </>
     );
 };
 
@@ -1552,18 +1603,19 @@ const SidebarNavItem = ({ item, isActive, onNav, collapsed, badgeCount, nexisHig
 };
 
 /* ─── SIDEBAR ─────────────────────────────────────────────────── */
-const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
+const Sidebar = ({ active, onNav, onLogout, onNexisAI, mobileOpen, onMobileClose }) => {
     const [collapsed, setCollapsed] = useState(true);
     const sidebarRef = React.useRef(null);
     React.useEffect(() => {
         const handleClickOutside = (event) => {
             if (sidebarRef.current && !sidebarRef.current.contains(event.target)) {
-                setCollapsed(true);
+                if (_isMobile && mobileOpen) { onMobileClose?.(); }
+                else { setCollapsed(true); }
             }
         };
         document.addEventListener("mousedown", handleClickOutside);
         return () => document.removeEventListener("mousedown", handleClickOutside);
-    }, []);
+    }, [mobileOpen]);
     const currentUser = React.useContext(UserCtx);
     const { leaveRequests } = React.useContext(DataCtx);
     const expandedW = 256;
@@ -1598,49 +1650,80 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
                 key={item.key}
                 item={item}
                 isActive={isActive}
-                onNav={handleNavClick}
-                collapsed={collapsed}
+                onNav={mobileMode ? handleNavMobile : handleNavClick}
+                collapsed={effectiveCollapsed}
                 badgeCount={badgeCount}
                 nexisHighlight={isNexis}
             />
         );
     };
 
+    const mobileMode = _isMobile;
+    const sidebarVisible = mobileMode ? mobileOpen : true;
+    const effectiveCollapsed = mobileMode ? false : collapsed;
+
+    const handleNavMobile = (key) => {
+        handleNavClick(key);
+        if (mobileMode) onMobileClose?.();
+    };
+
     return (
-        <motion.aside
-            ref={sidebarRef}
-            role="navigation"
-            aria-label="Main navigation"
-            onClick={() => { if (collapsed) setCollapsed(false); }}
-            animate={{ width: collapsed ? collapsedW : expandedW, minWidth: collapsed ? collapsedW : expandedW }}
-            transition={{ duration: 0.25, ease: "easeInOut" }}
-            style={{
-                background: SB.bg,
-                boxShadow: collapsed ? "none" : "4px 0 24px rgba(0,0,0,0.20)",
-                borderRight: `1px solid ${SB.border}`,
-                display: "flex",
-                flexDirection: "column",
-                overflowY: "auto",
-                overflowX: "hidden",
-                flexShrink: 0,
-                zIndex: 100,
-                position: "relative",
-            }}
-        >
+        <>
+            {/* Mobile backdrop */}
+            <AnimatePresence>
+                {mobileMode && mobileOpen && (
+                    <motion.div
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                        onClick={onMobileClose}
+                        style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", zIndex: 299 }}
+                    />
+                )}
+            </AnimatePresence>
+            <motion.aside
+                ref={sidebarRef}
+                role="navigation"
+                aria-label="Main navigation"
+                onClick={() => { if (!mobileMode && collapsed) setCollapsed(false); }}
+                animate={{
+                    width: mobileMode ? expandedW : (collapsed ? collapsedW : expandedW),
+                    minWidth: mobileMode ? expandedW : (collapsed ? collapsedW : expandedW),
+                    x: mobileMode ? (mobileOpen ? 0 : -expandedW) : 0,
+                }}
+                transition={{ duration: 0.25, ease: "easeInOut" }}
+                style={{
+                    background: SB.bg,
+                    boxShadow: (mobileMode && mobileOpen) ? "4px 0 24px rgba(0,0,0,0.30)" : collapsed ? "none" : "4px 0 24px rgba(0,0,0,0.20)",
+                    borderRight: `1px solid ${SB.border}`,
+                    display: "flex",
+                    flexDirection: "column",
+                    overflowY: "auto",
+                    overflowX: "hidden",
+                    flexShrink: 0,
+                    zIndex: mobileMode ? 300 : 100,
+                    position: mobileMode ? "fixed" : "relative",
+                    top: mobileMode ? 0 : undefined,
+                    left: mobileMode ? 0 : undefined,
+                    bottom: mobileMode ? 0 : undefined,
+                    height: mobileMode ? "100vh" : undefined,
+                }}
+            >
             {/* ── Logo row ────────────────────────────────────────── */}
             <div style={{
                 height: 64, flexShrink: 0,
                 display: "flex", alignItems: "center",
-                padding: collapsed ? "0 25px" : "0 20px",
+                padding: effectiveCollapsed ? "0 25px" : "0 20px",
                 gap: 14,
                 overflow: "hidden",
-                cursor: collapsed ? "pointer" : "default"
+                cursor: effectiveCollapsed ? "pointer" : "default"
             }}>
                 <div style={{ flexShrink: 0 }}>
                     <SelfvoraLogo size={30} />
                 </div>
                 <motion.div
-                    animate={{ opacity: collapsed ? 0 : 1 }}
+                    animate={{ opacity: effectiveCollapsed ? 0 : 1 }}
                     transition={{ duration: 0.18 }}
                     style={{ flex: 1, overflow: "hidden", whiteSpace: "nowrap" }}
                 >
@@ -1649,7 +1732,7 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
                     </div>
                     <div style={{ fontSize: 10, color: SB.text, fontWeight: 600, letterSpacing: "0.08em", textTransform: "uppercase", marginTop: 1 }}>HR Portal</div>
                 </motion.div>
-                {!collapsed && (
+                {!effectiveCollapsed && !mobileMode && (
                     <button
                         onClick={(e) => { e.stopPropagation(); setCollapsed(true); }}
                         style={{
@@ -1662,6 +1745,18 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
                         aria-label="Collapse Sidebar"
                     >
                         <Lucide.PanelLeftClose size={18} strokeWidth={2} />
+                    </button>
+                )}
+                {mobileMode && (
+                    <button
+                        onClick={(e) => { e.stopPropagation(); onMobileClose?.(); }}
+                        style={{
+                            background: "transparent", border: "none", cursor: "pointer", color: SB.text, padding: 4,
+                            display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 6, transition: "background 0.2s"
+                        }}
+                        aria-label="Close menu"
+                    >
+                        <Lucide.X size={18} strokeWidth={2} />
                     </button>
                 )}
             </div>
@@ -1677,9 +1772,9 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
                     if (!filteredItems.length) return null;
                     return (
                         <div key={gi} style={{ marginTop: gi > 0 ? 8 : 0 }}>
-                            {!collapsed && group.label && (
+                            {!effectiveCollapsed && group.label && (
                                 <motion.div
-                                    animate={{ opacity: collapsed ? 0 : 1 }}
+                                    animate={{ opacity: effectiveCollapsed ? 0 : 1 }}
                                     style={{
                                         fontSize: 10, fontWeight: 700, color: SB.label,
                                         letterSpacing: "1.2px", textTransform: "uppercase",
@@ -1689,7 +1784,7 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
                                     {group.label}
                                 </motion.div>
                             )}
-                            {collapsed && gi > 0 && (
+                            {effectiveCollapsed && gi > 0 && (
                                 <div style={{ height: 1, background: SB.separator, margin: "8px 4px" }} />
                             )}
                             <div style={{ display: "flex", flexDirection: "column", gap: 2 }}>
@@ -1701,6 +1796,7 @@ const Sidebar = ({ active, onNav, onLogout, onNexisAI }) => {
             </div>
 
         </motion.aside>
+        </>
     );
 };
 
@@ -1786,14 +1882,16 @@ const LoginPage = ({ onLogin }) => {
         setEmail(e); setPassword(p); setError("");
     };
 
+    const mob = _isMobile;
+
     return (
         <div style={{
-            minHeight: "100vh", display: "flex", background: "#f8fafc",
+            minHeight: "100vh", display: "flex", flexDirection: mob ? "column" : "row", background: "#f8fafc",
             fontFamily: "'Inter', 'Outfit', system-ui, sans-serif",
-            overflow: "hidden"
+            overflow: mob ? "auto" : "hidden"
         }}>
-            {/* Left panel — Hero Section */}
-            <motion.div
+            {/* Left panel — Hero Section (hidden on mobile) */}
+            {!mob && <motion.div
                 initial={{ opacity: 0, x: -20 }}
                 animate={{ opacity: 1, x: 0 }}
                 transition={{ duration: 0.8, ease: "easeOut" }}
@@ -1853,18 +1951,31 @@ const LoginPage = ({ onLogin }) => {
 
                 {/* Decorative Elements */}
                 <div style={{ position: "absolute", top: -100, right: -100, width: 300, height: 300, background: "rgba(255,255,255,0.05)", borderRadius: "50%", zIndex: 1 }} />
-            </motion.div>
+            </motion.div>}
+
+            {/* Mobile: compact logo header */}
+            {mob && (
+                <div style={{ padding: "32px 24px 16px", textAlign: "center" }}>
+                    <div style={{ display: "inline-flex", alignItems: "center", gap: 10, marginBottom: 8 }}>
+                        <div style={{ padding: 8, background: "#7c3aed", borderRadius: 12 }}>
+                            <SelfvoraLogo size={28} color="#fff" />
+                        </div>
+                        <span style={{ fontWeight: 850, fontSize: 22, color: "#1e293b", letterSpacing: "-0.5px" }}>Selfvora</span>
+                    </div>
+                    <p style={{ fontSize: 13, color: "#64748b", margin: "4px 0 0" }}>Your workplace, simplified.</p>
+                </div>
+            )}
 
             {/* Right Section — Form */}
-            <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "center", padding: "40px", overflowY: "auto" }}>
+            <div style={{ flex: 1, display: "flex", alignItems: mob ? "flex-start" : "center", justifyContent: "center", padding: mob ? "16px 20px 40px" : "40px", overflowY: "auto" }}>
                 <motion.div
                     initial={{ opacity: 0, y: 20 }}
                     animate={{ opacity: 1, y: 0 }}
                     transition={{ delay: 0.2, duration: 0.6 }}
                     style={{ width: "100%", maxWidth: 420 }}
                 >
-                    <div style={{ marginBottom: 40 }}>
-                        <h2 style={{ fontSize: 28, fontWeight: 800, color: "#1e293b", margin: "0 0 10px", letterSpacing: "-0.5px" }}>Sign in</h2>
+                    <div style={{ marginBottom: mob ? 24 : 40 }}>
+                        <h2 style={{ fontSize: mob ? 22 : 28, fontWeight: 800, color: "#1e293b", margin: "0 0 10px", letterSpacing: "-0.5px" }}>Sign in</h2>
                         <p style={{ fontSize: 14, color: "#64748b", margin: 0 }}>Welcome back! Please enter your credentials.</p>
                     </div>
 
@@ -1956,7 +2067,7 @@ const LoginPage = ({ onLogin }) => {
                             <div style={{ height: "1px", flex: 1, background: "#f1f5f9" }} />
                         </div>
 
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+                        <div style={{ display: "grid", gridTemplateColumns: mob ? "1fr" : "1fr 1fr", gap: mob ? 8 : 12 }}>
                             {DEMO_ROLES.map(role => (
                                 <motion.button
                                     key={role.id}
@@ -2007,17 +2118,17 @@ const LandingNavbar = ({ onEnterApp, onScrollTo, onStartSetup }) => {
                 transition: "all 0.35s ease",
             }}
         >
-            <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 28px", height: 68, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div style={{ maxWidth: 1200, margin: "0 auto", padding: _isMobile ? "0 16px" : "0 28px", height: _isMobile ? 56 : 68, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <motion.div whileHover={{ rotate: 10, scale: 1.1 }} style={{ filter: "drop-shadow(0 4px 10px rgba(13,148,136,0.40))" }}>
-                        <SelfvoraLogo size={36} />
+                        <SelfvoraLogo size={_isMobile ? 28 : 36} />
                     </motion.div>
-                    <span style={{ fontWeight: 800, fontSize: 20, letterSpacing: "-0.6px", transition: "color 0.35s ease" }}>
+                    <span style={{ fontWeight: 800, fontSize: _isMobile ? 17 : 20, letterSpacing: "-0.6px", transition: "color 0.35s ease" }}>
                         <span style={{ color: scrolled ? C.text : "#fff", transition: "color 0.35s ease" }}>Self</span><span style={{ color: "#0d9488" }}>vora</span>
                     </span>
                 </div>
-                <div style={{ display: "flex", alignItems: "center", gap: 32 }}>
-                    <div style={{ display: "flex", gap: 28 }}>
+                <div style={{ display: "flex", alignItems: "center", gap: _isMobile ? 8 : 32 }}>
+                    {!_isMobile && <div style={{ display: "flex", gap: 28 }}>
                         {links.map(l => (
                             <motion.span
                                 key={l}
@@ -2030,13 +2141,13 @@ const LandingNavbar = ({ onEnterApp, onScrollTo, onStartSetup }) => {
                                 {l}
                             </motion.span>
                         ))}
-                    </div>
-                    <div style={{ display: "flex", gap: 10, alignItems: "center" }}>
+                    </div>}
+                    <div style={{ display: "flex", gap: _isMobile ? 6 : 10, alignItems: "center" }}>
                         <motion.button
                             whileHover={{ scale: 1.03 }}
                             whileTap={{ scale: 0.97 }}
                             onClick={onEnterApp}
-                            style={{ padding: "8px 18px", borderRadius: 9, border: scrolled ? `1px solid ${C.border}` : "1px solid rgba(255,255,255,0.25)", background: scrolled ? C.white : "rgba(255,255,255,0.1)", color: scrolled ? C.text : "#fff", fontSize: 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.35s ease" }}
+                            style={{ padding: _isMobile ? "7px 12px" : "8px 18px", borderRadius: 9, border: scrolled ? `1px solid ${C.border}` : "1px solid rgba(255,255,255,0.25)", background: scrolled ? C.white : "rgba(255,255,255,0.1)", color: scrolled ? C.text : "#fff", fontSize: _isMobile ? 12 : 13, fontWeight: 600, cursor: "pointer", fontFamily: "inherit", transition: "all 0.35s ease" }}
                         >
                             Sign In
                         </motion.button>
@@ -2044,9 +2155,9 @@ const LandingNavbar = ({ onEnterApp, onScrollTo, onStartSetup }) => {
                             whileHover={{ scale: 1.03, boxShadow: "0 6px 20px rgba(99,102,241,0.45)" }}
                             whileTap={{ scale: 0.97 }}
                             onClick={onStartSetup}
-                            style={{ padding: "8px 22px", borderRadius: 9, border: "none", background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "#fff", fontSize: 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
+                            style={{ padding: _isMobile ? "7px 14px" : "8px 22px", borderRadius: 9, border: "none", background: "linear-gradient(135deg, #6366F1, #8B5CF6)", color: "#fff", fontSize: _isMobile ? 12 : 13, fontWeight: 700, cursor: "pointer", fontFamily: "inherit", boxShadow: "0 4px 14px rgba(99,102,241,0.3)" }}
                         >
-                            Start Free Trial →
+                            {_isMobile ? "Free Trial" : "Start Free Trial →"}
                         </motion.button>
                     </div>
                 </div>
@@ -3106,9 +3217,9 @@ const CompanySetupWizard = ({ onComplete, onSkip }) => {
     const LBL = { fontSize: 12, fontWeight: 700, color: '#374151', display: 'block', marginBottom: 6, letterSpacing: '0.02em' };
 
     return (
-        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 24, fontFamily: "inherit" }}>
+        <div style={{ minHeight: '100vh', background: 'linear-gradient(135deg, #0F172A 0%, #1E1B4B 60%, #0F172A 100%)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: _isMobile ? 12 : 24, fontFamily: "inherit" }}>
             <style>{`@keyframes spin { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }`}</style>
-            <div style={{ width: '100%', maxWidth: 480 }}>
+            <div style={{ width: '100%', maxWidth: _isMobile ? "100%" : 480 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 32, justifyContent: 'center' }}>
                     <SelfvoraLogo size={36} />
                     <div style={{ fontWeight: 800, fontSize: 18, letterSpacing: '-0.3px' }}>
@@ -3117,7 +3228,7 @@ const CompanySetupWizard = ({ onComplete, onSkip }) => {
                 </div>
 
                 <motion.div initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.4 }}
-                    style={{ background: '#fff', borderRadius: 20, padding: '32px 36px', boxShadow: '0 24px 64px rgba(0,0,0,0.28)' }}>
+                    style={{ background: '#fff', borderRadius: _isMobile ? 16 : 20, padding: _isMobile ? '24px 18px' : '32px 36px', boxShadow: '0 24px 64px rgba(0,0,0,0.28)' }}>
                     <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', margin: '0 0 4px', letterSpacing: '-0.4px' }}>Create your account</h1>
                     <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 28px' }}>Get started in 30 seconds — no credit card needed.</p>
 
@@ -3921,11 +4032,11 @@ const DashboardPage = () => {
                 </AnimatePresence>,
                 document.body
             )}
-            <div style={{ display: "flex", minHeight: "100%", background: ceoBg }}>
-                <div style={{ flex: 1, padding: "24px 28px", minWidth: 0 }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 22 }}>
+            <div style={{ display: "flex", minHeight: "100%", background: ceoBg, flexDirection: _isMobile ? "column" : "row" }}>
+                <div style={{ flex: 1, padding: _isMobile ? "16px 14px" : "24px 28px", minWidth: 0 }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: _isMobile ? "flex-start" : "flex-end", marginBottom: _isMobile ? 16 : 22, flexDirection: _isMobile ? "column" : "row", gap: _isMobile ? 10 : 0 }}>
                         <div>
-                            <h1 style={{ fontSize: 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Admin Dashboard</h1>
+                            <h1 style={{ fontSize: _isMobile ? 22 : 30, fontWeight: 800, color: _darkMode ? C.text : T.onSurface, margin: 0, letterSpacing: "-0.5px", fontFamily: "Manrope, sans-serif" }}>Admin Dashboard</h1>
                             <p style={{ fontSize: 14, color: _darkMode ? C.textMuted : T.onSurfaceVar, margin: "8px 0 0" }}>{isCEO ? "CEO" : "Head of HR"} · Company-wide health · March 2026</p>
                         </div>
                         <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
@@ -18886,11 +18997,36 @@ const EMP_DEFAULT_PERMS = {
     jf8: ["dashboard", "timesheet", "leave", "people", "performance", "skills"],                                      // QA
 };
 
-const EmployeeSidebar = ({ active, onNav, onLogout, user, navItems }) => {
+const EmployeeSidebar = ({ active, onNav, onLogout, user, navItems, mobileOpen, onMobileClose }) => {
     const { isDark, toggleTheme } = React.useContext(ThemeCtx);
     const items = navItems || EMP_NAV_ITEMS;
-    return (
-        <div style={{ width: 224, background: C.sidebar, borderRight: `1px solid ${C.border}`, display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto" }}>
+    const mob = _isMobile;
+
+    const handleNavMobile = (key) => {
+        onNav(key);
+        if (mob) onMobileClose?.();
+    };
+
+    return (<>
+        {/* Mobile backdrop */}
+        <AnimatePresence>
+            {mob && mobileOpen && (
+                <motion.div
+                    initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}
+                    transition={{ duration: 0.2 }}
+                    onClick={onMobileClose}
+                    style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.5)", backdropFilter: "blur(4px)", zIndex: 299 }}
+                />
+            )}
+        </AnimatePresence>
+        <motion.div
+            animate={{ x: mob ? (mobileOpen ? 0 : -260) : 0 }}
+            transition={{ duration: 0.25, ease: "easeInOut" }}
+            style={{
+                width: mob ? 260 : 224, background: C.sidebar, borderRight: `1px solid ${C.border}`,
+                display: "flex", flexDirection: "column", flexShrink: 0, overflowY: "auto",
+                ...(mob ? { position: "fixed", top: 0, left: 0, bottom: 0, zIndex: 300, height: "100vh" } : {}),
+            }}>
             <div style={{ padding: "20px 20px 16px", borderBottom: `1px solid ${C.borderLight}` }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <SelfvoraLogo size={36} />
@@ -18915,7 +19051,7 @@ const EmployeeSidebar = ({ active, onNav, onLogout, user, navItems }) => {
                 {items.map(item => {
                     const isActive = active === item.key;
                     return (
-                        <motion.div key={item.key} whileHover={{ x: 2 }} onClick={() => onNav(item.key)}
+                        <motion.div key={item.key} whileHover={{ x: 2 }} onClick={() => (mob ? handleNavMobile : onNav)(item.key)}
                             style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 12px", borderRadius: 9, cursor: "pointer", marginBottom: 2, background: isActive ? C.navActive : "transparent", color: isActive ? C.primary : C.textMid, fontWeight: isActive ? 700 : 500, fontSize: 13.5, transition: "all 0.15s" }}>
                             <Icon n={item.icon} size={16} color={isActive ? C.primary : C.textMuted} />
                             {item.label}
@@ -18933,8 +19069,8 @@ const EmployeeSidebar = ({ active, onNav, onLogout, user, navItems }) => {
                     Sign out
                 </div>
             </div>
-        </div>
-    );
+        </motion.div>
+    </>);
 };
 
 /* ─── EMPLOYEE DASHBOARD ─────────────────────────────────────── */
@@ -18955,11 +19091,11 @@ const EmployeeDashboard = ({ user, onStartOnboarding, empRecord, onNav, clockedI
     const todayDow = new Date().getDay(); // 0=Sun, 1=Mon … 5=Fri
 
     return (
-        <div style={{ padding: "28px 32px", overflowY: "auto", flex: 1 }}>
-            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: 24 }}>
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+        <div style={{ padding: _isMobile ? "16px 14px" : "28px 32px", overflowY: "auto", flex: 1 }}>
+            <motion.div initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} style={{ marginBottom: _isMobile ? 16 : 24 }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: _isMobile ? "flex-start" : "flex-start", flexDirection: _isMobile ? "column" : "row", gap: _isMobile ? 8 : 0 }}>
                     <div>
-                        <h1 style={{ fontSize: 26, fontWeight: 900, color: C.text, margin: "0 0 4px", letterSpacing: "-0.5px" }}>Good {greeting}, {user?.name?.split(" ")[0]}!</h1>
+                        <h1 style={{ fontSize: _isMobile ? 20 : 26, fontWeight: 900, color: C.text, margin: "0 0 4px", letterSpacing: "-0.5px" }}>Good {greeting}, {user?.name?.split(" ")[0]}!</h1>
                         <p style={{ fontSize: 13, color: C.textMuted, margin: 0 }}>{today}</p>
                     </div>
                     <div style={{ display: "flex", gap: 8 }}>
@@ -18990,7 +19126,7 @@ const EmployeeDashboard = ({ user, onStartOnboarding, empRecord, onNav, clockedI
 
             {/* Prominent Clock-In Card */}
             <motion.div initial={{ opacity: 0, y: 6 }} animate={{ opacity: 1, y: 0 }} transition={{ delay: 0.05 }}
-                style={{ marginBottom: 20, background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: "20px 24px", boxShadow: C.shadow, display: "flex", alignItems: "center", gap: 24 }}>
+                style={{ marginBottom: 20, background: C.white, border: `1px solid ${C.border}`, borderRadius: 16, padding: _isMobile ? "16px" : "20px 24px", boxShadow: C.shadow, display: "flex", alignItems: _isMobile ? "flex-start" : "center", gap: _isMobile ? 16 : 24, flexDirection: _isMobile ? "column" : "row" }}>
                 <div style={{ flex: 1 }}>
                     <div style={{ fontSize: 10, fontWeight: 700, color: C.textMuted, textTransform: "uppercase", letterSpacing: "0.07em", marginBottom: 12 }}>Today's Attendance</div>
                     <div style={{ display: "flex", alignItems: "center", gap: 14, flexWrap: "wrap" }}>
@@ -21065,6 +21201,8 @@ const EmployeeApp = ({ user, onLogout, isDark, setIsDark, dataCtxValue }) => {
     const [page, setPage] = React.useState("emp_dashboard");
     const [showOnboarding, setShowOnboarding] = React.useState(!user?.onboardingComplete);
     const [onboardingDone, setOnboardingDone] = React.useState(user?.onboardingComplete || false);
+    const [empMobileMenu, setEmpMobileMenu] = React.useState(false);
+    React.useEffect(() => { setEmpMobileMenu(false); }, [page]);
 
     // Shared clock-in state (lifted — shared between Dashboard and Timesheet)
     const [clockedIn, setClockedIn] = React.useState(false);
@@ -21138,10 +21276,44 @@ const EmployeeApp = ({ user, onLogout, isDark, setIsDark, dataCtxValue }) => {
           ` : `
             ::-webkit-scrollbar { width: 6px; } ::-webkit-scrollbar-track { background: #F8FAFC; } ::-webkit-scrollbar-thumb { background: #E2E8F0; border-radius: 3px; }
           `}
+          @media (max-width: 1024px) {
+            [style*="repeat(4"], [style*="repeat(5"] { grid-template-columns: repeat(2, 1fr) !important; }
+          }
+          @media (max-width: 768px) {
+            [style*="repeat(4"], [style*="repeat(5"] { grid-template-columns: repeat(2, 1fr) !important; }
+            [style*="repeat(3"] { grid-template-columns: repeat(2, 1fr) !important; }
+            table { display: block !important; overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          }
+          @media (max-width: 480px) {
+            [style*="repeat(4"], [style*="repeat(3"], [style*="repeat(5"] { grid-template-columns: 1fr !important; }
+            [style*="1fr 1fr"] { grid-template-columns: 1fr !important; }
+          }
         `}</style>
                 <div style={{ display: "flex", height: "100vh", background: C.bg, fontFamily: "'Inter','DM Sans',-apple-system,sans-serif", fontSize: 14, color: C.text, overflow: "hidden" }}>
-                    <EmployeeSidebar active={page} onNav={setPage} onLogout={onLogout} user={user} navItems={permittedNavItems} />
-                    <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column" }}>
+                    <EmployeeSidebar active={page} onNav={setPage} onLogout={onLogout} user={user} navItems={permittedNavItems} mobileOpen={empMobileMenu} onMobileClose={() => setEmpMobileMenu(false)} />
+                    <main style={{ flex: 1, overflow: "hidden", display: "flex", flexDirection: "column", width: _isMobile ? "100%" : undefined }}>
+                        {/* Mobile top bar for employee portal */}
+                        {_isMobile && (
+                            <div style={{
+                                height: 52, flexShrink: 0, display: "flex", alignItems: "center", gap: 10,
+                                padding: "0 14px", borderBottom: `1px solid ${C.border}`,
+                                background: isDark ? "rgba(16,20,35,0.75)" : "rgba(255,255,255,0.75)",
+                                backdropFilter: "blur(12px)",
+                            }}>
+                                <div onClick={() => setEmpMobileMenu(o => !o)}
+                                    style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, cursor: "pointer" }}>
+                                    <Lucide.Menu size={20} color={C.text} strokeWidth={1.75} />
+                                </div>
+                                <div style={{ flex: 1, display: "flex", alignItems: "center", gap: 8 }}>
+                                    <SelfvoraLogo size={22} />
+                                    <span style={{ fontWeight: 800, fontSize: 14, color: C.text }}>Selfvora</span>
+                                </div>
+                                <div onClick={() => setIsDark(d => !d)}
+                                    style={{ width: 36, height: 36, display: "flex", alignItems: "center", justifyContent: "center", borderRadius: 8, cursor: "pointer" }}>
+                                    {isDark ? <Lucide.Sun size={18} color={C.textMid} /> : <Lucide.Moon size={18} color={C.textMid} />}
+                                </div>
+                            </div>
+                        )}
                         <AnimatePresence>
                             {showOnboarding && !onboardingDone && (
                                 <div style={{ position: "fixed", inset: 0, zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 20 }}>
@@ -21196,6 +21368,13 @@ export default function App() {
     const [nexisTrigger, setNexisTrigger] = useState(0);
     // Leave apply modal trigger — incrementing this opens the modal from outside LeavePage
     const [leaveApplyTrigger, setLeaveApplyTrigger] = useState(0);
+
+    // Mobile responsive state
+    const isMobile = useIsMobile();
+    _isMobile = isMobile;
+    const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+    // Close mobile menu on page navigation
+    React.useEffect(() => { setMobileMenuOpen(false); }, [page]);
 
     // ═══ CENTRALIZED STATE — Single source of truth ═══
     const [jobFamilies, setJobFamilies] = useState(INITIAL_JOB_FAMILIES);
@@ -21371,7 +21550,7 @@ export default function App() {
             onComplete={(config) => {
                 setCompanyConfig(config);
                 lsSave(LS_CONFIG_KEY, config);
-                const wizardUser = { email: "admin@company.com", ...USERS["admin@company.com"] };
+                const wizardUser = { email: "owner@company.com", ...USERS["owner@company.com"] };
                 lsSave(LS_SESSION_KEY, wizardUser);
                 setShowSetupWizard(false);
                 handleLogin(wizardUser);
@@ -21418,11 +21597,85 @@ export default function App() {
         tbody tr { transition: background 0.15s; }
         tbody tr:hover { background: #F0F2FF !important; }
       `}
+
+      /* ═══ RESPONSIVE — Tablet (≤1024px) ═══ */
+      @media (max-width: 1024px) {
+        [style*="repeat(4"], [style*="repeat(5"] {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+      }
+
+      /* ═══ RESPONSIVE — Mobile (≤768px) ═══ */
+      @media (max-width: 768px) {
+        [style*="repeat(4"], [style*="repeat(5"] {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+        [style*="repeat(3"] {
+          grid-template-columns: repeat(2, 1fr) !important;
+        }
+        /* Page content padding reduction */
+        main > div > div[style*="padding"] {
+          padding-left: 14px !important;
+          padding-right: 14px !important;
+        }
+        /* Tables: horizontal scroll */
+        table {
+          display: block !important;
+          overflow-x: auto !important;
+          -webkit-overflow-scrolling: touch;
+          white-space: nowrap;
+        }
+        thead, tbody, tr, th, td {
+          white-space: nowrap;
+        }
+        /* Modal max width on mobile */
+        [style*="maxWidth: 840"] {
+          max-width: 95vw !important;
+          margin: 10px !important;
+        }
+        [style*="maxWidth: 860"] {
+          max-width: 95vw !important;
+        }
+      }
+
+      /* ═══ RESPONSIVE — Small Mobile (≤480px) ═══ */
+      @media (max-width: 480px) {
+        /* All multi-col grids → single column */
+        [style*="repeat(4"], [style*="repeat(3"], [style*="repeat(5"] {
+          grid-template-columns: 1fr !important;
+        }
+        /* 2-col grids → single column */
+        [style*="1fr 1fr"] {
+          grid-template-columns: 1fr !important;
+        }
+        /* Further padding reduction */
+        main > div > div[style*="padding"] {
+          padding-left: 10px !important;
+          padding-right: 10px !important;
+        }
+      }
+
+      /* ═══ RESPONSIVE — Viewport meta hint ═══ */
+      @media (max-width: 768px) {
+        /* Notification dropdown */
+        [style*="width: 320"] {
+          width: calc(100vw - 24px) !important;
+          right: -60px !important;
+        }
+        /* Search dropdown */
+        [style*="width: 280"][style*="position: absolute"] {
+          width: calc(100vw - 48px) !important;
+        }
+        /* Profile dropdown */
+        [style*="width: 220"][style*="position: absolute"] {
+          width: 200px !important;
+        }
+      }
     `}</style>
                             <div style={{ display: "flex", height: "100vh", background: _darkMode ? "#0C1118" : C.bg, fontFamily: "'Inter', 'DM Sans', -apple-system, sans-serif", fontSize: 14, color: C.text, overflow: "hidden", transition: "background 0.3s, color 0.3s" }}>
-                                <Sidebar active={page} onNav={setPage} onLogout={handleLogout} onNexisAI={() => setNexisTrigger(n => n + 1)} />
-                                <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden" }}>
-                                    <TopBar onNav={setPage} onLogout={handleLogout} page={page} onAction={() => {
+                                <Sidebar active={page} onNav={setPage} onLogout={handleLogout} onNexisAI={() => setNexisTrigger(n => n + 1)} mobileOpen={mobileMenuOpen} onMobileClose={() => setMobileMenuOpen(false)} />
+                                <div style={{ flex: 1, display: "flex", flexDirection: "column", overflow: "hidden", width: isMobile ? "100%" : undefined }}>
+                                    <TopBar onNav={setPage} onLogout={handleLogout} page={page} onMenuToggle={() => setMobileMenuOpen(o => !o)} onAction={() => {
                                         const leavePages = ["leave", "leave_My_Requests", "leave_All_Leave_Requests", "leave_Leave_Types", "calendar"];
                                         if (leavePages.includes(page)) setLeaveApplyTrigger(n => n + 1);
                                         else if (page === "people" || page.startsWith("people")) setPage("people_Onboarding");

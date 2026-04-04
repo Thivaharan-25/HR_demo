@@ -1,0 +1,64 @@
+
+  ┌─────────────────┬───────────────────────────────────┬───────────────────────────────────────────────────────────┐
+  │     Module      │           Tables Added            │                      Evidence Source                      │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Infrastructure  │ countries                         │ Referenced as country_id(ext) in 6+ tables but never      │
+  │ (+1)            │                                   │ defined                                                   │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │                 │                                   │ Critical gap — job_family_required_skills and             │
+  │ Org Structure   │ job_families, job_family_levels   │ allowance_type_job_families FK to it but table was        │
+  │ (+2)            │                                   │ missing. People tab, Setup Wizard Step 3, Employee forms  │
+  │                 │                                   │ all use it                                                │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │                 │ offboarding_cases,                │ Offboarding page (5-stage workflow, penalty bypass),      │
+  │ Core HR (+3)    │ offboarding_penalties,            │ Lifecycle page (promotions/transfers/demotions)           │
+  │                 │ employee_lifecycle_events         │                                                           │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │                 │ attendance_corrections,           │ Timesheet Corrections page, WorkSchedulePage (5           │
+  │ Attendance (+3) │ schedule_templates,               │ templates, custom templates, daily work mode per          │
+  │                 │ employee_work_schedules           │ employee)                                                 │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Performance     │ succession_plans,                 │ Succession Planning page, auto-ranking during offboarding │
+  │ (+2)            │ succession_candidates             │                                                           │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Skills (+1)     │ skill_validation_requests         │ 3 seeded requests (SR001-003), NexisAI "Request Skill"    │
+  │                 │                                   │ form                                                      │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Notifications   │ notifications,                    │ Topbar bell, Onboarding Step 5, Settings page             │
+  │ (NEW, 2)        │ notification_preferences          │                                                           │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Configuration   │ tenant_settings,                  │                                                           │
+  │ (NEW, 3)        │ integration_connections,          │ ConfigPage 6 tabs, Settings page, 8 integration cards     │
+  │                 │ digital_signature_configs         │                                                           │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Calendar (NEW,  │ calendar_events                   │ Employee Calendar, leave conflict checker                 │
+  │ 1)              │                                   │                                                           │
+  ├─────────────────┼───────────────────────────────────┼───────────────────────────────────────────────────────────┤
+  │ Reports (NEW,   │ scheduled_reports,                │ ReportsPage schedule/export actions                       │
+  │ 2)              │ report_executions                 │                                                           │
+  └─────────────────┴───────────────────────────────────┴───────────────────────────────────────────────────────────┘
+
+  4 Common Module Tables (HR + Work Management SSO)
+
+  ┌─────────────────────────┬──────────────────────────────────────────────────┐
+  │          Table          │                     Purpose                      │
+  ├─────────────────────────┼──────────────────────────────────────────────────┤
+  │ applications            │ Registry of Selfvora apps (HR, Work Management)  │
+  ├─────────────────────────┼──────────────────────────────────────────────────┤
+  │ user_application_access │ Per-user app access control                      │
+  ├─────────────────────────┼──────────────────────────────────────────────────┤
+  │ sso_providers           │ Google Workspace / Azure AD / Okta configs       │
+  ├─────────────────────────┼──────────────────────────────────────────────────┤
+  │ sso_sessions            │ Cross-app SSO sessions (login once, access both) │
+  └─────────────────────────┴──────────────────────────────────────────────────┘
+
+  HTML Changes Made
+
+  - Updated header stats (63 → 87, 11 → 15 modules)
+  - Added 5 new stat boxes + CSS color variables
+  - Added 2 new tab buttons ("Missing Tables", "Common Modules")
+  - Updated all existing overview cards with new table counts (red-highlighted additions)
+  - Added 5 new overview cards for new modules
+  - Added full Missing Tables tab panel with Mermaid ERD, 10 grouped table listings, and evidence from UI analysis
+  - Added full Common Modules tab panel with Mermaid ERD, SSO workflow documentation
+  - Updated architectural decisions and footer
